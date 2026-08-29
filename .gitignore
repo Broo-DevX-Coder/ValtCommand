@@ -1,0 +1,85 @@
+# ==========================
+# Build directories
+# ==========================
+build/
+cmake-build-debug/
+cmake-build-release/
+out/
+dist/
+
+# ==========================
+# tesy files
+# ==========================
+**/test/
+
+# ==========================
+# CMake generated files
+# ==========================
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
+Makefile
+compile_commands.json
+vcpkg_installed
+
+# ==========================
+# Executables & binaries
+# ==========================
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.o
+*.obj
+
+# ==========================
+# Logs
+# ==========================
+*.log
+
+# ==========================
+# Environment variables
+# ==========================
+*.env
+*.env.*
+
+# ==========================
+# VS Code
+# ==========================
+.vscode/
+
+# If you want to share settings,
+# comment the previous line and use:
+# .vscode/*
+# !.vscode/settings.json
+# !.vscode/tasks.json
+# !.vscode/launch.json
+
+# ==========================
+# Qt Creator
+# ==========================
+*.pro.user
+*.pro.user.*
+*.qbs.user
+
+# ==========================
+# Linux
+# ==========================
+*~
+*.cache/
+
+# ==========================
+# macOS
+# ==========================
+.DS_Store
+
+# ==========================
+# Windows
+# ==========================
+Thumbs.db
+Desktop.ini
