@@ -15,3 +15,10 @@ target_include_directories(
     PUBLIC
     ../include
 )
+
+# Link the Main app with Endine
+target_link_libraries(
+    ValtCommand
+    PRIVATE
+    engine
+)
