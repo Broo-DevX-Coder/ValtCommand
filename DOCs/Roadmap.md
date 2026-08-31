@@ -11,9 +11,9 @@
 
 ## v0.1
 
-- Lexer
-- Parser
-- AST
+✅ Lexer
+✅ Parser
+✅ AST
 - Runtime
 - Function Registry
 - Type Validation

@@ -22,7 +22,6 @@ std::vector<std::string> __types__ = {
 
 // All sepported keywords
 std::vector<std::string> __key_words__ = {
-    "END", // End of block (Functioon call, var ...)
     "CALL" // Call function
 };
 

@@ -12,6 +12,7 @@
 
 // == Locals ==
 #include "Lexar.hpp"
+#include "Parser.hpp"
 
 // ==================================================================
 // Entry point function
@@ -22,7 +23,7 @@ int main () {
         value<str>:"Hellow n****"
     END
     CALL sum
-        _1st<int>:1.5
+        _1st<float>:1.5
         _2nd<int>: 5
     END
     CALL boolean_return
@@ -40,6 +41,16 @@ int main () {
     }
 
     std::cout << "==== End Lexar ====" << std::endl << std::flush;
+
+    std::cout << "==== Start Parser ====" << std::endl << std::flush;
+
+    Parser p(all_t);
+    auto t = p.get_program_node();
+
+    std::cout << t->get_str(0) << std::endl << std::flush;
+
+    std::cout << "==== End Parser ====" << std::endl << std::flush;
+    
 
     return 0;
 }

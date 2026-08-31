@@ -34,7 +34,7 @@
 // This is the maain lixar class
 class API Lexar {
     private:
-        int pos = 0; // The curent position in code
+        size_t pos = 0; // The curent position in code
         std::string code; // The code's program
         char curent_c; // The curent byte in code
         bool code_ended = false; // Is the code done or no, used to stop all whileloops and return END_CODE type

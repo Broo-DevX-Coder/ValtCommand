@@ -28,11 +28,15 @@ FunctionCallArgumentNode::FunctionCallArgumentNode(
 
     } else if (type == "int" || type == "float") {
         auto v = std::stoul(v_);
-        value = type == "int"? (int)v : (double)v;
+        value = type == "int"? (uint64_t)v : (double)v;
 
     } else if (type == "bool") {
         value = v_=="True";
 
+    } 
+
+    if (v_.empty()){
+        value = std::monostate();
     }
 }
 
@@ -43,19 +47,18 @@ FunctionCallArgumentNode::get_str(
 ) {
     std::stringstream ss;
 
-    for (int i;i<level*3;i++)
-        ss << " ";
-    ss << "\n";
+    for (int i=0;i<level;i++)
+        ss << "|  ";
     ss << "Argument " << name << ":" << "\n";
 
-    for (int i;i<(level*3)+2;i++) 
-        ss << " ";
-    ss << "\n";
+    for (int i=0;i<level;i++)
+        ss << "|  ";
+    ss << "| ";
     ss << "Type: " << type << "\n";
 
-    for (int i;i<(level*3)+2;i++) 
-        ss << " ";
-    ss << "\n";
+    for (int i=0;i<level;i++)
+        ss << "|  ";
+    ss << "| ";
     ss << "Value: " << value_str << "\n";
 
     return ss.str();
@@ -71,7 +74,7 @@ FunctionCallNode::FunctionCallNode(
     ArgsT& a_
 ): 
     name(n_),
-    arguments(a_) 
+    arguments(std::move(a_)) 
 {}
 
 // get str to print
@@ -81,13 +84,12 @@ FunctionCallNode::get_str(
 ) {
     std::stringstream ss;
 
-    for (int i;i<level*3;i++)
-        ss << " ";
-    ss << "\n";
+    for (int i=0;i<level;i++)
+        ss << "|  ";
     ss << "FunctionCall " << name << ":" << "\n";
 
     for (auto& arg: arguments)
-        ss << arg.get_str(level+1);
+        ss << arg->get_str(level+1);
 
     return ss.str();
 }

@@ -26,3 +26,9 @@ endfunction()
 # =======================================================================
 
 create_module(engine .)
+
+target_link_libraries(
+    engine
+    PUBLIC
+    fmt
+)

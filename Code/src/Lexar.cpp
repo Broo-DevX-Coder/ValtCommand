@@ -90,6 +90,9 @@ Lexar::get_the_next_token() {
         if (is_token_type_(tk))
             tk_t = TYPE;
 
+        if (tk == "END") 
+            tk_t = NEWLINE;
+
         if (is_token_key_word_(tk))
             tk_t = KEY_WORD;
 

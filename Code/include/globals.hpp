@@ -68,7 +68,13 @@ API extern std::unordered_map<char,Token> __symbols__; // All sepported symbols 
 // ==================================================================
 // Types 
 // ==================================================================
-using Value = std::variant<int, double, std::string, bool>; // Value variant type
+using Value = std::variant<
+    std::monostate,
+    uint64_t, 
+    double, 
+    std::string, 
+    bool
+>; // Value variant type
 
 
 // ==================================================================

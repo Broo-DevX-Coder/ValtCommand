@@ -54,9 +54,9 @@ class API FunctionCallArgumentNode: public ASTNode
 // Function Call Node
 class API FunctionCallNode: public ASTNode
 {
-    using ArgsT = std::vector<FunctionCallArgumentNode>;
-
     public:
+        using ArgsT = std::vector<std::unique_ptr<FunctionCallArgumentNode>>;
+
         std::string name; // Name of function
         ArgsT arguments; // Function arguments
 

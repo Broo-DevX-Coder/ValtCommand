@@ -41,9 +41,9 @@ public:
 // ==================================================================
 class ProgramNode : public ASTNode
 {
-    using StatmentsT = std::vector<std::shared_ptr<ASTNode>>;
-
     public:
+        using StatmentsT = std::vector<std::unique_ptr<ASTNode>>;
+        
         StatmentsT statements;
 
         ProgramNode(StatmentsT& s_); // Constructure
