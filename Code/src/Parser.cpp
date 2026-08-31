@@ -5,9 +5,6 @@
 // == Locals ==
 #include "Parser.hpp"
 
-#include <iostream>
-#include <fmt/format.h>
-
 // ==================================================================
 // Parses's functions
 // ==================================================================
@@ -30,7 +27,6 @@ Parser::advence() {
     pos++;
     if (pos < tokens_list_.size()) {
         curent_token_ = tokens_list_[pos];
-        std::cout << curent_token_.value << std::endl << std::flush;
         if (curent_token_.Type == END_CODE)
             code_ended_ = true;
     } else {

@@ -27,7 +27,7 @@
 
 // == Locals ==
 #include "ASTNodes/ASTNode.hpp"
-#include "globals.hpp"
+#include "Runtime.hpp"
 
 // ==================================================================
 // Function Call Argument Node
@@ -44,6 +44,8 @@ class API FunctionCallArgumentNode: public ASTNode
 
         FunctionCallArgumentNode(std::string n_, std::string t_, std::string v_); // Constructure
         std::string get_str(int level) override; // Get str of node to print
+        ASTNodesTypes NType() override; // Get the type of node
+        void exec() override; // Execute node
 };
 
 
@@ -62,5 +64,11 @@ class API FunctionCallNode: public ASTNode
 
         FunctionCallNode(std::string n_, ArgsT& a_); // Contructure
         std::string get_str(int level) override; // Get str of node to print
+        ASTNodesTypes NType() override; // Get the type of node
+        void exec() override; // Execute node
 };
 
+
+// ==================================================================
+// Execution
+// ==================================================================

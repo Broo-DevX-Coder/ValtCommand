@@ -64,6 +64,18 @@ FunctionCallArgumentNode::get_str(
     return ss.str();
 }
 
+// Get the node type
+ASTNodesTypes 
+FunctionCallArgumentNode::NType() {
+    return T__FunctionCallArgumentNode;
+}
+
+// Execute node
+void 
+FunctionCallArgumentNode::exec() {
+    return;
+}
+
 // ==================================================================
 // Function Call Node
 // ==================================================================
@@ -92,4 +104,25 @@ FunctionCallNode::get_str(
         ss << arg->get_str(level+1);
 
     return ss.str();
+}
+
+// Get the node type
+ASTNodesTypes 
+FunctionCallNode::NType() {
+    return T__FunctionCallNode;
+}
+
+// Execute node
+void 
+FunctionCallNode::exec() {
+    if (!Runtime::registries::functions.contains(name)) 
+        throw std::runtime_error(
+            fmt::format("No function named {}",name)
+        );
+    
+    std::unordered_map<std::string, Value> args_list;
+    for (auto& ar: arguments)
+        args_list[ar->name] = ar->value;
+
+    Runtime::registries::functions.at(name)(args_list);
 }

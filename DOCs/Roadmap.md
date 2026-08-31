@@ -14,12 +14,18 @@
 ✅ Lexer
 ✅ Parser
 ✅ AST
-- Runtime
-- Function Registry
+✅ Runtime
+✅ Function Registry
 - Type Validation
 - Error Handling
 
 ## v0.2
+
+- Values nodes
+- Variables
+- Returns functions
+- Recursive parser
+- IF estatments and FOR and WHILE loops
 
 - Improved diagnostics
 - Better error reporting

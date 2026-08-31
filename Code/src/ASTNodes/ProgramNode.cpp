@@ -33,3 +33,17 @@ ProgramNode::get_str(
 
     return ss.str();
 }
+
+// Get the node type
+ASTNodesTypes 
+ProgramNode::NType() {
+    return T__ProgramNode;
+}
+
+// Execute node
+void 
+ProgramNode::exec() {
+    for (auto& stmt: statements) {
+        stmt->exec();
+    }
+}
