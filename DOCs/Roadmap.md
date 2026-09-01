@@ -11,21 +11,18 @@
 
 ## v0.1
 
-✅ Lexer
-✅ Parser
-✅ AST
-✅ Runtime
-✅ Function Registry
-- Type Validation
-- Error Handling
+- ✅ Lexer
+- ✅ Parser
+- ✅ AST
+- ✅ Runtime
+- ✅ Function Registry
+- Type Validation + Values nodes
+- ✅ Error Handling
 
 ## v0.2
 
-- Values nodes
-- Variables
 - Returns functions
 - Recursive parser
-- IF estatments and FOR and WHILE loops
 
 - Improved diagnostics
 - Better error reporting
@@ -33,6 +30,9 @@
 - Comments support
 
 ## v0.3
+
+- Variables
+- IF estatments and FOR and WHILE loops
 
 - Token inspector
 - AST inspector

@@ -25,6 +25,8 @@ Lexar::advence() {
     pos++;
     if (pos < code.size()) {
         curent_c = code[pos];
+        if (curent_c != '\n') 
+            curent_column++;
     } else 
         code_ended = true;
 }
@@ -37,6 +39,10 @@ Lexar::escape_spaces() {
         return;
     
     while ((std::isspace(curent_c) || curent_c == '\n' || curent_c == '\t') && !code_ended) {
+        if (curent_c == '\n') {
+            curent_line++;
+            curent_column = 0;
+        }
         advence();
     }
 }
@@ -48,12 +54,14 @@ Lexar::get_the_next_token() {
 
     // If there is not any char
     if (code_ended == true) {
-        return {END_CODE, ""};
+        return {TokenType::END_CODE, "", curent_line, curent_column};
 
     // If char is < or >
     } else if (__symbols__.contains(curent_c)) {
         auto t = __symbols__[curent_c];
         advence();
+        t.line = curent_line;
+        t.column = curent_column;
         return t;
 
     // If the curent char is digit
@@ -72,9 +80,9 @@ Lexar::get_the_next_token() {
         }
 
         if (dot)
-            return {FLOAT, tk};
+            return {TokenType::FLOAT, tk, curent_line, curent_column};
         else 
-            return {INTEGER, tk};
+            return {TokenType::INTEGER, tk, curent_line, curent_column};
 
     // If curent char is letter
     } else if (std::isalpha(curent_c) || curent_c == '_') {
@@ -85,24 +93,24 @@ Lexar::get_the_next_token() {
             advence(); 
         } while ((std::isdigit(curent_c) || std::isalpha(curent_c) || curent_c == '_') && !code_ended);
 
-        TokenType tk_t = IDENTIFIER;
+        TokenType tk_t = TokenType::IDENTIFIER;
 
         if (is_token_type_(tk))
-            tk_t = TYPE;
+            tk_t = TokenType::TYPE;
 
         if (tk == "END") 
-            tk_t = NEWLINE;
+            tk_t = TokenType::NEWLINE;
 
         if (is_token_key_word_(tk))
-            tk_t = KEY_WORD;
+            tk_t = TokenType::KEY_WORD;
 
         if (
             tk == "True" ||
             tk == "False"
         ) 
-            tk_t = BOOLEAN;
+            tk_t = TokenType::BOOLEAN;
         
-        return {tk_t, tk};
+        return {tk_t, tk, curent_line, curent_column};
 
     // If curent type is string
     } else if (curent_c == '"' || curent_c == '\'') {
@@ -117,9 +125,9 @@ Lexar::get_the_next_token() {
         }
         advence();
 
-        return {STRING, tk};
+        return {TokenType::STRING, tk, curent_line, curent_column};
     } else {
-        Token t = {UNKNOWN, std::string(1,curent_c)};
+        Token t = {TokenType::UNKNOWN, std::string(1,curent_c), curent_line, curent_column};
         advence();
         return t;
     }
@@ -132,11 +140,10 @@ Lexar::get_all_tokens() {
     auto tk = get_the_next_token();
     r.push_back(tk);
 
-    while (tk.Type != END_CODE) {
+    while (tk.Type != TokenType::END_CODE) {
         tk = get_the_next_token();
         r.push_back(tk);
     }
 
     return r;
-
 }

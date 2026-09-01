@@ -8,6 +8,7 @@
 
 // == Locals ==
 #include "ASTNodes/FunctionCallNode.hpp"
+#include "Errors.hpp"
 
 // ==================================================================
 // Function Call Argument Node
@@ -15,30 +16,13 @@
 
 // Constructure
 FunctionCallArgumentNode::FunctionCallArgumentNode(
-    std::string n_,
-    std::string t_,
-    std::string v_
+    std::string Aname, 
+    std::string Atype, 
+    std::unique_ptr<ASTNode> Value_node
 ): 
-    name(n_),
-    type(t_),
-    value_str(v_)
-{
-    if (type == "str") {
-        value = v_;
-
-    } else if (type == "int" || type == "float") {
-        auto v = std::stoul(v_);
-        value = type == "int"? (uint64_t)v : (double)v;
-
-    } else if (type == "bool") {
-        value = v_=="True";
-
-    } 
-
-    if (v_.empty()){
-        value = std::monostate();
-    }
-}
+    name(Aname),
+    type(Atype),
+    VNode(std::move(Value_node)) {}
 
 // get str to print
 std::string
@@ -51,15 +35,7 @@ FunctionCallArgumentNode::get_str(
         ss << "|  ";
     ss << "Argument " << name << ":" << "\n";
 
-    for (int i=0;i<level;i++)
-        ss << "|  ";
-    ss << "| ";
-    ss << "Type: " << type << "\n";
-
-    for (int i=0;i<level;i++)
-        ss << "|  ";
-    ss << "| ";
-    ss << "Value: " << value_str << "\n";
+    ss <<  VNode->get_str(level+1);
 
     return ss.str();
 }
@@ -67,13 +43,18 @@ FunctionCallArgumentNode::get_str(
 // Get the node type
 ASTNodesTypes 
 FunctionCallArgumentNode::NType() {
-    return T__FunctionCallArgumentNode;
+    return NT__FunctionCallArgumentNode;
 }
 
 // Execute node
-void 
+ReturnResult<Value> 
 FunctionCallArgumentNode::exec() {
-    return;
+    auto vnode_r = VNode->exec();
+    if (!vnode_r.success)
+        return {vnode_r.Message,false,std::monostate{}};
+    
+    value = vnode_r.value;
+    return {"",true,std::monostate{}};
 }
 
 // ==================================================================
@@ -82,11 +63,13 @@ FunctionCallArgumentNode::exec() {
 
 // Constructure
 FunctionCallNode::FunctionCallNode(
-    std::string n_, 
-    ArgsT& a_
+    std::string Fname, 
+    ArgsT& Args_list, 
+    Token token
 ): 
-    name(n_),
-    arguments(std::move(a_)) 
+    name(Fname),
+    arguments(std::move(Args_list)),
+    vToken(token)
 {}
 
 // get str to print
@@ -109,20 +92,30 @@ FunctionCallNode::get_str(
 // Get the node type
 ASTNodesTypes 
 FunctionCallNode::NType() {
-    return T__FunctionCallNode;
+    return NT__FunctionCallNode;
 }
 
 // Execute node
-void 
+ReturnResult<Value> 
 FunctionCallNode::exec() {
     if (!Runtime::registries::functions.contains(name)) 
-        throw std::runtime_error(
-            fmt::format("No function named {}",name)
-        );
+        return {
+            Errors::NameError(
+                vToken.value,
+                vToken.line,
+                vToken.column
+            ).msg,
+            false,
+            std::monostate()
+        };
     
     std::unordered_map<std::string, Value> args_list;
-    for (auto& ar: arguments)
-        args_list[ar->name] = ar->value;
+    for (auto& ar: arguments){
+        auto arg_exec_r = ar->exec();
+        if (!arg_exec_r.success) 
+            return {arg_exec_r.Message,false,std::monostate()};
 
-    Runtime::registries::functions.at(name)(args_list);
+        args_list[ar->name] = ar->value;
+    }
+    return Runtime::registries::functions.at(name)(args_list);
 }

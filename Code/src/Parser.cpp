@@ -4,6 +4,10 @@
 
 // == Locals ==
 #include "Parser.hpp"
+#include "ASTNodes/ValueNode.hpp"
+#include "Errors.hpp"
+
+#include <iostream>
 
 // ==================================================================
 // Parses's functions
@@ -27,73 +31,146 @@ Parser::advence() {
     pos++;
     if (pos < tokens_list_.size()) {
         curent_token_ = tokens_list_[pos];
-        if (curent_token_.Type == END_CODE)
+        if (curent_token_.Type == TokenType::END_CODE)
             code_ended_ = true;
+        std::cout << curent_token_.value << std::endl << std::flush;
+        
     } else {
         code_ended_ = true;
     }
 }
 
 // Verifi the next token type
-bool
+ReturnResult<bool>
 Parser::next_match(
-    TokenType tt_
+    TokenType tt_,
+    std::string comment_
 ) {
     advence();
     if (curent_token_.Type == tt_ && !code_ended_)
-        return true;
+        return {"",true,true};
 
-    throw std::runtime_error(
-        fmt::format("Unexpected token {}", curent_token_.value)
-    );
+    return {
+        Errors::SyntaxError(
+            code_ended_?"(end of code!)":curent_token_.value,
+            curent_token_.line,
+            curent_token_.column,
+            comment_
+        ).msg,
+        false,false
+    };
 }
 
 // Verifi the curent token type
-bool
+ReturnResult<bool>
 Parser::match(
-    TokenType tt_
+    TokenType tt_,
+    std::string comment_
 ) {
     if (curent_token_.Type == tt_ && !code_ended_)
-        return true;
+        return {"",true,true};
 
-    throw std::runtime_error(
-        fmt::format("Unexpected token {}", curent_token_.value)
-    );
+    return {
+        Errors::SyntaxError(
+            code_ended_?"(end of code!)":curent_token_.value,
+            curent_token_.line,
+            curent_token_.column,
+            comment_
+        ).msg,
+        false,false
+    };
 }
 
 // Get the next node
-Parser::Node
+ReturnResult<Parser::Node>
 Parser::get_next_node() {
-    if (curent_token_.Type == KEY_WORD) {
+
+    // set match result var
+    ReturnResult<bool> mt;
+
+    if (curent_token_.Type == TokenType::KEY_WORD) {
 
         if (curent_token_.value == "CALL") {
 
-            next_match(IDENTIFIER);
-            auto func_name = curent_token_.value;
+            mt = next_match(TokenType::IDENTIFIER, "What is the function name ?? \n");  
+            if (!mt.success)
+                return {mt.Message,false,nullptr};
+            auto func_token = curent_token_;
             advence();
 
             FunctionCallNode::ArgsT arg_list;
 
-            while (curent_token_.Type != NEWLINE && !code_ended_) {
+            while (curent_token_.Type != TokenType::NEWLINE && !code_ended_) {
 
                 // get arg name
-                match(IDENTIFIER);
+                mt = match(TokenType::IDENTIFIER, "Forgot naming function's argument \n");
+                if (!mt.success)
+                    return {mt.Message,false,nullptr};
                 auto arg_name = curent_token_.value;            
 
                 // get arg type
-                next_match(LESS_THAN);
-                next_match(TYPE);
+                mt = next_match(TokenType::LESS_THAN, "Forgot adding `<` befor type name \n");
+                if (!mt.success)
+                    return {mt.Message,false,nullptr};
+                mt = next_match(TokenType::TYPE, "Forgot setting type for argument \n");
+                if (!mt.success)
+                    return {mt.Message,false,nullptr};
                 auto arg_type = curent_token_.value;
-                next_match(GREATER_THAN);
+                mt = next_match(TokenType::GREATER_THAN, "Forgot adding `>` aftre type name \n");
+                if (!mt.success)
+                    return {mt.Message,false,nullptr};
 
                 // get arg value
-                next_match(COLON);
+                mt = next_match(TokenType::COLON, "Forgot adding `:` to set argument value \n");
+                if (!mt.success)
+                    return {mt.Message,false,nullptr};
                 advence();
-                auto arg_value = curent_token_.value;
+                {
+                    auto tt = curent_token_.Type;
+                    if(!(
+                        tt == TokenType::STRING ||
+                        tt == TokenType::INTEGER ||
+                        tt == TokenType::FLOAT ||
+                        tt == TokenType::BOOLEAN ||
+                        tt == TokenType::KEY_WORD
+                    ))
+                        return {
+                        Errors::SyntaxError(
+                            code_ended_?"(end of code!)":curent_token_.value,
+                            curent_token_.line,
+                            curent_token_.column,
+                            "Forgot adding argument value"
+                        ).msg,
+                        false,nullptr};
+                }
 
-                // Make the argument node
+                std::unique_ptr<ASTNode> arg_value;
+                if (
+                    curent_token_.Type == TokenType::STRING ||
+                    curent_token_.Type == TokenType::INTEGER ||
+                    curent_token_.Type == TokenType::FLOAT ||
+                    curent_token_.Type == TokenType::BOOLEAN 
+                ) {
+                    if (arg_type == "str") {
+                        arg_value = std::make_unique<StringValueNode>(curent_token_);
+                    } else if (arg_type == "int") {
+                        arg_value = std::make_unique<NumberValueNode>(curent_token_,"int");
+                    } else if (arg_type == "float") {
+                        arg_value = std::make_unique<NumberValueNode>(curent_token_,"float");
+                    } else if (arg_type == "boolean") {
+                        arg_value = std::make_unique<BooleanValueNode>(curent_token_);
+                    } 
+
+                } else if (curent_token_.Type == TokenType::KEY_WORD) {
+                    auto g = get_next_node();
+                    if (!g.success)
+                        return {g.Message,false,nullptr};
+                    arg_value = std::move(g.value);
+                }
+
+                // Creat argument node
                 auto arg = std::make_unique<FunctionCallArgumentNode>(
-                    arg_name, arg_type, arg_value
+                    arg_name, arg_type, std::move(arg_value)
                 );
 
                 // Move the argument to args list
@@ -102,33 +179,55 @@ Parser::get_next_node() {
                 advence();
             }
             
+            mt = match(TokenType::NEWLINE, "Forgot END at the end of function call \n");
+            if (!mt.success)
+                return {mt.Message,false,nullptr};
             advence();
 
-            return std::make_unique<FunctionCallNode>(
-                func_name,
-                arg_list
-            );
+            return {
+                "",
+                true,
+                std::make_unique<FunctionCallNode>(
+                    func_token.value,
+                    arg_list,
+                    func_token
+                )
+            };
+            
         }
-    } else {
-        throw std::runtime_error(
-            fmt::format("Unexpected token {}", curent_token_.value)
-        );
-    }
+    } 
+    return {
+        Errors::SyntaxError(
+            code_ended_?"(end of code!)":curent_token_.value,
+            curent_token_.line,
+            curent_token_.column,
+            fmt::format("This keyword named {}",curent_token_.value)
+        ).msg,
+        false,
+        nullptr
+    };
 }
 
-// Get clear program node
-Parser::PNode
-Parser::get_program_node() {
+// Get clear module node
+ReturnResult<Parser::PNode>
+Parser::get_module_node() {
 
-    ProgramNode::StatmentsT s_list;
+    ModuleNode::StatmentsT s_list;
 
+    auto nt = get_next_node();
     while (!code_ended_) {
-        s_list.push_back(get_next_node());
+        nt = get_next_node();
+        if(!nt.success)
+            return {nt.Message,false,nullptr};
+        s_list.push_back(std::move(nt.value));
     }
 
-    // make program node and return them
-    return  std::make_unique<ProgramNode>(
-        s_list
-    );
-
+    // make module node and return them
+    return {
+        "",
+        true,
+        std::make_unique<ModuleNode>(
+            s_list
+        )
+    };
 }

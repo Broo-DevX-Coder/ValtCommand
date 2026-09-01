@@ -27,11 +27,25 @@
 #include <vector>
 #include <unordered_map>
 #include <variant>
+#include <fmt/format.h>
+
+// ==================================================================
+// Types 
+// ==================================================================
+using Value = std::variant<
+    std::monostate,
+    uint64_t, 
+    double, 
+    std::string, 
+    bool
+>; // Value variant type
 
 // ==================================================================
 // Enums
 // ==================================================================
-enum TokenType {
+
+// tokenTypes enum
+enum class TokenType {
     IDENTIFIER,
     TYPE,
     KEY_WORD,
@@ -48,37 +62,45 @@ enum TokenType {
 };
 
 // ==================================================================
+// Vars 
+// ==================================================================
+extern std::unordered_map<TokenType,std::string> TokenTypesStr; // All TokenTypes like string
+
+// ==================================================================
 // Structs
 // ==================================================================
-struct API Token {
+struct Token {
     TokenType Type;
     std::string value;
+    size_t line;
+    size_t column;
     void print() {
-        std::cout << "{" << Type << " - " << value << "}" << std::endl << std::flush;
+        std::cout << fmt::format(
+            "[ T:{} | V:{} | L:{} | C:{} ]",
+            TokenTypesStr[Type], value, line, column
+        ) << std::endl << std::flush;
     }
 };
 
 // ==================================================================
-// Vars
+// Vars 
 // ==================================================================
-API extern std::vector<std::string> __types__; // All sepported types
-API extern std::vector<std::string> __key_words__; // All seported key words
-API extern std::unordered_map<char,Token> __symbols__; // All sepported symbols like <>:
-
-// ==================================================================
-// Types 
-// ==================================================================
-using Value = std::variant<
-    std::monostate,
-    uint64_t, 
-    double, 
-    std::string, 
-    bool
->; // Value variant type
-
+extern std::unordered_map<TokenType,std::string> TokenTypes_to_StringType; // All TokenTypes like string
+extern std::vector<std::string> __types__; // All sepported types
+extern std::vector<std::string> __key_words__; // All seported key words
+extern std::unordered_map<char,Token> __symbols__; // All sepported symbols like <>:
 
 // ==================================================================
 // Functions
 // ==================================================================
-API bool is_token_type_(std::string token);  // Is the token a type
-API bool is_token_key_word_(std::string token); // Is the token a keyword
+bool is_token_type_(std::string token);  // Is the token a type
+bool is_token_key_word_(std::string token); // Is the token a keyword
+std::string Get_ValueT(const Value& value); // Get Value type (what inside variant)
+
+// Return object, to handle errors
+template<typename T>
+struct ReturnResult {
+    std::string Message;
+    bool success;
+    T value;
+};

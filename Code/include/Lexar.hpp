@@ -35,6 +35,8 @@
 class API Lexar {
     private:
         size_t pos = 0; // The curent position in code
+        size_t curent_line = 0; // The line that the cursor is on.
+        size_t curent_column = 0; // The number letter in current line that the cursor is on.
         std::string code; // The code's program
         char curent_c; // The curent byte in code
         bool code_ended = false; // Is the code done or no, used to stop all whileloops and return END_CODE type

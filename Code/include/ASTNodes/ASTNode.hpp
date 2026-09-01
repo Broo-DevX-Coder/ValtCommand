@@ -27,40 +27,47 @@
 #include <memory>
 #include <fmt/format.h>
 
+// == Locals ==
+#include "globals.hpp"
+
 // ==================================================================
 // ASTNodes Types
 // ==================================================================
 enum ASTNodesTypes {
-    T__ProgramNode,
-    T__FunctionCallNode,
-    T__FunctionCallArgumentNode
+    NT__ModuleNode,
+    NT__FunctionCallNode,
+    NT__FunctionCallArgumentNode,
+    NT__ValueNode,
+    NT__StringValueNode,
+    NT__NumberValueNode,
+    NT__BooleanValueNode
 };
 
 // ==================================================================
 // ASTNode
 // ==================================================================
-class API ASTNode
+class ASTNode
 {
 public:
     virtual ~ASTNode() = default;
     virtual std::string get_str(int level) = 0;
     virtual ASTNodesTypes NType() = 0;
-    virtual void exec() = 0;
+    virtual ReturnResult<Value> exec() = 0;
 };
 
 // ==================================================================
 // Main program node
 // ==================================================================
-class ProgramNode : public ASTNode
+class ModuleNode : public ASTNode
 {
     public:
         using StatmentsT = std::vector<std::unique_ptr<ASTNode>>;
         
         StatmentsT statements;
 
-        ProgramNode(StatmentsT& s_); // Constructure
-        std::string get_str(int level) override; // get the str of node to print
+        ModuleNode(StatmentsT& s_); // Constructure
+        std::string get_str(int level=0) override; // get the str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        void exec() override; // Execute node
+        ReturnResult<Value> exec() override; // Execute node
 };
 

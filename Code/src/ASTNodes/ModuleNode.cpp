@@ -13,13 +13,13 @@
 // ==================================================================
 
 // Constructure
-ProgramNode::ProgramNode(
+ModuleNode::ModuleNode(
     StatmentsT& s_
 ): statements(std::move(s_)) {}
 
 // get str to print
 std::string
-ProgramNode::get_str(
+ModuleNode::get_str(
     int level
 ) {
     std::stringstream ss;
@@ -36,14 +36,18 @@ ProgramNode::get_str(
 
 // Get the node type
 ASTNodesTypes 
-ProgramNode::NType() {
-    return T__ProgramNode;
+ModuleNode::NType() {
+    return NT__ModuleNode;
 }
 
 // Execute node
-void 
-ProgramNode::exec() {
+ReturnResult<Value>
+ModuleNode::exec() {
+    ReturnResult<Value> r;
     for (auto& stmt: statements) {
-        stmt->exec();
+        r = stmt->exec();
+        if (!r.success)
+            return {r.Message,false,std::monostate()};
     }
+    return {"",true,std::monostate()};
 }

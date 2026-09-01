@@ -28,16 +28,10 @@ int main () {
         value0<str>:"Hellow n****"
     END
     CALL print 
-        value<str>:"Hellow n****"
+        value<str>:1.05
         value2<str>:"Hellow n****"
         value3<str>:"Hellow n****"
-        value4<str>:"Hellow n****"
-    END
-    CALL printf
-        value<str>:"Hellow n****"
-        value2<str>:"Hellow n****"
-        value3<str>:"Hellow n****"
-        value4<str>:"Hellow n****"
+        value22<str>:"Hellow n****"
     END
     )CODE";
 
@@ -54,17 +48,26 @@ int main () {
     std::cout << "==== Start Parser ====" << std::endl << std::flush;
 
     Parser p(all_t);
-    auto pnode = p.get_program_node();
+    auto mnode = p.get_module_node();
+    if (!mnode.success){
+        std::cout << "Parser error" << std::endl << std::flush;
+        std::cout << mnode.Message << std::endl << std::flush;
+        return 1;
+    }
 
-    std::cout << pnode->get_str(1) << std::endl << std::flush;
+    std::cout << mnode.value->get_str() << std::endl << std::flush;
 
     std::cout << "==== End Parser ====" << std::endl << std::flush;
     std::cout << "==== Start running ====" << std::endl << std::flush;
 
-    pnode->exec();
+    auto exec_r = mnode.value->exec();
+    if (!exec_r.success){
+        std::cout << "Runtime error" << std::endl << std::flush;
+        std::cout << exec_r.Message << std::endl << std::flush;
+        return 1;
+    }
 
     std::cout << "==== End running ====" << std::endl << std::flush;
-    
 
     return 0;
 }

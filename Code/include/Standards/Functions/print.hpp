@@ -33,6 +33,6 @@
 
 namespace Standardes {
     namespace Functions {
-        API void print(Runtime::FunInType input); // Print data in console
+        ReturnResult<Value> print(Runtime::FunInType input); // Print data in console
     }
 }

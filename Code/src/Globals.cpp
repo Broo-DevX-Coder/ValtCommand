@@ -12,6 +12,23 @@
 // Vars
 // ==================================================================
 
+// All Tokens Types by string
+std::unordered_map<TokenType,std::string> TokenTypesStr = {
+    {TokenType::IDENTIFIER,"IDENTIFIER"},
+    {TokenType::TYPE,"TYPE"},
+    {TokenType::KEY_WORD,"KEY_WORD"},
+    {TokenType::STRING,"STRING"},
+    {TokenType::INTEGER,"INTEGER"},
+    {TokenType::FLOAT,"FLOAT"},
+    {TokenType::BOOLEAN,"BOOLEAN"},
+    {TokenType::COLON,"COLON"},
+    {TokenType::LESS_THAN,"LESS_THAN"},
+    {TokenType::GREATER_THAN,"GREATER_THAN"},
+    {TokenType::NEWLINE,"NEWLINE"},
+    {TokenType::END_CODE,"END_CODE"},
+    {TokenType::UNKNOWN,"UNKNOWN"}
+};
+
 // All sepported types
 std::vector<std::string> __types__ = {
     "str", // string
@@ -27,9 +44,17 @@ std::vector<std::string> __key_words__ = {
 
 // All sepported symbols
 std::unordered_map<char,Token> __symbols__ = {
-    {'<',{LESS_THAN,"<"}},
-    {'>',{GREATER_THAN,">"}},
-    {':',{COLON,":"}}
+    {'<',{TokenType::LESS_THAN,"<",0,0}},
+    {'>',{TokenType::GREATER_THAN,">",0,0}},
+    {':',{TokenType::COLON,":",0,0}}
+};
+
+// All TokenTypes like string
+std::unordered_map<TokenType,std::string> TokenTypes_to_StringType = {
+    {TokenType::STRING,"str"},
+    {TokenType::INTEGER,"int"},
+    {TokenType::FLOAT,"float"},
+    {TokenType::BOOLEAN,"bool"}
 };
 
 // ==================================================================
@@ -65,4 +90,27 @@ bool is_token_key_word_(
     if (it != __key_words__.end())
         return true;
     return false;
+}
+
+// Get Value type (what inside variant)
+std::string 
+Get_ValueT(
+    const Value& value
+) {
+    if (std::holds_alternative<std::monostate>(value))
+        return "void";
+
+    if (std::holds_alternative<uint64_t>(value))
+        return "int";
+
+    if (std::holds_alternative<double>(value))
+        return "float";
+
+    if (std::holds_alternative<std::string>(value))
+        return "string";
+
+    if (std::holds_alternative<bool>(value))
+        return "bool";
+
+    return "unknown";
 }

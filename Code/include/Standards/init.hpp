@@ -29,5 +29,5 @@
 // ==================================================================
 
 namespace Standardes {
-    API void __init__(); // initialyze all standards values (functions, vars ...)
+    void __init__(); // initialyze all standards values (functions, vars ...)
 }

@@ -21,50 +21,51 @@
 // Include neccessary headers
 // ==================================================================
 
-// == Libs ==
-#include <vector>
-#include <unordered_map>
-
 // == Locals ==
 #include "ASTNodes/ASTNode.hpp"
-#include "Runtime.hpp"
+#include "globals.hpp"
 
 // ==================================================================
-// Function Call Argument Node
+// Main Value Node
 // ==================================================================
 
-// Function Call Argument Node
-class FunctionCallArgumentNode: public ASTNode
+// Value Node
+class ValueNode: public ASTNode
 {
     public:
-        std::string name; // Name of argument
-        std::string type; // Type of argument
+        Token vToken; // The token of value
+        std::string type; // The expected type of value
         Value value; // Value that in argumen
-        std::unique_ptr<ASTNode> VNode; // AST Node that givs Argument its content
 
-        FunctionCallArgumentNode(std::string Aname, std::string Atype, std::unique_ptr<ASTNode> Value_node); // Constructure
+        ValueNode(Token token, std::string type); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<Value> exec() override; // Execute node
 };
 
-
 // ==================================================================
-// Function Call Node
+// Values Nodes
 // ==================================================================
 
-// Function Call Node
-class FunctionCallNode: public ASTNode
-{
+// Class String Value Node
+class StringValueNode: public ValueNode {
     public:
-        using ArgsT = std::vector<std::unique_ptr<FunctionCallArgumentNode>>;
-
-        std::string name; // Name of function
-        ArgsT arguments; // Function arguments
-        Token vToken; // Token of function name in code
-
-        FunctionCallNode(std::string Fname, ArgsT& Args_list, Token token); // Contructure
-        std::string get_str(int level) override; // Get str of node to print
+        StringValueNode(Token token); // Constructure
+        ReturnResult<Value> exec() override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<Value> exec() override; // Execute node
+};
+
+// Class Value Number Node
+class NumberValueNode: public ValueNode {   
+    public:
+        NumberValueNode(Token token, std::string type="float"); // Constructure
+        ReturnResult<Value> exec() override; // Execute the node and get result
+        ASTNodesTypes NType() override; // Get the type of node
+};
+
+// Class Value Bool Node
+class BooleanValueNode: public ValueNode {
+    public:
+        BooleanValueNode(Token token); // Constructure
+        ReturnResult<Value> exec() override; // Execute the node and get result
+        ASTNodesTypes NType() override; // Get the type of node
 };
