@@ -6,6 +6,16 @@
 #include "Standards/Functions/print.hpp"
 
 // ==================================================================
+// Initialyze operators
+// ==================================================================
+std::ostream& operator<<(
+    std::ostream& os,
+    const std::monostate&
+) {
+    return os << "null";
+}
+
+// ==================================================================
 // Function
 // ==================================================================
 ReturnResult<Value>
@@ -13,7 +23,9 @@ Standardes::Functions::print(
     Runtime::FunInType in_
 ) {
     for (const auto& [n_,input]: in_) {
-        std::cout << n_ << "\n" << std::flush;
+        std::visit([](auto&& v){
+            std::cout << v << "\n" << std::flush;
+        },input);
     }
     return {"",true,std::monostate()};
 }

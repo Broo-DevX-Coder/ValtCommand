@@ -201,7 +201,7 @@ Parser::get_next_node() {
             code_ended_?"(end of code!)":curent_token_.value,
             curent_token_.line,
             curent_token_.column,
-            fmt::format("This keyword named {}",curent_token_.value)
+            code_ended_?"The code is empty":fmt::format("This keyword named {}",curent_token_.value)
         ).msg,
         false,
         nullptr
@@ -213,14 +213,14 @@ ReturnResult<Parser::PNode>
 Parser::get_module_node() {
 
     ModuleNode::StatmentsT s_list;
+    ReturnResult<Parser::Node> nt;
 
-    auto nt = get_next_node();
-    while (!code_ended_) {
+    do {
         nt = get_next_node();
         if(!nt.success)
             return {nt.Message,false,nullptr};
         s_list.push_back(std::move(nt.value));
-    }
+    } while (!code_ended_);
 
     // make module node and return them
     return {

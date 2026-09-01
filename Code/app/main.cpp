@@ -25,13 +25,7 @@ int main () {
 
     std::string code = R"CODE(
     CALL print 
-        value0<str>:"Hellow n****"
-    END
-    CALL print 
-        value<str>:1.05
-        value2<str>:"Hellow n****"
-        value3<str>:"Hellow n****"
-        value22<str>:"Hellow n****"
+        value0<str>:"Hellow man 1"
     END
     )CODE";
 
