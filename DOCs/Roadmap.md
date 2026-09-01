@@ -16,14 +16,12 @@
 - ✅ AST
 - ✅ Runtime
 - ✅ Function Registry
-- Type Validation + Values nodes
+- ✅ Type Validation + Values nodes
 - ✅ Error Handling
 
 ## v0.2
 
-- Returns functions
-- Recursive parser
-
+- ✅ Recursive parser
 - Improved diagnostics
 - Better error reporting
 - Additional built-in types
