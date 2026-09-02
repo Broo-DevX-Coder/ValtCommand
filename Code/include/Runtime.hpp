@@ -23,19 +23,26 @@
 
 // == Locals ==
 #include "globals.hpp"
-
-// == Libs ==
-#include <functional>
+#include "Parser.hpp"
 
 // ==================================================================
-// Namespace
+// Runtime namespace
 // ==================================================================
 namespace Runtime {
 
-    using FunInType = std::unordered_map<std::string, Value>;
-    using FuncType = std::function<ReturnResult<Value>(FunInType)>;
-
-    namespace registries {
-        API extern std::unordered_map<std::string,FuncType> functions;
-    }
+    // The program runtime
+    class API RunTime {
+        private:
+            std::unique_ptr<Scopes::Scope> run_scope = std::make_unique<Scopes::Scope>(); // All global scopes (main global scope and other modules's scopes) in running
+            std::unique_ptr<Scopes::Scope> semantic_scope = std::make_unique<Scopes::Scope>(); // All global scopes in analyzing
+            std::string Code;
+            
+        public:
+            RunTime(const std::string& code); // Constructure
+            RunTime(RunTime& runtime) = delete; // 2nd constructure
+            ReturnResult<Parser::PNode> analyze(); // Analyze the code and get the module node
+            ReturnResult<bool> semantic_analyses(); // Analyse th code befor running
+            ReturnResult<bool> execute_code(); // Start executing the code
+            void add_external_function(ExternalFuncType function, const std::string& name, const std::string& return_type, std::unordered_map<std::string, Scopes::SymbolTableTypes::Method> methods); // Add extenal function of c++
+    };
 }

@@ -50,9 +50,10 @@ class ASTNode
 {
 public:
     virtual ~ASTNode() = default;
-    virtual std::string get_str(int level) = 0;
-    virtual ASTNodesTypes NType() = 0;
-    virtual ReturnResult<Value> exec() = 0;
+    virtual std::string get_str(int level) = 0; // Get the string of node to print AST
+    virtual ASTNodesTypes NType() = 0; // get the type of node
+    virtual ReturnResult<bool> accept(Scopes::Scope* ParentScope) = 0; // The node verifi it self befor runnig
+    virtual ReturnResult<Value> exec(Scopes::Scope* ParentScope) = 0; // Run the node
 };
 
 // ==================================================================
@@ -68,6 +69,6 @@ class ModuleNode : public ASTNode
         ModuleNode(StatmentsT& s_); // Constructure
         std::string get_str(int level=0) override; // get the str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<Value> exec() override; // Execute node
+        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
 };
-

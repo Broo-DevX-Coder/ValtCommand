@@ -22,6 +22,7 @@
 ## v0.2
 
 - ✅ Recursive parser
+- Semantic Analysis
 - Improved diagnostics
 - Better error reporting
 - Additional built-in types

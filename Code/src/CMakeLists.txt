@@ -33,11 +33,3 @@ target_link_libraries(
     fmt
 )
 
-target_compile_options(
-    engine
-    PRIVATE
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Werror=return-type
-)

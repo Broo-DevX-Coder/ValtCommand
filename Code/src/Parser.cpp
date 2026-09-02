@@ -176,7 +176,9 @@ Parser::get_next_node() {
                 // Move the argument to args list
                 arg_list.push_back(std::move(arg));
 
-                advence();
+                mt = match(TokenType::NEWLINE, "Forgot END at the end of function call \n");
+                if (!mt.success)
+                    advence();
             }
             
             mt = match(TokenType::NEWLINE, "Forgot END at the end of function call \n");

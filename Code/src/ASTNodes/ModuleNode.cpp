@@ -42,12 +42,28 @@ ModuleNode::NType() {
 
 // Execute node
 ReturnResult<Value>
-ModuleNode::exec() {
+ModuleNode::exec(
+    Scopes::Scope* ParentScope
+) {
     ReturnResult<Value> r;
     for (auto& stmt: statements) {
-        r = stmt->exec();
+        r = stmt->exec(ParentScope);
         if (!r.success)
             return {r.Message,false,std::monostate()};
     }
     return {"",true,std::monostate()};
+}
+
+// Execute node
+ReturnResult<bool>
+ModuleNode::accept(
+    Scopes::Scope* ParentScope
+) {
+    ReturnResult<bool> r;
+    for (auto& stmt: statements) {
+        r = stmt->accept(ParentScope);
+        if (!r.success)
+            return {r.Message,false,false};
+    }
+    return {"",true,true};
 }

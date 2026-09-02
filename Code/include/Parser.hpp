@@ -32,11 +32,12 @@
 // ==================================================================
 
 class API Parser {
-    private:
+    public:
         using Node = std::unique_ptr<ASTNode>;
         using PNode = std::unique_ptr<ModuleNode>;
         using TList = std::vector<Token>;
 
+    private:
         size_t pos = 0; // Iterator of the curent pos
         Token curent_token_; // The curent token
         TList tokens_list_; // All tokens that will parsed
@@ -44,6 +45,7 @@ class API Parser {
         bool code_ended_ = false; // Is the parsing operation Done
 
     public:
+
         Parser(TList& tokens_list); // Constructure
         void advence(); // Go to the next token
         ReturnResult<bool> match(TokenType token_t_, std::string Emsg=""); // Verifi if the curent token is in type `token_t_` 

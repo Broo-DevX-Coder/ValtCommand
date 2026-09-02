@@ -50,7 +50,8 @@ class ValueNode: public ASTNode
 class StringValueNode: public ValueNode {
     public:
         StringValueNode(Token token); // Constructure
-        ReturnResult<Value> exec() override; // Execute the node and get result
+        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
 };
 
@@ -58,7 +59,8 @@ class StringValueNode: public ValueNode {
 class NumberValueNode: public ValueNode {   
     public:
         NumberValueNode(Token token, std::string type="float"); // Constructure
-        ReturnResult<Value> exec() override; // Execute the node and get result
+        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
 };
 
@@ -66,6 +68,7 @@ class NumberValueNode: public ValueNode {
 class BooleanValueNode: public ValueNode {
     public:
         BooleanValueNode(Token token); // Constructure
-        ReturnResult<Value> exec() override; // Execute the node and get result
+        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
 };

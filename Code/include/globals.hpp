@@ -23,6 +23,7 @@
 
 // == Libs ==
 #include <iostream>
+#include <functional>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -39,6 +40,17 @@ using Value = std::variant<
     std::string, 
     bool
 >; // Value variant type
+
+// Return object, to handle errors
+template<typename T>
+struct ReturnResult {
+    std::string Message;
+    bool success;
+    T value;
+};
+
+using ExternalFunInType = std::unordered_map<std::string, Value>; // External functin input type
+using ExternalFuncType = std::function<ReturnResult<Value>(ExternalFunInType)>; // External function type
 
 // ==================================================================
 // Enums
@@ -97,10 +109,57 @@ bool is_token_type_(std::string token);  // Is the token a type
 bool is_token_key_word_(std::string token); // Is the token a keyword
 std::string Get_ValueT(const Value& value); // Get Value type (what inside variant)
 
-// Return object, to handle errors
-template<typename T>
-struct ReturnResult {
-    std::string Message;
-    bool success;
-    T value;
-};
+// ==================================================================
+// Scopes space
+// ==================================================================
+namespace Scopes {
+
+    namespace registries {
+        API extern std::unordered_map<std::string,ExternalFuncType> functions;
+    }
+
+    namespace SymbolTableTypes {
+        enum class FunctionsTypes {
+            Extenal,
+            Inside
+        };
+
+        // Variable in scope
+        struct SVar {
+            std::string type;
+            bool is_const;
+        };
+
+        // Variable with value in scope
+        struct RVar: public SVar {
+            Value value;
+        };
+
+        // Function's method in scope
+        struct Method: public SVar {};
+        
+        // Function in scope
+        struct Function {
+            std::string return_type;
+            std::unordered_map<std::string, Method> methods;
+            FunctionsTypes type;
+            ExternalFuncType external_func;
+        };
+
+    }
+
+    // Scope
+    class Scope {
+        protected:
+            Scope* Parent;
+            std::unordered_map<std::string, std::unique_ptr<SymbolTableTypes::Function>> functions; // All functions in scope
+            std::unordered_map<std::string, std::unique_ptr<SymbolTableTypes::RVar>> variables; // All variables in scope
+
+        public:
+            Scope(Scope* parent = nullptr); // constructure
+            SymbolTableTypes::Function* add_function(const std::string& name, const std::string& return_type, std::unordered_map<std::string, SymbolTableTypes::Method> methods); // add function to scope table
+            SymbolTableTypes::RVar* add_var(const std::string& name, const std::string& type, Value& value, bool is_const=false); // add variable to scope table
+            ReturnResult<SymbolTableTypes::Function*> search_function(Token& NameToken); // Get a function struct pointer from scope by name
+            ReturnResult<SymbolTableTypes::RVar*> search_var(Token& NameToken); // Get a variable struct pointer from scope by name
+    };
+}

@@ -62,10 +62,11 @@ StringValueNode::StringValueNode(
     Token t_
 ): ValueNode(t_,"str") {}
 
-// Execute the node and get result
-ReturnResult<Value> 
-StringValueNode::exec(){
-
+// The node verifi it self befor runnig
+ReturnResult<bool> 
+StringValueNode::accept(
+    Scopes::Scope* ParentScope
+) {
     if (vToken.Type != TokenType::STRING)
         return {
             Errors::TypeError(
@@ -73,8 +74,16 @@ StringValueNode::exec(){
                 TokenTypes_to_StringType[vToken.Type],
                 vToken.line,
                 vToken.column
-            ).msg,false,std::monostate()};
+            ).msg,false,false};
     
+    return {"",true,true};
+}
+
+// Execute the node and get result
+ReturnResult<Value> 
+StringValueNode::exec(
+    Scopes::Scope* ParentScope
+){
     value = vToken.value;
     return {"",true,std::move(value)};
 }
@@ -93,9 +102,11 @@ NumberValueNode::NumberValueNode(
     std::string tt_
 ): ValueNode(t_,tt_) {}
 
-// Execute the node and get result
-ReturnResult<Value> 
-NumberValueNode::exec(){
+// The node verifi it self befor runnig
+ReturnResult<bool> 
+NumberValueNode::accept(
+    Scopes::Scope* ParentScope
+) {
     if (vToken.Type != TokenType::INTEGER && vToken.Type != TokenType::FLOAT)
         return {
             Errors::TypeError(
@@ -103,8 +114,16 @@ NumberValueNode::exec(){
                 TokenTypes_to_StringType[vToken.Type],
                 vToken.line,
                 vToken.column
-            ).msg,false,std::monostate()};
+            ).msg,false,false};
     
+    return {"",true,true};
+}
+
+// Execute the node and get result
+ReturnResult<Value> 
+NumberValueNode::exec(
+    Scopes::Scope* ParentScope
+){
     auto v = std::stoul(vToken.value);
     value = type == "int"? (uint64_t)v : (double)v;
     
@@ -124,9 +143,11 @@ BooleanValueNode::BooleanValueNode(
     Token t_
 ): ValueNode(t_,"bool") {}
 
-// Execute the node and get result
-ReturnResult<Value> 
-BooleanValueNode::exec(){
+// The node verifi it self befor runnig
+ReturnResult<bool> 
+BooleanValueNode::accept(
+    Scopes::Scope* ParentScope
+) {
     if (vToken.Type != TokenType::BOOLEAN)
         return {
             Errors::TypeError(
@@ -134,8 +155,16 @@ BooleanValueNode::exec(){
                 TokenTypes_to_StringType[vToken.Type],
                 vToken.line,
                 vToken.column
-            ).msg,false,std::monostate()};
-    
+            ).msg,false,false};
+
+    return {"",true,true};
+}
+
+// Execute the node and get result
+ReturnResult<Value> 
+BooleanValueNode::exec(
+    Scopes::Scope* ParentScope
+){
     value = vToken.value == "True";
     return {"",true,std::move(value)};
 }

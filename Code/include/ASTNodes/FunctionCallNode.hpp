@@ -27,7 +27,6 @@
 
 // == Locals ==
 #include "ASTNodes/ASTNode.hpp"
-#include "Runtime.hpp"
 
 // ==================================================================
 // Function Call Argument Node
@@ -45,7 +44,8 @@ class FunctionCallArgumentNode: public ASTNode
         FunctionCallArgumentNode(std::string Aname, std::string Atype, std::unique_ptr<ASTNode> Value_node); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<Value> exec() override; // Execute node
+        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
 };
 
 
@@ -66,5 +66,6 @@ class FunctionCallNode: public ASTNode
         FunctionCallNode(std::string Fname, ArgsT& Args_list, Token token); // Contructure
         std::string get_str(int level) override; // Get str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<Value> exec() override; // Execute node
+        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
 };
