@@ -24,6 +24,19 @@ std::unordered_map<TokenType,std::string> TokenTypesStr = {
     {TokenType::COLON,"COLON"},
     {TokenType::LESS_THAN,"LESS_THAN"},
     {TokenType::GREATER_THAN,"GREATER_THAN"},
+    {TokenType::LEFT_BRACKET,"LEFT_BRACKET"},
+    {TokenType::RIGHT_BRACKET,"RIGHT_BRACKET"},
+    {TokenType::LEFT_BRACE,"LEFT_BRACE"},
+    {TokenType::RIGHT_BRACE,"RIGHT_BRACE"},
+    {TokenType::LEFT_PAREN,"LEFT_PAREN"},
+    {TokenType::RIGHT_PAREN,"RIGHT_PAREN"},
+    {TokenType::SLASH,"SLASH"},
+    {TokenType::BACKSLASH,"BACKSLASH"},
+    {TokenType::STAR,"STAR"},
+    {TokenType::MINUS,"MINUS"},
+    {TokenType::PLUS,"PLUS"},
+    {TokenType::EQUAL,"EQUAL"},
+    {TokenType::CARET,"CARET"},
     {TokenType::END_BLOCK,"END_BLOCK"},
     {TokenType::END_CODE,"END_CODE"},
     {TokenType::UNKNOWN,"UNKNOWN"}
@@ -47,7 +60,20 @@ std::vector<std::string> __key_words__ = {
 std::unordered_map<char,Token> __symbols__ = {
     {'<',{TokenType::LESS_THAN,"<",0,0}},
     {'>',{TokenType::GREATER_THAN,">",0,0}},
-    {':',{TokenType::COLON,":",0,0}}
+    {':',{TokenType::COLON,":",0,0}},
+    {'[',{TokenType::LEFT_BRACKET,"[",0,0}},
+    {']',{TokenType::RIGHT_BRACKET,"]",0,0}},
+    {'{',{TokenType::LEFT_BRACE,"{",0,0}},
+    {'}',{TokenType::RIGHT_BRACE,"}",0,0}},
+    {'(',{TokenType::LEFT_PAREN,"(",0,0}},
+    {')',{TokenType::RIGHT_PAREN,")",0,0}},
+    {'/',{TokenType::SLASH,"/",0,0}},
+    {'\\',{TokenType::BACKSLASH,"\\",0,0}},
+    {'*',{TokenType::STAR,"*",0,0}},
+    {'-',{TokenType::MINUS,"-",0,0}},
+    {'+',{TokenType::PLUS,"+",0,0}},
+    {'=',{TokenType::EQUAL,"=",0,0}},
+    {'^',{TokenType::CARET,"^",0,0}}
 };
 
 // All TokenTypes like string

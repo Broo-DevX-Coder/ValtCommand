@@ -2,58 +2,96 @@
 
 | Version | Goal |
 |----------|----------|
-| v0.1 | Core language implementation |
-| v0.2 | Language improvements and diagnostics |
-| v0.3 | Developer tools and debugging utilities |
-| v0.4 | Valtrida integration |
-| v0.5 | Automation and workflow support |
+| v0.1 | Core language foundation |
+| v0.2 | Semantic analysis and language validation |
+| v0.3 | Language features and expressions |
+| v0.4 | Developer tools and debugging |
 | v1.0 | Stable public release |
+
+---
 
 ## v0.1
 
 - ✅ Lexer
 - ✅ Parser
 - ✅ AST
-- ✅ Runtime
+- ✅ Token Inspector
+- ✅ AST Inspector
 - ✅ Function Registry
-- ✅ Type Validation + Values nodes
-- ✅ Error Handling
+- ✅ Value Nodes
+- ✅ Basic Type Validation
+- ✅ Basic Error Handling
+
+---
 
 ## v0.2
 
-- ✅ Recursive parser
-- Semantic Analysis
-- Improved diagnostics
-- Better error reporting
-- Additional built-in types
-- Comments support
+- ✅ Runtime Engine
+- ✅ Scope System
+- ✅ Block Scopes
+- ✅ Recursive Parser
+- ✅ Semantic Analysis
+- ✅ Function Resolution
+- ✅ Argument Validation
+- ✅ Required Arguments Validation
+- ✅ Argument Type Validation
+- ✅ Nested Function Calls
+- ✅ Type Compatibility Checking
+- ✅ Improved Error Reporting
+- ✅ Additional Tokens Support
+
+### Planned
+
+- Comments Support
+- Additional Built-in Types
+
+---
 
 ## v0.3
 
 - Variables
-- IF estatments and FOR and WHILE loops
+- Constants
+- User Functions (`SETFUNCTION`)
+- Return Values
+- Binary Operations (`+ - * / ^`)
+- Operator Precedence
+- Parentheses Expressions
+- IF Statements
+- ELSE Statements
+- FOR Loops
+- WHILE Loops
 
-- Token inspector
-- AST inspector
-- Debug tools
-- Developer documentation
+---
 
 ## v0.4
 
-- Workspace management
-- Window management
-- Plugin integration
-- Layout management
+### Debugging
 
-## v0.5
+- Runtime Tracer
+- Scope Inspector
+- Variable Inspector
+- Function Inspector
+- Better error handling
 
-- Automation commands
-- Event-driven execution
-- Script scheduling
+### Developer Tools
+
+- Debug Tools
+- Performance Metrics
+- Better Diagnostics
+
+### Documentation
+
+- Language Reference
+- Standard Library Documentation
+- Embedding Guide
+- Examples & Tutorials
+
+---
 
 ## v1.0
 
 - Stable API
-- Complete documentation
-- Performance optimizations
-- Production-ready release
+- Complete Documentation
+- Performance Optimizations
+- Production-Ready Release
+- Long-Term Compatibility

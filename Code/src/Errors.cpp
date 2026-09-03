@@ -20,7 +20,7 @@ Errors::SyntaxError::SyntaxError(
     std::string comment
 ) {
     msg = fmt::format(
-        "SyntaxError: expected '{}' at line:{} ,column:{}",
+        "SyntaxError: expected token '{}' at line:{} ,column:{}",
         token, line, column
     );
     if (!comment.empty())

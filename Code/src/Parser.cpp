@@ -72,8 +72,7 @@ Parser::consume(TokenType type) {
             Errors::SyntaxError(
                 isAsEnd()?"(end of code!)":curent_token_.value,
                 curent_token_.line,
-                curent_token_.column,
-                isAsEnd()?"The code is empty":fmt::format("This keyword named {}",curent_token_.value)
+                curent_token_.column
             ).msg,
             false,
             curent()

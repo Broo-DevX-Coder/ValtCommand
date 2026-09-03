@@ -52,6 +52,15 @@ CALL open_chart
     timeframe<str>:"1h"
 ```
 
+# Version Documents
+
+Detailed specifications are maintained separately.
+
+| Version | Document | Wiki |
+|----------|----------|-----------|
+| v0.1 | [v0.1.md](./DOCs/Versions/V0.1.md) | [V0.1]() |
+| v0.1 | [v0.2.md](./DOCs/Versions/V0.2.md) | [V0.2]() |
+
 ---
 
 # Architecture
@@ -98,31 +107,6 @@ The language specification evolves through versioned documents.
 | Roadmap | [Roadmap.md](./DOCs/Roadmap.md) |
 | License | [LICENSE](./LICENCE) |
 | Version Specifications | [Folder](./DOCs/Versions/) |
-
----
-
----
-
-# Specifications
-
-| Version | Status | Description |
-|----------|----------|----------|
-| v0.1 | In Development | Core language, lexer, parser, runtime |
-| v0.2 | Planned | Diagnostics and language improvements |
-| v0.3 | Planned | Valtrida integration |
-| v0.4 | Planned | Script engine enhancements |
-| v0.5 | Planned | Automation system |
-| v1.0 | Future | Stable public release |
-
----
-
-# Version Documents
-
-Detailed specifications are maintained separately.
-
-| Version | Document | Wiki |
-|----------|----------|-----------|
-| v0.1 | [v0.1.md](./DOCs/Versions/V0.1.md) | [V0.1]() |
 
 ---
 
