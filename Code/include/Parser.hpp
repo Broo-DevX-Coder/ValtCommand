@@ -42,15 +42,24 @@ class API Parser {
         Token curent_token_; // The curent token
         TList tokens_list_; // All tokens that will parsed
 
-        bool code_ended_ = false; // Is the parsing operation Done
+        bool is_code_ended_ = false; // Is the parsing operation Done
 
     public:
 
         Parser(TList& tokens_list); // Constructure
+        
         void advence(); // Go to the next token
-        ReturnResult<bool> match(TokenType token_t_, std::string Emsg=""); // Verifi if the curent token is in type `token_t_` 
-        ReturnResult<bool> next_match(TokenType tt_, std::string Emsg=""); // Verifi if the next token is in type `token_t_` 
+        const Token& curent(); // Get the curent token
+        const Token& peek(size_t offset=1); // Return the next <offset> token
+        bool check(TokenType type);  // Check the type of curent token
+        ReturnResult<Token> consume(TokenType type); // Return curent token, check its type, and advence
+        bool isAsEnd(); // is the code ended
+        
 
-        ReturnResult<Node> get_next_node();
+        // Grammars 
+        ReturnResult<Node> get_node();
         ReturnResult<PNode> get_module_node(); // Get the clear program node that contain all parsed code
+
+        ReturnResult<Node> get_functioncall_node(); // Get the function call node when found CALL keyword
+        ReturnResult<Node> get_value_node(); // Get the pure value node
 };

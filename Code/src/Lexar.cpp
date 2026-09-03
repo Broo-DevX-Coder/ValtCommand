@@ -99,7 +99,7 @@ Lexar::get_the_next_token() {
             tk_t = TokenType::TYPE;
 
         if (tk == "END") 
-            tk_t = TokenType::NEWLINE;
+            tk_t = TokenType::END_BLOCK;
 
         if (is_token_key_word_(tk))
             tk_t = TokenType::KEY_WORD;

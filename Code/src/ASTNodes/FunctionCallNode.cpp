@@ -5,6 +5,7 @@
 // == Libs ==
 #include <sstream>
 #include <cstdint>
+#include <algorithm>
 
 // == Locals ==
 #include "ASTNodes/FunctionCallNode.hpp"
@@ -16,13 +17,17 @@
 
 // Constructure
 FunctionCallArgumentNode::FunctionCallArgumentNode(
-    std::string Aname, 
-    std::string Atype, 
+    std::string& Aname,
+    Token TToken,
     std::unique_ptr<ASTNode> Value_node
 ): 
     name(Aname),
-    type(Atype),
-    VNode(std::move(Value_node)) {}
+    type(TToken.value),
+    TypeToken(TToken),
+    VNode(std::move(Value_node))
+{
+    return_type = type;
+}
 
 // get str to print
 std::string
@@ -52,8 +57,18 @@ FunctionCallArgumentNode::accept(
     Scopes::Scope* ParentScope
 ) {
     auto vnode_ar = VNode->accept(ParentScope);
-    if (!vnode_ar.success)
-        return {vnode_ar.Message,false,false};
+    if (!vnode_ar.success) return {vnode_ar.Message,false,false};
+
+    if (!are_types_compatible(VNode->return_type,type)){
+        return {
+            Errors::TypeError(
+                type,VNode->return_type,
+                TypeToken.line,
+                TypeToken.column
+            ).msg,false,false
+        };
+    }
+
     return {"",true,true};
 }
 
@@ -80,11 +95,11 @@ FunctionCallArgumentNode::exec(
 FunctionCallNode::FunctionCallNode(
     std::string Fname, 
     ArgsT& Args_list, 
-    Token token
+    Token n_token
 ): 
     name(Fname),
     arguments(std::move(Args_list)),
-    vToken(token)
+    NameToken(n_token)
 {}
 
 // get str to print
@@ -113,15 +128,60 @@ FunctionCallNode::NType() {
 // Execute node
 ReturnResult<bool> 
 FunctionCallNode::accept(
-    
     Scopes::Scope* ParentScope
 ) {
-    auto search_result = ParentScope->search_function(vToken);
-    if (!search_result.success)
+    auto search_result = ParentScope->search_function(NameToken);
+    if (!search_result.success){
         return {
             search_result.Message,
             false,false
         };
+    }
+    return_type = search_result.value->return_type;
+    func = search_result.value;
+
+    auto error_obj = Errors::ArgumentError(
+        name,
+        NameToken.line,
+        NameToken.column
+    );
+    if (!func->is_sepport_any_methods_) {
+
+        if (arguments.size() > func->methods.size()) {
+            return {
+                error_obj.too_many_arguments(func->methods.size(),arguments.size()),
+                false,false
+            };
+
+        } else {
+            for (auto& ar: arguments) {
+                if (!func->methods.contains(ar->name)) {
+                    return {
+                        error_obj.unexpected_argument(ar->name),
+                        false,false
+                    };
+                }
+            }
+
+            for (auto& [mt_n,mt]: func->methods) {
+                if (mt.is_required) {
+                    auto it = std::find_if(
+                        arguments.begin(),
+                        arguments.end(),
+                        [mt_n](const std::unique_ptr<FunctionCallArgumentNode>& arg){
+                            return arg->name == mt_n;
+                        }
+                    );
+                    if (it == arguments.end()) {
+                        return {
+                        error_obj.unplaced_arg(mt_n),
+                        false,false
+                        };
+                    }
+                }
+            }
+        }
+    }
     
     for (auto& ar: arguments){
         auto arg_accept_r = ar->accept(ParentScope);
@@ -138,9 +198,7 @@ ReturnResult<Value>
 FunctionCallNode::exec(
     Scopes::Scope* ParentScope
 ) {
-    auto search_result = ParentScope->search_function(vToken);
-    
-    std::unordered_map<std::string, Value> args_list;
+    ExternalFunInType args_list;
     for (auto& ar: arguments){
         auto arg_exec_r = ar->exec(ParentScope);
         if (!arg_exec_r.success) 
@@ -151,7 +209,7 @@ FunctionCallNode::exec(
     }
     arguments.clear();
 
-    if (search_result.value->type == Scopes::SymbolTableTypes::FunctionsTypes::Extenal)
-        return search_result.value->external_func(args_list);
-    return search_result.value->external_func(args_list);
+    if (func->type == Scopes::SymbolTableTypes::FunctionsTypes::Extenal)
+        return func->external_func(args_list);
+    return func->external_func(args_list);
 }

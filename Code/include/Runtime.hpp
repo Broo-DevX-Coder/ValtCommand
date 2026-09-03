@@ -43,6 +43,6 @@ namespace Runtime {
             ReturnResult<Parser::PNode> analyze(); // Analyze the code and get the module node
             ReturnResult<bool> semantic_analyses(); // Analyse th code befor running
             ReturnResult<bool> execute_code(); // Start executing the code
-            void add_external_function(ExternalFuncType function, const std::string& name, const std::string& return_type, std::unordered_map<std::string, Scopes::SymbolTableTypes::Method> methods); // Add extenal function of c++
+            void add_external_function(ExternalFuncType function, const std::string& name, const std::string& return_type, std::unordered_map<std::string, Scopes::SymbolTableTypes::Method> methods, bool is_any=false); // Add extenal function of c++
     };
 }

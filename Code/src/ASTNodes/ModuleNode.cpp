@@ -15,7 +15,9 @@
 // Constructure
 ModuleNode::ModuleNode(
     StatmentsT& s_
-): statements(std::move(s_)) {}
+): statements(std::move(s_)) {
+    return_type = "void";
+}
 
 // get str to print
 std::string
@@ -60,8 +62,10 @@ ModuleNode::accept(
     Scopes::Scope* ParentScope
 ) {
     ReturnResult<bool> r;
+
     for (auto& stmt: statements) {
         r = stmt->accept(ParentScope);
+
         if (!r.success)
             return {r.Message,false,false};
     }

@@ -12,7 +12,7 @@
 // Namespace
 // ==================================================================
 
-// ============== TypeError class constructure ==============
+// ============== SyntaxError class constructure ==============
 Errors::SyntaxError::SyntaxError(
     std::string token, 
     int line, 
@@ -43,7 +43,7 @@ Errors::TypeError::TypeError(
         msg+=fmt::format("\n{}",comment);
 }
 
-// ============== TypeError class constructure ==============
+// ============== NameError class constructure ==============
 Errors::NameError::NameError(
     std::string name, 
     int line, 
@@ -56,4 +56,54 @@ Errors::NameError::NameError(
     );
     if (!comment.empty())
         msg+=fmt::format("\n{}",comment);
+}
+
+
+// ============== NameError class constructure ==============
+Errors::ArgumentError::ArgumentError(
+    std::string f_name,
+    int l_, 
+    int c_, 
+    std::string com_
+):
+    function_name(f_name),
+    line(l_),
+    column(c_),
+    comment(com_) {}
+
+// When the user places more arguments than expacted
+std::string 
+Errors::ArgumentError::too_many_arguments(
+    int expected, 
+    int placed
+) {
+    msg = fmt::format(
+        "ArgumentError: Function '{}': Too many arguments. Expected {}, but got {} at line:{}, column:{}",
+        function_name, expected, placed, line, column
+    );
+    return msg;
+}
+
+// When user places unknown argument
+std::string 
+Errors::ArgumentError::unexpected_argument(
+    std::string arg_name
+) {
+    msg = fmt::format(
+        "ArgumentError: Function '{}': Unexpected argument '{}' at line:{}, column:{}",
+        function_name, arg_name, line, column
+    );
+    return msg;
+}
+
+// When user don't places all required arguments
+std::string 
+Errors::ArgumentError::unplaced_arg(
+    std::string arg_name
+) {
+    msg = fmt::format(
+        "ArgumentError: Function '{}': Missing required argument '{}' at line:{}, column:{}",
+        function_name, arg_name, line, column
+    );
+    return msg;
 }

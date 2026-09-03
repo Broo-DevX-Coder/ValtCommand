@@ -21,13 +21,15 @@ Scopes::Scope::Scope(
 Scopes::SymbolTableTypes::Function* 
 Scopes::Scope::add_function(
     const std::string& name, 
-    const std::string& return_type, 
-    std::unordered_map<std::string, SymbolTableTypes::Method> methods
+    const std::string& return_type,
+    std::unordered_map<std::string, SymbolTableTypes::Method> methods,
+    bool is_any
 ) {
     auto func_type = std::make_unique<SymbolTableTypes::Function>(
         SymbolTableTypes::Function{
             return_type,
-            methods
+            methods,
+            is_any
         }
     );
     functions[name] = std::move(func_type);
@@ -59,9 +61,9 @@ Scopes::Scope::search_function(
     Token& nToken
 ) {
     if (!functions.contains(nToken.value)){
-        if (Parent != nullptr)  
-            std::cout << nToken.value << " Serach on function" << std::endl << std::flush;
+        if (Parent != nullptr)  {
             return Parent->search_function(nToken);
+        }
 
         return {
             Errors::NameError(
@@ -83,8 +85,9 @@ Scopes::Scope::search_var(
     Token& nToken
 ) {
     if (!variables.contains(nToken.value)) {
-        if (Parent != nullptr)  
+        if (Parent != nullptr){  
             return Parent->search_var(nToken);
+        }
 
         return {
             Errors::NameError(
@@ -107,10 +110,7 @@ Scopes::Scope::search_var(
 // Constructure
 Runtime::RunTime::RunTime(
     const std::string& code
-): Code(code) {
-    
-
-}
+): Code(code) {}
 
 ReturnResult<Parser::PNode> 
 Runtime::RunTime::analyze() {
@@ -124,11 +124,11 @@ Runtime::RunTime::analyze() {
     if (!pars_result.success){
         return {pars_result.Message,false,nullptr};
     }
-
     auto accept_result = pars_result.value->accept(semantic_scope.get());
 
-    if (!accept_result.success)
+    if (!accept_result.success){
         return {accept_result.Message,false,nullptr};
+    }
 
     return {"",true,std::move(pars_result.value)}; 
 }
@@ -137,8 +137,9 @@ Runtime::RunTime::analyze() {
 ReturnResult<bool> 
 Runtime::RunTime::semantic_analyses() {
     auto r = analyze();
-    if (!r.success) 
+    if (!r.success) {
         return {r.Message,false,false};
+    }
     return {r.Message,true,true};
 }
 
@@ -147,13 +148,15 @@ ReturnResult<bool>
 Runtime::RunTime::execute_code() {
 
     auto analyze_result = analyze();
-    if (!analyze_result.success) 
+    if (!analyze_result.success) {
         return {analyze_result.Message,false,false};
+    }
 
     auto exec_result = analyze_result.value->exec(run_scope.get());
 
-    if (!exec_result.success)
+    if (!exec_result.success){
         return {exec_result.Message,false,false};
+    }
 
     return {"",true,true};
 }
@@ -163,11 +166,12 @@ Runtime::RunTime::add_external_function(
     ExternalFuncType function, 
     const std::string& name, 
     const std::string& return_type,
-    std::unordered_map<std::string, Scopes::SymbolTableTypes::Method> methods
+    std::unordered_map<std::string, Scopes::SymbolTableTypes::Method> methods,
+    bool is_any
 ) {
-    auto f = run_scope->add_function(name,return_type,methods);
+    auto f = run_scope->add_function(name,return_type,methods,is_any);
     f->external_func = function;
 
-    f = semantic_scope->add_function(name,return_type,methods);
+    f = semantic_scope->add_function(name,return_type,methods,is_any);
     f->external_func = function;
 }

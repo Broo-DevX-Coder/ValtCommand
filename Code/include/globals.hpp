@@ -68,7 +68,7 @@ enum class TokenType {
     COLON,
     LESS_THAN,
     GREATER_THAN,
-    NEWLINE,
+    END_BLOCK,
     END_CODE,
     UNKNOWN
 };
@@ -108,6 +108,7 @@ extern std::unordered_map<char,Token> __symbols__; // All sepported symbols like
 bool is_token_type_(std::string token);  // Is the token a type
 bool is_token_key_word_(std::string token); // Is the token a keyword
 std::string Get_ValueT(const Value& value); // Get Value type (what inside variant)
+bool are_types_compatible(const std::string& first, const std::string& secound); // Are two types compatible (like int with float)
 
 // ==================================================================
 // Scopes space
@@ -136,12 +137,16 @@ namespace Scopes {
         };
 
         // Function's method in scope
-        struct Method: public SVar {};
+        struct Method: public SVar {
+            bool is_required;
+            bool is_any;
+        };
         
         // Function in scope
         struct Function {
             std::string return_type;
             std::unordered_map<std::string, Method> methods;
+            bool is_sepport_any_methods_=false;
             FunctionsTypes type;
             ExternalFuncType external_func;
         };
@@ -157,7 +162,7 @@ namespace Scopes {
 
         public:
             Scope(Scope* parent = nullptr); // constructure
-            SymbolTableTypes::Function* add_function(const std::string& name, const std::string& return_type, std::unordered_map<std::string, SymbolTableTypes::Method> methods); // add function to scope table
+            SymbolTableTypes::Function* add_function(const std::string& name, const std::string& return_type, std::unordered_map<std::string, SymbolTableTypes::Method> methods, bool is_any=false); // add function to scope table
             SymbolTableTypes::RVar* add_var(const std::string& name, const std::string& type, Value& value, bool is_const=false); // add variable to scope table
             ReturnResult<SymbolTableTypes::Function*> search_function(Token& NameToken); // Get a function struct pointer from scope by name
             ReturnResult<SymbolTableTypes::RVar*> search_var(Token& NameToken); // Get a variable struct pointer from scope by name

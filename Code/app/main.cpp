@@ -42,16 +42,18 @@ int main () {
 
     std::string code = R"CODE(
     CALL print 
-        value0<str>: 
+        value__<void>: 
             CALL print
-                value0<str>:CALL Pi END
-
+                value0<float>:CALL Pi v<str>:"boy" END
+                value1<float>:CALL Pi END
+                value2<str>:"gg"
+                value3<str>:"ee"
             END
     END
     )CODE";
 
     auto r = Runtime::RunTime(code);
-    r.add_external_function(print,"print","void",{});
+    r.add_external_function(print,"print","void",{},true);
     r.add_external_function(Pi,"Pi","float",{});
 
     auto semantic_analyses = r.semantic_analyses();

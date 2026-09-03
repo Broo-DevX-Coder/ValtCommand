@@ -19,7 +19,10 @@ ValueNode::ValueNode(
     std::string tt_
 ): 
     vToken(t_),
-    type(tt_) {}
+    type(tt_)
+{
+    return_type = type;
+}
 
 // Get str of node to print
 std::string

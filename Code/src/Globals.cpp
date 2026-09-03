@@ -24,7 +24,7 @@ std::unordered_map<TokenType,std::string> TokenTypesStr = {
     {TokenType::COLON,"COLON"},
     {TokenType::LESS_THAN,"LESS_THAN"},
     {TokenType::GREATER_THAN,"GREATER_THAN"},
-    {TokenType::NEWLINE,"NEWLINE"},
+    {TokenType::END_BLOCK,"END_BLOCK"},
     {TokenType::END_CODE,"END_CODE"},
     {TokenType::UNKNOWN,"UNKNOWN"}
 };
@@ -34,7 +34,8 @@ std::vector<std::string> __types__ = {
     "str", // string
     "int", // integer
     "float", // double or float
-    "bool" // boolean
+    "bool", // boolean
+    "void" // means null or void in c++
 };
 
 // All sepported keywords
@@ -113,4 +114,17 @@ Get_ValueT(
         return "bool";
 
     return "unknown";
+}
+
+// Are two types compatible (like int with float)
+bool 
+are_types_compatible(
+    const std::string& first, 
+    const std::string& secound
+) {
+    if (
+        (first == "int" && secound == "float") ||
+        (first == "float" && secound == "int")
+    ) return true;
+    return first == secound;
 }

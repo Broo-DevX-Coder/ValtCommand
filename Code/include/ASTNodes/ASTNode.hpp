@@ -49,6 +49,7 @@ enum ASTNodesTypes {
 class ASTNode
 {
 public:
+    std::string return_type; // The type of return value
     virtual ~ASTNode() = default;
     virtual std::string get_str(int level) = 0; // Get the string of node to print AST
     virtual ASTNodesTypes NType() = 0; // get the type of node

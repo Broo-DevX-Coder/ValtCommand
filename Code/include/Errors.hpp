@@ -55,4 +55,18 @@ namespace Errors {
         public:
             NameError(std::string name, int line, int column, std::string comment=""); // Constructure
     };
+
+    // Argument error in function
+    class ArgumentError: public Error {
+            std::string function_name;
+            int line;
+            int column;
+            std::string comment="";
+
+        public:
+            ArgumentError(std::string function_name, int line, int column, std::string comment=""); // Constructure
+            std::string too_many_arguments(int expected, int placed); // When the user places more arguments than expacted
+            std::string unexpected_argument(std::string arg_name); // When user places unknown argument
+            std::string unplaced_arg(std::string arg_name); // When user don't places all required arguments
+    };
 }
