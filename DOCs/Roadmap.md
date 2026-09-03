@@ -40,15 +40,11 @@
 - ✅ Improved Error Reporting
 - ✅ Additional Tokens Support
 
-### Planned
-
-- Comments Support
-- Additional Built-in Types
-
 ---
 
 ## v0.3
 
+- Comments Support
 - Variables
 - Constants
 - User Functions (`SETFUNCTION`)
