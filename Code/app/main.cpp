@@ -40,12 +40,11 @@ int main () {
     // ====== initialyze standards ==========
     //Standardes::__init__();
 
-    std::string code = R"CODE(
-    CALL print 
+    std::string code = R"CODE(CALL print 
         value__<void>: 
             CALL print
                 value0<float>:CALL Pi v<str>:"boy" END
-                value1<float>:CALL Pi END
+                value1<float>:CALL Pi v<str>:22.5 END
                 value2<str>:"gg"
                 value3<str>:"ee"
             END

@@ -174,10 +174,20 @@ FunctionCallNode::accept(
                     );
                     if (it == arguments.end()) {
                         return {
-                        error_obj.unplaced_arg(mt_n),
-                        false,false
+                            error_obj.unplaced_arg(mt_n),
+                            false,false
                         };
                     }
+                }
+            }
+
+            for (auto& ar: arguments) {
+                auto method = func->methods[ar->name];
+                if (!method.is_any && !are_types_compatible(method.type,ar->type) ) {
+                    return {
+                        error_obj.unexpected_argument_type(ar->name,method.type,ar->type),
+                        false,false
+                    };
                 }
             }
         }

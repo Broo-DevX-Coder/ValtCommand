@@ -96,6 +96,19 @@ Errors::ArgumentError::unexpected_argument(
     return msg;
 }
 
+std::string 
+Errors::ArgumentError::unexpected_argument_type(
+    std::string arg_name, 
+    std::string expected_type, 
+    std::string placed_type
+) {
+    msg = fmt::format(
+        "ArgumentError: Function '{}': Unexpected argument '{}' type expected:{}, got:{}  at line:{}, column:{}",
+        function_name, arg_name, expected_type, placed_type, line, column
+    );
+    return msg;
+}
+
 // When user don't places all required arguments
 std::string 
 Errors::ArgumentError::unplaced_arg(
