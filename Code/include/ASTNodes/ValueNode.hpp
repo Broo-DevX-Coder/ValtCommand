@@ -23,7 +23,6 @@
 
 // == Locals ==
 #include "ASTNodes/ASTNode.hpp"
-#include "globals.hpp"
 
 // ==================================================================
 // Main Value Node

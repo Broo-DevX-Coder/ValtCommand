@@ -6,7 +6,7 @@
 #include "Runtime.hpp" 
 #include "Errors.hpp"
 #include "Lexar.hpp"
-
+#include "utils.hpp"
 
 // ==================================================================
 // Scope functions
@@ -15,7 +15,15 @@
 // Constructure
 Scopes::Scope::Scope(
     Scope* parent_
-): Parent(parent_) {};
+): Parent(parent_) {
+    ID = Utils::random_num();
+};
+
+// get ID of scope
+size_t 
+Scopes::Scope::get_id() {
+    return ID;
+}
 
 // Add a function to functions list
 Scopes::SymbolTableTypes::Function* 
@@ -29,7 +37,8 @@ Scopes::Scope::add_function(
         SymbolTableTypes::Function{
             return_type,
             methods,
-            is_any
+            is_any,
+            ID
         }
     );
     functions[name] = std::move(func_type);
@@ -48,7 +57,8 @@ Scopes::Scope::add_var(
         SymbolTableTypes::RVar{
             type,
             is_const,
-            value
+            value,
+            ID
         }
     );
     variables[name] = std::move(var_ptr);
@@ -110,10 +120,14 @@ Scopes::Scope::search_var(
 // Constructure
 Runtime::RunTime::RunTime(
     const std::string& code
-): Code(code) {}
+): Code(code) {
+    run_scope = std::make_unique<Scopes::Scope>();
+    semantic_scope = std::make_unique<Scopes::Scope>();
+    run_semantic_scope = std::make_unique<Scopes::Scope>();
+}
 
 ReturnResult<Parser::PNode> 
-Runtime::RunTime::analyze() {
+Runtime::RunTime::analyze(Scopes::Scope* Scope) {
 
     Lexar l(Code);
     auto tokens_list = l.get_all_tokens();
@@ -124,7 +138,7 @@ Runtime::RunTime::analyze() {
     if (!pars_result.success){
         return {pars_result.Message,false,nullptr};
     }
-    auto accept_result = pars_result.value->accept(semantic_scope.get());
+    auto accept_result = pars_result.value->accept(Scope);
 
     if (!accept_result.success){
         return {accept_result.Message,false,nullptr};
@@ -136,7 +150,7 @@ Runtime::RunTime::analyze() {
 // Get the result of befor runing analyses
 ReturnResult<bool> 
 Runtime::RunTime::semantic_analyses() {
-    auto r = analyze();
+    auto r = analyze(semantic_scope.get());
     if (!r.success) {
         return {r.Message,false,false};
     }
@@ -146,11 +160,12 @@ Runtime::RunTime::semantic_analyses() {
 // Run thz code
 ReturnResult<bool> 
 Runtime::RunTime::execute_code() {
-
-    auto analyze_result = analyze();
+    auto analyze_result = analyze(run_semantic_scope.get());
     if (!analyze_result.success) {
         return {analyze_result.Message,false,false};
     }
+
+    std::cout << analyze_result.value->get_str(0) << "\n" << std::flush;
 
     auto exec_result = analyze_result.value->exec(run_scope.get());
 
@@ -170,6 +185,9 @@ Runtime::RunTime::add_external_function(
     bool is_any
 ) {
     auto f = run_scope->add_function(name,return_type,methods,is_any);
+    f->external_func = function;
+
+    f = run_semantic_scope->add_function(name,return_type,methods,is_any);
     f->external_func = function;
 
     f = semantic_scope->add_function(name,return_type,methods,is_any);

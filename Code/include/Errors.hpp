@@ -58,6 +58,7 @@ namespace Errors {
 
     // Argument error in function
     class ArgumentError: public Error {
+        private:
             std::string function_name;
             int line;
             int column;
@@ -69,5 +70,21 @@ namespace Errors {
             std::string unexpected_argument(std::string arg_name); // When user places unknown argument
             std::string unexpected_argument_type(std::string arg_name, std::string expected_type, std::string placed_type); // When user places flase type of function
             std::string unplaced_arg(std::string arg_name); // When user don't places all required arguments
+    };
+
+    // Variable Error
+    class VariableError: public Error {
+        private:
+            std::string var_name;
+            int line;
+            int column;
+            std::string comment="";
+        public:
+            VariableError(std::string var_name, int line, int column, std::string comment="");  // Constructure
+            std::string reset_var_in_same_scope(); // When recreate variable in same scope
+            std::string reset_const_var(); // When user reset a const variable
+            std::string reset_var_from_auther_scope(); // When user reset variable value but from auther scoupe (inside function or authe module)
+            std::string reset_var_value_by_other_type(std::string var_type, std::string got_type); // When reset variable value but new value is incompatible type with variable type
+
     };
 }

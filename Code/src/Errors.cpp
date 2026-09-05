@@ -20,7 +20,7 @@ Errors::SyntaxError::SyntaxError(
     std::string comment
 ) {
     msg = fmt::format(
-        "SyntaxError: expected token '{}' at line:{} ,column:{}",
+        "SyntaxError: unexpected token '{}' at line:{} ,column:{}",
         token, line, column
     );
     if (!comment.empty())
@@ -59,7 +59,7 @@ Errors::NameError::NameError(
 }
 
 
-// ============== NameError class constructure ==============
+// ============== ArgumentError class constructure ==============
 Errors::ArgumentError::ArgumentError(
     std::string f_name,
     int l_, 
@@ -117,6 +117,64 @@ Errors::ArgumentError::unplaced_arg(
     msg = fmt::format(
         "ArgumentError: Function '{}': Missing required argument '{}' at line:{}, column:{}",
         function_name, arg_name, line, column
+    );
+    return msg;
+}
+
+// ============== VariableError class constructure ==============
+
+Errors::VariableError::VariableError(
+    std::string v_name,
+    int l_, 
+    int c_, 
+    std::string com_
+):
+    var_name(v_name),
+    line(l_),
+    column(c_),
+    comment(com_) {}
+
+// When recreate variable in same scope
+std::string 
+Errors::VariableError::reset_var_in_same_scope() {
+    msg = fmt::format(
+        "VariableError: Variable '{}' already defined in this scope at line:{}, column:{}",
+        var_name, line, column
+    );
+    return msg;
+}
+
+
+
+// When reset variable value but new value is incompatible type with variable type
+std::string 
+Errors::VariableError::reset_var_value_by_other_type(
+    std::string var_type, 
+    std::string got_type
+) {
+    msg = fmt::format(
+        "TypeError: Cannot assign value of type '{}' to variable '{}' of type '{}' at line:{}, column:{}",
+        got_type, var_name, var_type, line, column
+    );
+    return msg;
+}
+
+// When user reset a const variable
+std::string 
+Errors::VariableError::reset_const_var() {
+    msg = fmt::format(
+        "ImmutableError: Cannot modify constant variable '{}' at line:{}, column:{}",
+        var_name, line, column
+    );
+    return msg;
+}
+
+// When user reset variable value but from auther scoupe (inside function or authe module)
+std::string 
+Errors::VariableError::reset_var_from_auther_scope() {
+    msg = fmt::format(
+        "ScopeError: Cannot modify variable '{}' declared in another scope at line:{}, column:{}",
+        var_name, line, column
     );
     return msg;
 }

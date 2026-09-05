@@ -38,7 +38,7 @@ FunctionCallArgumentNode::get_str(
 
     for (int i=0;i<level;i++)
         ss << "|  ";
-    ss << "Argument " << name << ":" << "\n";
+    ss << "Argument " << name << ":\n";
 
     ss <<  VNode->get_str(level+1);
 
@@ -111,7 +111,10 @@ FunctionCallNode::get_str(
 
     for (int i=0;i<level;i++)
         ss << "|  ";
-    ss << "FunctionCall " << name << ":" << "\n";
+    ss << "FunctionCall " << name;
+
+    if (!arguments.empty()) ss << ":";
+    ss << "\n";
 
     for (auto& arg: arguments)
         ss << arg->get_str(level+1);

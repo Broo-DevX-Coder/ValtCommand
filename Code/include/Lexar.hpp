@@ -44,6 +44,8 @@ class API Lexar {
         Lexar(std::string& code); // Constructure
         void advence(); // Move to the next byte in code; pos++
         void escape_spaces(); // Jump on all spaces and escape chaines
+        void escape_comments(); // Jump on all coments 
         Token get_the_next_token(); // Get the next token from code
         std::vector<Token> get_all_tokens(); // Get all tokens in code
+        char peek(size_t offset = 1); // Get the next <offset> char in code
 };

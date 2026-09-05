@@ -13,6 +13,8 @@
 // == Locals ==
 #include "Runtime.hpp"
 
+#include "Lexar.hpp"
+
 std::ostream& operator<<(std::ostream& os, const std::monostate&) {
     os << "null";
     return os;
@@ -40,18 +42,25 @@ int main () {
     // ====== initialyze standards ==========
     //Standardes::__init__();
 
-    std::string code = R"CODE(CALL print 
-        value__<void>: 
-            CALL print
-                value0<float>:CALL Pi END
-                value1<float>:CALL Pi END
-                value2<str>:"gg"
-                value3<str>:"ee"
-                value4<float>:1
-            END
+    std::string code = R"CODE(
+
+    // set name
+    SET name<str> = "broo-dev-x"
+
+    // print the name
+    CALL print 
+        value<str>: GET name
+    END
+
+    // reset the name
+    SET name = "auther" // or any other name that you want
+
+    // print new name
+    CALL print
+        p<str>: GET name
     END
     )CODE";
-
+    
     auto r = Runtime::RunTime(code);
     r.add_external_function(print,"print","void",{},true);
     r.add_external_function(Pi,"Pi","float",{});
@@ -71,6 +80,8 @@ int main () {
         return 1;
     }
     std::cout << "======== exec end =========" << std::endl << std::flush;
+
+    
 
     return 0;
 }

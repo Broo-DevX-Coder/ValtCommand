@@ -53,7 +53,10 @@ std::vector<std::string> __types__ = {
 
 // All sepported keywords
 std::vector<std::string> __key_words__ = {
-    "CALL" // Call function
+    "CALL", // Call function
+    "SET", // Set of reset variable
+    "SET_CONST", // Set const variable
+    "GET" // Get a variable value 
 };
 
 // All sepported symbols

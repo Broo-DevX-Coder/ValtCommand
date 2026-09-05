@@ -22,10 +22,8 @@
 // ==================================================================
 
 // == Locals ==
+#include "ASTNodes/ASTNode.hpp"
 #include "globals.hpp"
-
-// Nodes
-#include "ASTNodes/FunctionCallNode.hpp"
 
 // ==================================================================
 // Parser
@@ -62,4 +60,6 @@ class API Parser {
 
         ReturnResult<Node> get_functioncall_node(); // Get the function call node when found CALL keyword
         ReturnResult<Node> get_value_node(); // Get the pure value node
+        ReturnResult<Node> get_set_variable_node(bool is_const); // Get the set or reset variable node when found SET keyword
+        ReturnResult<Node> get_get_variable_node(); // Get the node that get the variable value from symbols table
 };

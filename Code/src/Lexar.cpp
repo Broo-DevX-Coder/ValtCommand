@@ -31,7 +31,20 @@ Lexar::advence() {
         code_ended = true;
 }
 
-// Wolk on spaces
+// Get the next <offset> char in code
+char 
+Lexar::peek(
+    size_t offset
+) {
+    if (pos+offset < code.size()){
+        return code[pos+offset];
+    } else {
+        code_ended = true;
+    }
+    return '\0';
+}
+
+// Jump on all spaces
 void 
 Lexar::escape_spaces() {
     
@@ -47,16 +60,43 @@ Lexar::escape_spaces() {
     }
 }
 
+// Jump on comments
+void 
+Lexar::escape_comments() {
+    escape_spaces();
+
+    do {
+        if (curent_c == '/' && peek(1) == '/') {
+            while (curent_c != '\n' && !code_ended) {
+                advence();
+            }
+
+        } else if (curent_c == '/' && peek(1) == '*') {
+            bool done = false;
+            while (!done) {
+                advence();
+                if (curent_c == '*' && peek(1) == '/' && !code_ended) 
+                    done = true;
+            }
+            advence();
+            advence();
+        }
+        escape_spaces();
+
+    } while ((curent_c == '/' && peek(1) == '/') || (curent_c == '/' && peek(1) == '*'));
+
+}
+
 // get the next token function
 Token
 Lexar::get_the_next_token() {
-    escape_spaces();
+    escape_comments();
 
     // If there is not any char
     if (code_ended == true) {
         return {TokenType::END_CODE, "", curent_line, curent_column};
 
-    // If char is < or >
+    // If char is symbol
     } else if (__symbols__.contains(curent_c)) {
         auto t = __symbols__[curent_c];
         advence();
