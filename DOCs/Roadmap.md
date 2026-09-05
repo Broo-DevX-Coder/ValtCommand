@@ -44,10 +44,10 @@
 
 ## v0.3
 
-- Comments Support
-- Variables
-- Constants
-- User Functions (`SETFUNCTION`)
+- ✅ Comments Support
+- ✅ Variables
+- ✅ Constants
+- User Functions (`SET_FUNCTION`)
 - Return Values
 - Binary Operations (`+ - * / ^`)
 - Operator Precedence
