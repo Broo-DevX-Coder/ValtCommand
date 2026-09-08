@@ -24,6 +24,7 @@
 // == Locals ==
 #include "globals.hpp"
 #include "Parser.hpp"
+#include "Scope.hpp"
 
 // ==================================================================
 // Runtime namespace

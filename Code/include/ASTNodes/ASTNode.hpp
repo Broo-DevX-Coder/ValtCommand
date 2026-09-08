@@ -29,6 +29,7 @@
 
 // == Locals ==
 #include "globals.hpp"
+#include "Scope.hpp"
 
 // ==================================================================
 // ASTNodes Types
@@ -43,7 +44,8 @@ enum ASTNodesTypes {
     NT__ValueNode,
     NT__StringValueNode,
     NT__NumberValueNode,
-    NT__BooleanValueNode
+    NT__BooleanValueNode,
+    NT__BinOpsNode
 };
 
 // ==================================================================

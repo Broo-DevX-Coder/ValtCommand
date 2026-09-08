@@ -10,6 +10,7 @@
 #include "ASTNodes/FunctionCallNode.hpp"
 #include "ASTNodes/ValueNode.hpp"
 #include "ASTNodes/VariableNode.hpp"
+#include "ASTNodes/BynaryOpsNode.hpp"
 
 // == Libs ==
 #include <iostream>
@@ -158,7 +159,7 @@ Parser::get_functioncall_node() {
         if (!consume_result.success) return {consume_result.Message,false,nullptr};
 
         // Get arg value node
-        auto arg_value = get_node();
+        auto arg_value = get_expretion();
         if (!arg_value.success) return {arg_value.Message,false,nullptr};
 
         // Add the argument to args list
@@ -218,7 +219,7 @@ Parser::get_set_variable_node(
         if (!consume_result.success) return {consume_result.Message,false,nullptr};
 
         // Get ths ASTNode of variable value
-        auto var_value = get_node();
+        auto var_value = get_expretion();
         if (!var_value.success) return {var_value.Message,false,nullptr};
 
         return {
@@ -238,7 +239,7 @@ Parser::get_set_variable_node(
         if (!consume_result.success) return {consume_result.Message,false,nullptr};
 
         // Get ths ASTNode of variable value
-        auto var_value = get_node();
+        auto var_value = get_expretion();
         if (!var_value.success) return {var_value.Message,false,nullptr};
 
         return {
@@ -279,9 +280,11 @@ Parser::get_get_variable_node() {
 }
 
 
-// Global function of nodes
+// Global functions ================================================================
+
+// Global function of primary nodes
 ReturnResult<Parser::Node>
-Parser::get_node() {
+Parser::get_primary() {
 
     // set match result var
     ReturnResult<bool> mt;
@@ -324,7 +327,109 @@ Parser::get_node() {
     };
 }
 
-// Get clear module node
+
+ReturnResult<Parser::Node> 
+Parser::get_expretion() {
+
+    OperationPartsList parts; // Define parts list
+
+    auto cu = curent(); // Get token of first part
+    auto node_r = get_term(); // Get the first part
+    if (!node_r.success) return {node_r.Message,false,nullptr}; // Error if first part returns error
+
+    // If token after first part is plus or minus
+    if (check(TokenType::PLUS) || check(TokenType::MINUS)) {
+        // Push the first node in parts list
+        parts.push_back({
+            TokenType::UNKNOWN,
+            cu,
+            std::move(node_r.value)
+        });
+    }
+
+    // While the curent token is + or -
+    while (check(TokenType::PLUS) || check(TokenType::MINUS)) {
+
+        // Consume operation symbol
+        auto op = check(TokenType::PLUS)? consume(TokenType::PLUS) : consume(TokenType::MINUS);
+
+        auto pcu = curent(); // get the first token of this part
+        auto pnode_r = get_term(); // Get this part
+        if (!pnode_r.success) return {pnode_r.Message,false,nullptr}; // Error if this part returns error
+
+        // Push this part in parts list
+        parts.push_back({
+            op.value.Type,
+            pcu,
+            std::move(pnode_r.value)
+        });
+
+    }
+    
+    if (!parts.empty()) {
+        return {
+            "",true,
+            std::make_unique<BinOpsNode>(
+                parts
+            )
+        };
+    } 
+
+    return node_r;
+}
+
+ReturnResult<Parser::Node> 
+Parser::get_term() {
+
+    OperationPartsList parts; // Define parts list
+
+    auto cu = curent(); // Get token of first part
+    auto node_r = get_primary(); // Get the first part
+    if (!node_r.success) return {node_r.Message,false,nullptr}; // Error if first part returns error
+
+    // If token after first part is multiple or divide
+    if (check(TokenType::STAR) || check(TokenType::SLASH)) {
+        // Push the first node in parts list
+        parts.push_back({
+            TokenType::UNKNOWN,
+            cu,
+            std::move(node_r.value)
+        });
+    }
+
+    // While the curent token is * or /
+    while (check(TokenType::STAR) || check(TokenType::SLASH)) {
+
+        // Consume operation symbol
+        auto op = check(TokenType::STAR)? consume(TokenType::STAR) : consume(TokenType::SLASH);
+
+        auto pcu = curent(); // get the first token of this part
+        auto pnode_r = get_primary(); // Get this part
+        if (!pnode_r.success) return {pnode_r.Message,false,nullptr}; // Error if this part returns error
+
+        // Push this part in parts list
+        parts.push_back({
+            op.value.Type,
+            pcu,
+            std::move(pnode_r.value)
+        });
+
+    }
+    
+    if (!parts.empty()) {
+        return {
+            "",true,
+            std::make_unique<BinOpsNode>(
+                parts
+            )
+        };
+    } 
+
+    return node_r;
+}
+
+
+// Get clear module node ==================================================
 ReturnResult<Parser::PNode>
 Parser::get_module_node() {
 
@@ -332,7 +437,7 @@ Parser::get_module_node() {
     ReturnResult<Parser::Node> nt;
 
     do {
-        nt = get_node();
+        nt = get_expretion();
         if(!nt.success){
             return {nt.Message,false,nullptr};
         }

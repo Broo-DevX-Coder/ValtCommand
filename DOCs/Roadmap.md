@@ -47,9 +47,9 @@
 - ✅ Comments Support
 - ✅ Variables
 - ✅ Constants
-- User Functions (`SET_FUNCTION`)
-- Return Values
+- ✅ ///Return Values
 - Binary Operations (`+ - * / ^`)
+- User Functions (`SET_FUNCTION`)
 - Operator Precedence
 - Parentheses Expressions
 - IF Statements

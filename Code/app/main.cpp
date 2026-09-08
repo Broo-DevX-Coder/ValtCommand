@@ -43,21 +43,8 @@ int main () {
     //Standardes::__init__();
 
     std::string code = R"CODE(
-
-    // set name
-    SET name<str> = "broo-dev-x"
-
-    // print the name
-    CALL print 
-        value<str>: GET name
-    END
-
-    // reset the name
-    SET name = "auther" // or any other name that you want
-
-    // print new name
     CALL print
-        p<str>: GET name
+        p<int>: 1+5*9+66
     END
     )CODE";
     
@@ -80,8 +67,6 @@ int main () {
         return 1;
     }
     std::cout << "======== exec end =========" << std::endl << std::flush;
-
-    
 
     return 0;
 }
