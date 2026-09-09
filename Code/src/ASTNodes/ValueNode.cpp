@@ -127,8 +127,8 @@ ReturnResult<Value>
 NumberValueNode::exec(
     Scopes::Scope* ParentScope
 ){
-    auto v = std::stoul(vToken.value);
-    value = type == "int"? (uint64_t)v : (double)v;
+    auto v = std::stold(vToken.value);
+    value = type == "int"? (int64_t)v : (long double)v;
     
     return {"",true,std::move(value)};
 }

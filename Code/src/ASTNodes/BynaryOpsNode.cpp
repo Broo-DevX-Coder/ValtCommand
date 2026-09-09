@@ -81,9 +81,9 @@ BinOpsNode::accept(
 // Do operation on a node
 void
 BinOpsNode::push_to_result(
-    double& result, 
+    long double& result, 
     TokenType op, 
-    double input
+    long double input
 ) {
     if (op == TokenType::PLUS) {
         result += input;
@@ -101,7 +101,7 @@ ReturnResult<Value>
 BinOpsNode::exec(
     Scopes::Scope* ParentScope
 ) { 
-    double result = 0;
+    long double result = 0;
 
     for (size_t i=0;i<Parts.size();i++) {
         auto& part = Parts[i];
@@ -109,20 +109,20 @@ BinOpsNode::exec(
         auto exec_result = part.node->exec(ParentScope);
         if (!exec_result.success) return {exec_result.Message,false,std::monostate{}};
 
-        size_t* val = std::get_if<size_t>(&exec_result.value);
+        int64_t* val = std::get_if<int64_t>(&exec_result.value);
 
         if (val != nullptr) {
             if (i==0) {
-                result = static_cast<double>(*val);
+                result = static_cast<long double>(*val);
             } else {
-                push_to_result(result,part.op,static_cast<double>(*val));
+                push_to_result(result,part.op,static_cast<long double>(*val));
             }
         } else {
-            double* val = std::get_if<double>(&exec_result.value);
+            long double* val = std::get_if<long double>(&exec_result.value);
             if (i==0) {
-                result = static_cast<double>(*val);
+                result = static_cast<long double>(*val);
             } else {
-                push_to_result(result,part.op,static_cast<double>(*val));
+                push_to_result(result,part.op,static_cast<long double>(*val));
             }
         }
     }

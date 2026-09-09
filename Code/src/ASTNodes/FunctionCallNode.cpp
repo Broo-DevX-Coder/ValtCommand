@@ -81,7 +81,28 @@ FunctionCallArgumentNode::exec(
     if (!vnode_r.success)
         return {vnode_r.Message,false,std::monostate{}};
     
-    value = vnode_r.value;
+    if (type=="int") {
+        int64_t* v = std::get_if<int64_t>(&vnode_r.value);
+
+        if (v!=nullptr) {
+            value = *v;
+        } else {
+            long double* v = std::get_if<long double>(&vnode_r.value);
+            value = static_cast<int64_t>(*v);
+        }
+
+    }else if (type == "float") {
+        long double* v = std::get_if<long double>(&vnode_r.value);
+
+        if (v!=nullptr) {
+            value = *v;
+        } else {
+            int64_t* v = std::get_if<int64_t>(&vnode_r.value);
+            value = static_cast<long double>(*v);
+        }
+
+    } else value=vnode_r.value;
+
     VNode = nullptr;
 
     return {"",true,std::monostate{}};

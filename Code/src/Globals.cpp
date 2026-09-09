@@ -130,10 +130,10 @@ Get_ValueT(
     if (std::holds_alternative<std::monostate>(value))
         return "void";
 
-    if (std::holds_alternative<uint64_t>(value))
+    if (std::holds_alternative<int64_t>(value))
         return "int";
 
-    if (std::holds_alternative<double>(value))
+    if (std::holds_alternative<long double>(value))
         return "float";
 
     if (std::holds_alternative<std::string>(value))

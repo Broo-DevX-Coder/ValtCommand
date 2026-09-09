@@ -31,7 +31,7 @@ ReturnResult<Value> print(ExternalFunInType inputs) {
 }
 
 ReturnResult<Value> Pi(ExternalFunInType inputs) {
-    return {"",true,3.14159265359};
+    return {"",true,-3.14159265359};
 }
 
 // ==================================================================
@@ -44,7 +44,7 @@ int main () {
 
     std::string code = R"CODE(
     CALL print
-        p<int>: 1+5*9+66
+        p<float>: -5*1.5555
     END
     )CODE";
     

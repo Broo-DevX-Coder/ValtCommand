@@ -35,8 +35,8 @@
 // ==================================================================
 using Value = std::variant<
     std::monostate,
-    uint64_t, 
-    double, 
+    int64_t, 
+    long double, 
     std::string, 
     bool
 >; // Value variant type
