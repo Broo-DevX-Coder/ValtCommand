@@ -112,9 +112,21 @@ SetVariableNode::exec(
     return {"",true,std::monostate{}};
 }
 
+// Copy node
+ASTNode* 
+SetVariableNode::clone(){
+    std::unique_ptr<ASTNode> new_value_node(VNode->clone());
+    return new SetVariableNode(
+        NameToken,
+        TypeToken,
+        std::move(new_value_node),
+        is_const
+    );
+}
+
 
 // ==================================================================
-// Reset variable node class functions
+// Reset variable value node class functions
 // ==================================================================
 
 // Constructure
@@ -216,9 +228,18 @@ ResetVariableNode::exec(
     return {"",true,std::monostate{}};
 }
 
+// Copy node
+ASTNode* 
+ResetVariableNode::clone(){
+    std::unique_ptr<ASTNode> new_value_node(VNode->clone());
+    return new ResetVariableNode(
+        NameToken,
+        std::move(new_value_node)
+    );
+}
 
 // ==================================================================
-// Reset variable node class functions
+// Get variable value node class functions
 // ==================================================================
 
 // Constructure
@@ -272,4 +293,10 @@ GetVariableNode::exec(
 ) {
     auto search_r = ParentScope->search_var(NameToken);
     return {"",true,search_r.value->value};
+}
+
+// Copy node
+ASTNode* 
+GetVariableNode::clone(){
+    return new GetVariableNode(NameToken);
 }

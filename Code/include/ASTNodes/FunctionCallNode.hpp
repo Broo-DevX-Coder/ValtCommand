@@ -43,6 +43,7 @@ class FunctionCallArgumentNode: public ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
+        ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
 
@@ -59,11 +60,11 @@ class FunctionCallNode: public ASTNode
         std::string name; // Name of function
         ArgsT arguments; // Function arguments
         Token NameToken; // Token of function name in code
-        Scopes::SymbolTableTypes::Function* func; // The pointer of function symbol in scop's table
 
         FunctionCallNode(std::string Fname, ArgsT& Args_list, Token name_token); // Contructure
         std::string get_str(int level) override; // Get str of node to print
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
+        ASTNode* clone() override; // Clone the class or get a new copy from them
 };

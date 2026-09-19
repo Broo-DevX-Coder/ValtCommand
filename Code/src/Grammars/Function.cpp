@@ -61,7 +61,7 @@ Parser::get_functioncall_node() {
         ));
     }
 
-    // Jump on `CALL`
+    // Jump on `END`
     consume_result = consume(TokenType::END_BLOCK); 
     if (!consume_result.success) {
         return {consume_result.Message,false,nullptr};

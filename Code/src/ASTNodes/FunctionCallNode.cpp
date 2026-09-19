@@ -9,6 +9,7 @@
 
 // == Locals ==
 #include "ASTNodes/FunctionCallNode.hpp"
+#include "ASTNodes/UserFunctionNode.hpp"
 #include "Errors.hpp"
 
 // ==================================================================
@@ -81,31 +82,20 @@ FunctionCallArgumentNode::exec(
     if (!vnode_r.success)
         return {vnode_r.Message,false,std::monostate{}};
     
-    if (type=="int") {
-        int64_t* v = std::get_if<int64_t>(&vnode_r.value);
-
-        if (v!=nullptr) {
-            value = *v;
-        } else {
-            long double* v = std::get_if<long double>(&vnode_r.value);
-            value = static_cast<int64_t>(*v);
-        }
-
-    }else if (type == "float") {
-        long double* v = std::get_if<long double>(&vnode_r.value);
-
-        if (v!=nullptr) {
-            value = *v;
-        } else {
-            int64_t* v = std::get_if<int64_t>(&vnode_r.value);
-            value = static_cast<long double>(*v);
-        }
-
-    } else value=vnode_r.value;
-
+    value=reconsiliation_int_float(type,vnode_r.value);
     VNode = nullptr;
 
     return {"",true,std::monostate{}};
+}
+
+ASTNode* 
+FunctionCallArgumentNode::clone() {
+    std::unique_ptr<ASTNode> new_value_node(VNode->clone());
+    return new FunctionCallArgumentNode(
+        name,
+        TypeToken,
+        std::move(new_value_node)
+    );
 }
 
 // ==================================================================
@@ -162,7 +152,7 @@ FunctionCallNode::accept(
         };
     }
     return_type = search_result.value->return_type;
-    func = search_result.value;
+    auto func = search_result.value;
 
     auto error_obj = Errors::ArgumentError(
         name,
@@ -233,9 +223,20 @@ FunctionCallNode::exec(
     Scopes::Scope* ParentScope
 ) {
     ExternalFunInType args_list;
+
+    auto search_result = ParentScope->search_function(NameToken);
+    if (!search_result.success){
+        return {
+            search_result.Message,
+            false,false
+        };
+    }
+    auto func = search_result.value;
+
+
     for (auto& ar: arguments){
         auto arg_exec_r = ar->exec(ParentScope);
-        if (!arg_exec_r.success) 
+        if (!arg_exec_r.success)
             return {arg_exec_r.Message,false,std::monostate()};
 
         args_list[ar->name] = ar->value;
@@ -243,7 +244,56 @@ FunctionCallNode::exec(
     }
     arguments.clear();
 
+    // If the function is external execute it directely ==========
     if (func->type == Scopes::SymbolTableTypes::FunctionsTypes::Extenal)
         return func->external_func(args_list);
-    return func->external_func(args_list);
+    
+    // If the function is user Function ===========
+
+    // Create scoupe for function
+    auto func_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+
+    // Create a copy from function proxy node
+    std::unique_ptr<UserProxyFunctionNode> copy_func(dynamic_cast<UserProxyFunctionNode*>(func->user_function->clone()));
+
+    // Put all args in function scoupe
+    for (auto& [arg_name,arg_value]: args_list) {
+        func_scoupe->add_var(
+            arg_name,
+            Get_ValueT(arg_value),
+            arg_value,
+            true
+        );
+    }
+
+    // search if there is any defualt arguments not defined in call to put them i scoupe
+    for (auto& [method_name, method]: func->methods) {
+        if (!args_list.contains(method_name)) {
+            func_scoupe->add_var(
+                method_name,
+                method.type,
+                method.default_value,
+                true
+            );
+        }
+    }
+
+    return copy_func->exec(func_scoupe.get());
+}
+
+// Get a copy from class
+ASTNode*
+FunctionCallNode::clone() {
+    ArgsT new_args_list;
+
+    for (auto& a: arguments) {
+        std::unique_ptr<FunctionCallArgumentNode> arg(dynamic_cast<FunctionCallArgumentNode*>(a->clone()));
+        new_args_list.push_back(std::move(arg));
+    }
+
+    return new FunctionCallNode(
+        name,
+        new_args_list,
+        NameToken
+    );
 }

@@ -34,6 +34,15 @@ Parser::get_primary() {
         // Get variable's value node
         } else if (curent().value == "GET"){
             return get_get_variable_node();
+        
+        // Get user function
+        } else if (curent().value == "FUNCTION") {
+            return get_user_function_node(); 
+        
+        // Get return node 
+        } else if (curent().value == "RETURN") {
+            return get_return_noode();
+
         }
 
     // If the curent type is pure value
@@ -45,15 +54,15 @@ Parser::get_primary() {
     ) {
         return get_value_node();
 
+    // Get between parens
     } else if (check(TokenType::LEFT_PAREN)) {
         consume(TokenType::LEFT_PAREN);
-
         auto node_r = get_expretion();
-
         auto is_paren_closed__ = consume(TokenType::RIGHT_PAREN);
         if (!is_paren_closed__.success) return {is_paren_closed__.Message,false,nullptr};
-
         return std::move(node_r);
+
+    // Get negative number
     } else if (
         (check(TokenType::MINUS) || check(TokenType::PLUS)) && 
         (peek(1).Type == TokenType::INTEGER || peek(1).Type == TokenType::FLOAT)
@@ -61,6 +70,7 @@ Parser::get_primary() {
         auto op = curent().Type == TokenType::MINUS ? consume(TokenType::MINUS) : consume(TokenType::PLUS);
         curent_token_.value = op.value.value + curent().value;
         return get_value_node();
+        
     }
 
     return {

@@ -87,4 +87,20 @@ namespace Errors {
             std::string reset_var_value_by_other_type(std::string var_type, std::string got_type); // When reset variable value but new value is incompatible type with variable type
 
     };
+
+    // User Function Error
+    class UserFunctionError : public Error {
+        private:
+            std::string function_name;
+            int line;
+            int column;
+            std::string comment = "";
+
+        public:
+            UserFunctionError(std::string function_name,int line,int column,std::string comment = ""); // Constructure
+            std::string return_type_error(std::string expected_type,std::string got_type); // When user returns uncompatible type data with function return type
+            std::string missing_return_statement(); // Forgot to return data else thene void
+            std::string missing_return_error(); // Not all paths return a value
+            std::string function_already_defined(); // When user redifine a function by same name in same scope
+    };
 }

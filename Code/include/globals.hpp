@@ -31,6 +31,11 @@
 #include <fmt/format.h>
 
 // ==================================================================
+// Forwarding declarations
+// ==================================================================
+class ASTNode;
+
+// ==================================================================
 // Types 
 // ==================================================================
 using Value = std::variant<
@@ -41,12 +46,23 @@ using Value = std::variant<
     bool
 >; // Value variant type
 
+enum class ExecState {
+    Normal,
+    Return,
+    Break,
+    Continue
+};
+
 // Return object, to handle errors
 template<typename T>
 struct ReturnResult {
     std::string Message;
     bool success;
     T value;
+    ExecState state = ExecState::Normal;
+
+    ASTNode* return_node; // For function return: whow is the node that returns data
+    Value return_data; // For function return: what did the function return
 };
 
 using ExternalFunInType = std::unordered_map<std::string, Value>; // External functin input type
@@ -122,3 +138,4 @@ bool is_token_type_(std::string token);  // Is the token a type
 bool is_token_key_word_(std::string token); // Is the token a keyword
 std::string Get_ValueT(const Value& value); // Get Value type (what inside variant)
 bool are_types_compatible(const std::string& first, const std::string& secound); // Are two types compatible (like int with float)
+Value reconsiliation_int_float(const std::string& type, Value& input); // Reconsiliation between intiger and float

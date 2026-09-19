@@ -52,6 +52,7 @@ ModuleNode::exec(
         r = stmt->exec(ParentScope);
         if (!r.success)
             return {r.Message,false,std::monostate()};
+        stmt = nullptr;
     }
     return {"",true,std::monostate()};
 }
@@ -70,4 +71,17 @@ ModuleNode::accept(
             return {r.Message,false,false};
     }
     return {"",true,true};
+}
+
+// Copy node
+ASTNode* 
+ModuleNode::clone() {
+    StatmentsT new_statments;
+
+    for (auto& s: statements) {
+        std::unique_ptr<ASTNode> statment_c(s->clone());
+        new_statments.push_back(std::move(statment_c));
+    }
+
+    return new ModuleNode(new_statments);
 }

@@ -66,4 +66,6 @@ class API Parser {
         ReturnResult<Node> get_value_node(); // Get the pure value node
         ReturnResult<Node> get_set_variable_node(bool is_const); // Get the set or reset variable node when found SET keyword
         ReturnResult<Node> get_get_variable_node(); // Get the node that get the variable value from symbols table
+        ReturnResult<Node> get_user_function_node(); // Get the node of user's function that put the function in symbol table
+        ReturnResult<Node> get_return_noode(); // Get the node of returning value in function
 };

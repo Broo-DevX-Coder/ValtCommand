@@ -49,7 +49,7 @@ Scopes::SymbolTableTypes::RVar*
 Scopes::Scope::add_var(
     const std::string& name, 
     const std::string& type,
-    Value& value,
+    const Value& value,
     bool is_const
 ) {
     auto var_ptr = std::make_unique<SymbolTableTypes::RVar>(
@@ -111,3 +111,9 @@ Scopes::Scope::search_var(
 
     return {"",true,variables[nToken.value].get()};
 }
+
+// Others
+
+Scopes::SymbolTableTypes::Function::~Function() {
+    delete user_function;
+};

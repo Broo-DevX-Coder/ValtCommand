@@ -45,7 +45,11 @@ enum ASTNodesTypes {
     NT__StringValueNode,
     NT__NumberValueNode,
     NT__BooleanValueNode,
-    NT__BinOpsNode
+    NT__BinOpsNode,
+    NT__UserFunctionMethodNode,
+    NT__UserFunctionNode,
+    NT__UserFunctionReturnNode,
+    NT__UserProxyFunctionNode
 };
 
 // ==================================================================
@@ -60,6 +64,7 @@ public:
     virtual ASTNodesTypes NType() = 0; // get the type of node
     virtual ReturnResult<bool> accept(Scopes::Scope* ParentScope) = 0; // The node verifi it self befor runnig
     virtual ReturnResult<Value> exec(Scopes::Scope* ParentScope) = 0; // Run the node
+    virtual ASTNode* clone() = 0; // Clone the class or get a new copy from them
 };
 
 // ==================================================================
@@ -77,4 +82,5 @@ class ModuleNode : public ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
+        ASTNode* clone() override; // Clone the class or get a new copy from them
 };

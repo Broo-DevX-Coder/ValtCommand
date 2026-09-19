@@ -178,3 +178,75 @@ Errors::VariableError::reset_var_from_auther_scope() {
     );
     return msg;
 }
+
+// ============== UserFunctionError class constructure ==============
+
+// Constructure
+Errors::UserFunctionError::UserFunctionError(
+    std::string f_name,
+    int l_,
+    int c_,
+    std::string com_
+):
+    function_name(f_name),
+    line(l_),
+    column(c_),
+    comment(com_) {}
+
+
+// When user returns uncompatible type data with function return type
+std::string
+Errors::UserFunctionError::return_type_error(
+    std::string expected_type,
+    std::string got_type
+) {
+    msg = fmt::format(
+        "ReturnTypeError: function '{}' expected return type '{}', got '{}' at line:{}, column:{}",
+        function_name,
+        expected_type,
+        got_type,
+        line,
+        column
+    );
+
+    return msg;
+}
+
+// Forgot to return data else thene void
+std::string
+Errors::UserFunctionError::missing_return_statement() {
+    msg = fmt::format(
+        "MissingReturnError: not all code paths return a value in function '{}' at line:{}, column:{}",
+        function_name,
+        line,
+        column
+    );
+
+    return msg;
+}
+
+// Not all paths return a value
+std::string
+Errors::UserFunctionError::missing_return_error() {
+    msg = fmt::format(
+        "MissingReturnError: not all code paths return a value in function '{}' at line:{}, column:{}",
+        function_name,
+        line,
+        column
+    );
+
+    return msg;
+}
+
+// When user redifine a function by same name in same scope
+std::string
+Errors::UserFunctionError::function_already_defined() {
+    msg = fmt::format(
+        "FunctionError: function '{}' already defined in this scope at line:{}, column:{}",
+        function_name,
+        line,
+        column
+    );
+
+    return msg;
+}

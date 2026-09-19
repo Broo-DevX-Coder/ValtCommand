@@ -129,3 +129,20 @@ BinOpsNode::exec(
 
     return {"",true,result};
 }
+
+// Get a new copy of class
+ASTNode*
+BinOpsNode::clone() {
+    OperationPartsList new_parts;
+
+    for (auto& p: Parts) {
+        std::unique_ptr<ASTNode> value_node(p.node->clone());
+        new_parts.push_back({
+            p.op,
+            p.token,
+            std::move(value_node)
+        });
+    }
+
+    return new BinOpsNode(new_parts);
+};

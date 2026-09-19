@@ -97,6 +97,12 @@ StringValueNode::NType() {
     return NT__StringValueNode;
 }
 
+// copy node
+ASTNode* 
+StringValueNode::clone() {
+    return new StringValueNode(vToken);
+}
+
 // ================== Class Number Value Node ==================
 
 // Constructure
@@ -139,6 +145,12 @@ NumberValueNode::NType() {
     return NT__NumberValueNode;
 }
 
+// copy node
+ASTNode* 
+NumberValueNode::clone() {
+    return new NumberValueNode(vToken,type);
+}
+
 // ================== Class Boolean Value Node ==================
 
 // Constructure
@@ -176,4 +188,10 @@ BooleanValueNode::exec(
 ASTNodesTypes 
 BooleanValueNode::NType() {
     return NT__BooleanValueNode;
+}
+
+// copy node
+ASTNode* 
+BooleanValueNode::clone() {
+    return new BooleanValueNode(vToken);
 }

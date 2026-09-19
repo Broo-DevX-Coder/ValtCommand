@@ -50,5 +50,6 @@ class BinOpsNode: public ASTNode {
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // type and value checking
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and get the result of calculation
+        ASTNode* clone() override; // Clone the class or get a new copy from them
         void push_to_result(long double& result, TokenType op, long double input); // Do binary operatiion on a node
 };

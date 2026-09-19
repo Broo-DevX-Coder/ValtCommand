@@ -44,6 +44,7 @@ class SetVariableNode: public ASTNode {
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // type and value checking
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and set the var in symbols table
+        ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
 // Set varuable node: the node that reset the variable's value and execute it, after that it reset the value of var in symbols table in parent scope
@@ -60,7 +61,12 @@ class ResetVariableNode: public ASTNode {
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // type and value checking
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and set the var's value in symbols table
+        ASTNode* clone() override; // Clone the class or get a new copy from them
 };
+
+// ==================================================================
+// Get variable node
+// ==================================================================
 
 // Get variable value: the node that get the value of var from symbols table
 class GetVariableNode: public ASTNode {
@@ -72,4 +78,5 @@ class GetVariableNode: public ASTNode {
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // type and value checking
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and get the value from symbols table
+        ASTNode* clone() override; // Clone the class or get a new copy from them
 };

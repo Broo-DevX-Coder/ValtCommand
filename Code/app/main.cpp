@@ -43,9 +43,23 @@ int main () {
     //Standardes::__init__();
 
     std::string code = R"CODE(
-    CALL print
-        p<float>: -5*1.5555
+    FUNCTION my_fun(
+        value<float>
+        secound_value<int> = 55
+    )->float
+
+        RETURN GET value * GET secound_value
+
     END
+
+    CALL print 
+        va<float>: 
+            CALL my_fun 
+                value<float>:55.5
+                secound_value<float>:59995.3333
+            END
+    END
+
     )CODE";
     
     auto r = Runtime::RunTime(code);

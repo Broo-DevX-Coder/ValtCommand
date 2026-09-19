@@ -48,10 +48,12 @@
 - ✅ Variables
 - ✅ Constants
 - ✅ ///Return Values
-- Binary Operations (`+ - * / ^`)
-- User Functions (`SET_FUNCTION`)
-- Operator Precedence
-- Parentheses Expressions
+- ✅ Binary Operations (`+ - * / ^`)
+- ✅ Operator Precedence
+- ✅ Parentheses Expressions
+- ✅ User Functions (`FUNCTION`)
+- Comparition operations (`==`,`!=`,`>`,`<`,`>=`,`<=`)
+- Recursive Comparition operations `(55 == 5 || ((66 != 2) && 5 == 5) )`
 - IF Statements
 - ELSE Statements
 - FOR Loops

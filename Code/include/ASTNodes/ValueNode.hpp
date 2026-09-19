@@ -52,6 +52,7 @@ class StringValueNode: public ValueNode {
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
+        ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
 // Class Value Number Node
@@ -61,6 +62,7 @@ class NumberValueNode: public ValueNode {
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
+        ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
 // Class Value Bool Node
@@ -70,4 +72,5 @@ class BooleanValueNode: public ValueNode {
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
+        ASTNode* clone() override; // Clone the class or get a new copy from them
 };

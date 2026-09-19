@@ -56,7 +56,9 @@ std::vector<std::string> __key_words__ = {
     "CALL", // Call function
     "SET", // Set of reset variable
     "SET_CONST", // Set const variable
-    "GET" // Get a variable value 
+    "GET", // Get a variable value 
+    "FUNCTION", // Set user function
+    "RETURN" // Return a value from function to outside
 };
 
 // All sepported symbols
@@ -156,4 +158,37 @@ are_types_compatible(
         (first == "float" && secound == "int")
     ) return true;
     return first == secound;
+}
+
+// Reconsiliation between intiger and float
+Value 
+reconsiliation_int_float(
+    const std::string& type, 
+    Value& input
+) {
+    Value value;
+
+    if (type=="int") {
+        int64_t* v = std::get_if<int64_t>(&input);
+    
+        if (v!=nullptr) {
+            value = *v;
+        } else {
+            long double* v = std::get_if<long double>(&input);
+            value = static_cast<int64_t>(*v);
+        }
+    
+    }else if (type == "float") {
+        long double* v = std::get_if<long double>(&input);
+    
+        if (v!=nullptr) {
+            value = *v;
+        } else {
+            int64_t* v = std::get_if<int64_t>(&input);
+            value = static_cast<long double>(*v);
+        }
+    
+    } else value=input;
+
+    return value;
 }
