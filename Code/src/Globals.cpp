@@ -39,6 +39,11 @@ std::unordered_map<TokenType,std::string> TokenTypesStr = {
     {TokenType::CARET,"CARET"},
     {TokenType::END_BLOCK,"END_BLOCK"},
     {TokenType::END_CODE,"END_CODE"},
+    {TokenType::EXCLAMATION,"EXCLAMATION"},
+    {TokenType::EQUAL_EQUAL,"EQUAL_EQUAL"},
+    {TokenType::NOT_EQUAL,"NOT_EQUAL"},
+    {TokenType::LESS_EQUAL,"LESS_EQUAL"},
+    {TokenType::GREATER_EQUAL,"GREATER_EQUAL"},
     {TokenType::UNKNOWN,"UNKNOWN"}
 };
 
@@ -78,7 +83,16 @@ std::unordered_map<char,Token> __symbols__ = {
     {'-',{TokenType::MINUS,"-",0,0}},
     {'+',{TokenType::PLUS,"+",0,0}},
     {'=',{TokenType::EQUAL,"=",0,0}},
-    {'^',{TokenType::CARET,"^",0,0}}
+    {'^',{TokenType::CARET,"^",0,0}},
+    {'!',{TokenType::EXCLAMATION,"!",0,0}}
+};
+
+// Comparitions operations
+std::unordered_map<std::string, Token> __comparison_ops_symbols__ = {
+    {"==", {TokenType::EQUAL_EQUAL, "==", 0, 0}},
+    {"!=", {TokenType::NOT_EQUAL, "!=", 0, 0}},
+    {"<=", {TokenType::LESS_EQUAL, "<=", 0, 0}},
+    {">=", {TokenType::GREATER_EQUAL, ">=", 0, 0}}
 };
 
 // All TokenTypes like string

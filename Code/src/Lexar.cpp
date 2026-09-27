@@ -96,12 +96,21 @@ Lexar::get_the_next_token() {
     if (code_ended == true) {
         return {TokenType::END_CODE, "", curent_line, curent_column};
 
+    // If char+char is a comparition
+    } else if (__comparison_ops_symbols__.contains( std::string(1, curent_c) + std::string(1, peek(1)) )) {
+        auto t = __comparison_ops_symbols__[std::string(1, curent_c) + std::string(1, peek(1))];
+        t.line = curent_line;
+        t.column = curent_column;
+        advence();
+        advence();
+        return t;
+
     // If char is symbol
     } else if (__symbols__.contains(curent_c)) {
         auto t = __symbols__[curent_c];
-        advence();
         t.line = curent_line;
         t.column = curent_column;
+        advence();
         return t;
 
     // If the curent char is digit

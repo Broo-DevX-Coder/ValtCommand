@@ -46,6 +46,7 @@ enum ASTNodesTypes {
     NT__NumberValueNode,
     NT__BooleanValueNode,
     NT__BinOpsNode,
+    NT__CompOpsNode,
     NT__UserFunctionMethodNode,
     NT__UserFunctionNode,
     NT__UserFunctionReturnNode,
@@ -55,16 +56,15 @@ enum ASTNodesTypes {
 // ==================================================================
 // ASTNode
 // ==================================================================
-class ASTNode
-{
-public:
-    std::string return_type; // The type of return value
-    virtual ~ASTNode() = default;
-    virtual std::string get_str(int level) = 0; // Get the string of node to print AST
-    virtual ASTNodesTypes NType() = 0; // get the type of node
-    virtual ReturnResult<bool> accept(Scopes::Scope* ParentScope) = 0; // The node verifi it self befor runnig
-    virtual ReturnResult<Value> exec(Scopes::Scope* ParentScope) = 0; // Run the node
-    virtual ASTNode* clone() = 0; // Clone the class or get a new copy from them
+class ASTNode {
+    public:
+        std::string return_type; // The type of return value
+        virtual ~ASTNode() = default;
+        virtual std::string get_str(int level) = 0; // Get the string of node to print AST
+        virtual ASTNodesTypes NType() = 0; // get the type of node
+        virtual ReturnResult<bool> accept(Scopes::Scope* ParentScope) = 0; // The node verifi it self befor runnig
+        virtual ReturnResult<Value> exec(Scopes::Scope* ParentScope) = 0; // Run the node
+        virtual ASTNode* clone() = 0; // Clone the class or get a new copy from them
 };
 
 // ==================================================================

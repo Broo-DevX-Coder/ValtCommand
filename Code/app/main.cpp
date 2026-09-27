@@ -22,6 +22,22 @@ std::ostream& operator<<(std::ostream& os, const std::monostate&) {
 
 ReturnResult<Value> print(ExternalFunInType inputs) {
     for (auto& [n,i]: inputs) {
+
+        if (std::holds_alternative<bool>(i)) {
+            bool vv = false;
+            bool* v = std::get_if<bool>(&i);
+
+            if (v != nullptr) {
+                vv = *v;
+            }
+
+            if (vv) std::cout << "True" << std::endl << std::flush;
+            else std::cout << "False" << std::endl << std::flush;
+
+            continue;
+        }
+            
+
         std::visit([](auto&& v){
             std::cout << v << std::endl << std::flush;
         }, i);
@@ -46,23 +62,18 @@ int main () {
     FUNCTION my_fun(
         value<float>
         secound_value<int> = 55
-    )->float
+    )->bool
 
-        RETURN GET value * GET secound_value
+        RETURN GET value == GET secound_value
 
     END
 
     CALL print 
-        va<float>: 
+        va<bool>: 
             CALL my_fun 
                 value<float>:55.5
-                secound_value<float>:5995.3333
+                secound_value<int>:55
             END
-    END
-
-    CALL print 
-        _<int>: 44
-        __<str>: "value is: \n u"
     END
 
     )CODE";

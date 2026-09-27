@@ -52,7 +52,8 @@
 - ✅ Operator Precedence
 - ✅ Parentheses Expressions
 - ✅ User Functions (`FUNCTION`)
-- Comparition operations (`==`,`!=`,`>`,`<`,`>=`,`<=`)
+- ✅ Comparition operations (`==`,`!=`,`>`,`<`,`>=`,`<=`)
+- Create `&&` (AND) and `||` (OR)
 - Recursive Comparition operations `(55 == 5 || ((66 != 2) && 5 == 5) )`
 - IF Statements
 - ELSE Statements

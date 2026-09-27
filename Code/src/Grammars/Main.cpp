@@ -95,7 +95,7 @@ Parser::get_expretion() {
 
     auto cu = curent(); // Get token of first part
     auto node_r = get_term(); // Get the first part
-    if (!node_r.success) return {node_r.Message,false,nullptr}; // Error if first part returns error
+    if (!node_r.success) return node_r; // Error if first part returns error
 
     // If token after first part is plus or minus
     if (check(TokenType::PLUS) || check(TokenType::MINUS)) {
@@ -106,6 +106,43 @@ Parser::get_expretion() {
             std::move(node_r.value)
         });
     }
+
+    // If tokens next are comparition op like `==`
+    if (   
+        check(TokenType::EQUAL_EQUAL) || check(TokenType::NOT_EQUAL) || 
+        check(TokenType::LESS_THAN) || check(TokenType::GREATER_THAN) ||
+        check(TokenType::LESS_EQUAL) || check(TokenType::GREATER_EQUAL)
+    ){
+        // Get operation token
+        auto op = curent();
+        consume(op.Type);
+
+        // Get Operation Type
+        ComparitonOpsTypes opT;
+        opT = ComparitonSymbols_ToOps[op.Type];
+
+        // Get the secound value
+        auto second_part_T = curent();
+        auto scond_part_r = get_term();
+        if (!scond_part_r.success) return scond_part_r; // Error if second part returns error
+
+        // First part
+        OperationPart fpart = { 
+            TokenType::UNKNOWN,
+            cu,
+            std::move(node_r.value)
+        };
+
+        // Second part
+        OperationPart spart = { 
+            TokenType::UNKNOWN,
+            second_part_T,
+            std::move(scond_part_r.value)
+        };
+
+        return {"",true,std::make_unique<CompOpsNode>(fpart,spart,opT)};
+    }
+
 
     // While the curent token is + or -
     while (check(TokenType::PLUS) || check(TokenType::MINUS)) {
@@ -133,7 +170,7 @@ Parser::get_expretion() {
                 parts
             )
         };
-    } 
+    }
 
     return node_r;
 }

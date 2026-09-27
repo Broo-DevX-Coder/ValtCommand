@@ -10,7 +10,20 @@
 #include <sstream>
 
 // ==================================================================
-// Base (linear) operatins node classes
+// Binary operatins node classes
+// ==================================================================
+
+std::unordered_map<TokenType,ComparitonOpsTypes> ComparitonSymbols_ToOps = {
+    {TokenType::EQUAL_EQUAL,ComparitonOpsTypes::EQUAL},
+    {TokenType::NOT_EQUAL,ComparitonOpsTypes::NOT_EQUAL},
+    {TokenType::LESS_THAN,ComparitonOpsTypes::LESS_THEN},
+    {TokenType::GREATER_THAN,ComparitonOpsTypes::GREATER_THEN},
+    {TokenType::LESS_EQUAL,ComparitonOpsTypes::LESS_THEN_OR_EQUAL},
+    {TokenType::GREATER_EQUAL,ComparitonOpsTypes::GREATER_THEN_OR_EQUAL}
+};
+
+// ==================================================================
+// Binary operatins node classes
 // ==================================================================
 
 // Constructure
@@ -28,7 +41,7 @@ BinOpsNode::get_str(
 
     for (int i=0;i<level;i++)
         ss << "|  ";
-    ss << "Linear operation " << ":\n";
+    ss << "Bynary operation " << ":\n";
 
     for (auto& part: Parts) {
         for (int i=0;i<level+1;i++)
@@ -146,3 +159,172 @@ BinOpsNode::clone() {
 
     return new BinOpsNode(new_parts);
 };
+
+// ==================================================================
+// Comparition operatins node classes
+// ==================================================================
+
+// Constructure
+CompOpsNode::CompOpsNode(
+    OperationPart& FToken, 
+    OperationPart& SToken,
+    ComparitonOpsTypes T
+): 
+    first_part(std::move(FToken)),
+    second_part(std::move(SToken)),
+    type(T) {}
+
+// Get str to print
+std::string 
+CompOpsNode::get_str(
+    int level
+) {
+    std::stringstream ss;
+
+    for (int i=0;i<level;i++)
+        ss << "|  ";
+    ss << "Comparition operation " << ":\n";
+
+    std::string op_type = "EQUAL";
+
+    if (type == ComparitonOpsTypes::NOT_EQUAL) op_type = "NOT_EQUAL";
+    else if (type == ComparitonOpsTypes::LESS_THEN) op_type = "LESS_THEN";
+    else if (type == ComparitonOpsTypes::GREATER_THEN) op_type = "GREATER_THEN";
+    else if (type == ComparitonOpsTypes::LESS_THEN_OR_EQUAL) op_type = "LESS_THEN_OR_EQUAL";
+    else if (type == ComparitonOpsTypes::GREATER_THEN_OR_EQUAL) op_type = "GREATER_THEN_OR_EQUAL";
+
+    for (int i=0;i<level+1;i++)
+        ss << "|  ";
+    ss << "Type: " << op_type << ":\n";
+
+    for (int i=0;i<level+1;i++)
+        ss << "|  ";
+    ss << "First part: \n" << first_part.node->get_str(level+2);
+
+    for (int i=0;i<level+1;i++)
+        ss << "|  ";
+    ss << "Second part: \n" << second_part.node->get_str(level+2);
+
+    return ss.str();
+}
+
+// get type of node
+ASTNodesTypes 
+CompOpsNode::NType() {
+    return NT__CompOpsNode;
+}
+
+// Clone the class or get a new copy from them
+ASTNode* 
+CompOpsNode::clone() {
+
+    std::unique_ptr<ASTNode> fpart_ptr(first_part.node->clone());
+    std::unique_ptr<ASTNode> spart_ptr(second_part.node->clone());
+
+    OperationPart FirstP = {
+        TokenType::UNKNOWN,
+        first_part.token,
+        std::move(fpart_ptr)
+    };
+    OperationPart SecondP = {
+        TokenType::UNKNOWN,
+        second_part.token,
+        std::move(spart_ptr)
+    };
+
+    return new CompOpsNode(FirstP,SecondP,type);
+}
+
+// type and value checking
+ReturnResult<bool> 
+CompOpsNode::accept(
+    Scopes::Scope* ParentScope
+) {
+    return_type = "bool";
+
+    // Verifi parts
+    auto fresult = first_part.node->accept(ParentScope);
+    if (!fresult.success) return fresult;
+    auto sresult = second_part.node->accept(ParentScope);
+    if (!sresult.success) return sresult;
+
+    // Verifi parts's types
+    if (!are_types_compatible(first_part.node->return_type,second_part.node->return_type))  {
+        return {
+            fmt::format(
+                "UncompatibleTypesError: can't compare `{}` with `{}` at line:{} ,column:{}",
+                first_part.node->return_type, second_part.node->return_type, second_part.token.line, second_part.token.column
+            ),
+            false,false};
+    }
+
+    if (
+        (
+            type == ComparitonOpsTypes::LESS_THEN ||
+            type == ComparitonOpsTypes::GREATER_THEN ||
+            type == ComparitonOpsTypes::LESS_THEN_OR_EQUAL ||
+            type == ComparitonOpsTypes::GREATER_THEN_OR_EQUAL
+
+        ) && !(
+            (first_part.node->return_type == "int" && second_part.node->return_type == "float") ||
+            (first_part.node->return_type == "float" && second_part.node->return_type == "int")
+
+        ) && first_part.node->return_type != second_part.node->return_type
+    ) {
+        return {
+            fmt::format(
+                "UncompatibleTypesError: can't compare `{}` with `{}` at line:{} ,column:{} \n These types deos't sepport this compare operation",
+                first_part.node->return_type, second_part.node->return_type, second_part.token.line, second_part.token.column
+            ),
+            false,false};
+    }
+
+    return {"",true,true};
+}
+
+// execute and get the result of compariton
+ReturnResult<Value> 
+CompOpsNode::exec(
+    Scopes::Scope* ParentScope
+) {
+
+    // Execute parts
+    auto fresult = first_part.node->exec(ParentScope);
+    if (!fresult.success) return fresult;
+    auto sresult = second_part.node->exec(ParentScope);
+    if (!sresult.success) return sresult;
+
+    // Delete parts nodes
+    first_part.node = nullptr;
+    second_part.node = nullptr;
+
+    // Do comparition op ------
+    Value cp_result;
+
+    // Equal op (==)
+    if (type == ComparitonOpsTypes::EQUAL) 
+        cp_result = fresult.value == sresult.value;
+
+    // Non-equal op (!=)
+    else if(type == ComparitonOpsTypes::NOT_EQUAL)
+        cp_result = fresult.value != sresult.value;
+
+    // Less-then op (<)
+    else if (type == ComparitonOpsTypes::LESS_THEN)
+        cp_result = fresult.value < sresult.value;
+
+    // GREATER-then op (>)
+    else if (type == ComparitonOpsTypes::GREATER_THEN)
+        cp_result = fresult.value > sresult.value;
+
+    // Less-then or equal op (<=)
+    else if (type == ComparitonOpsTypes::LESS_THEN_OR_EQUAL)
+        cp_result = fresult.value <= sresult.value;
+
+    // GREATER-then or equal op (>=)
+    else if (type == ComparitonOpsTypes::GREATER_THEN_OR_EQUAL)
+        cp_result = fresult.value >= sresult.value;
+
+    // Return result -----
+    return {"",true,cp_result};
+}
