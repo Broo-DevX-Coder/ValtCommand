@@ -160,7 +160,17 @@ Lexar::get_the_next_token() {
         advence();
 
         while ((curent_c != c) && !code_ended) {
-            tk += curent_c;
+            if (curent_c == '\\' && peek(1) != '\0' && !std::isspace(peek(1))) {
+                // Jump on `\`
+                advence(); 
+
+                // Is the next char after `\` in map
+                if (__backslashed_symbols__.contains(curent_c))
+                    tk += __backslashed_symbols__[curent_c];
+
+            } else
+                tk += curent_c;
+
             advence(); 
         }
         advence();

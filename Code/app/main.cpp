@@ -56,8 +56,13 @@ int main () {
         va<float>: 
             CALL my_fun 
                 value<float>:55.5
-                secound_value<float>:59995.3333
+                secound_value<float>:5995.3333
             END
+    END
+
+    CALL print 
+        _<int>: 44
+        __<str>: "value is: \n u"
     END
 
     )CODE";

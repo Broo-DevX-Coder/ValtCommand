@@ -89,6 +89,13 @@ std::unordered_map<TokenType,std::string> TokenTypes_to_StringType = {
     {TokenType::BOOLEAN,"bool"}
 };
 
+// All symbols like `\n` or `\t`
+std::unordered_map<char,char> 
+__backslashed_symbols__ = {
+    {'n', '\n'},
+    {'t', '\t'}
+};
+
 // ==================================================================
 // Functions
 // ==================================================================

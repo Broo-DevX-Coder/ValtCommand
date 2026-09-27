@@ -110,6 +110,8 @@ extern std::unordered_map<TokenType,std::string> TokenTypesStr; // All TokenType
 // ==================================================================
 // Structs
 // ==================================================================
+
+// Token in code
 struct Token {
     TokenType Type;
     std::string value;
@@ -130,6 +132,7 @@ extern std::unordered_map<TokenType,std::string> TokenTypes_to_StringType; // Al
 extern std::vector<std::string> __types__; // All sepported types
 extern std::vector<std::string> __key_words__; // All seported key words
 extern std::unordered_map<char,Token> __symbols__; // All sepported symbols like <>:
+extern std::unordered_map<char,char> __backslashed_symbols__; // All symbols like `\n` or `\t`
 
 // ==================================================================
 // Functions
