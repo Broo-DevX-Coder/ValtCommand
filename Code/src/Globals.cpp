@@ -44,8 +44,11 @@ std::unordered_map<TokenType,std::string> TokenTypesStr = {
     {TokenType::NOT_EQUAL,"NOT_EQUAL"},
     {TokenType::LESS_EQUAL,"LESS_EQUAL"},
     {TokenType::GREATER_EQUAL,"GREATER_EQUAL"},
+    {TokenType::LOGICAL_AND,"LOGICAL_AND"},
+    {TokenType::LOGICAL_OR,"LOGICAL_OR"},
     {TokenType::UNKNOWN,"UNKNOWN"}
 };
+
 
 // All sepported types
 std::vector<std::string> __types__ = {
@@ -88,11 +91,13 @@ std::unordered_map<char,Token> __symbols__ = {
 };
 
 // Comparitions operations
-std::unordered_map<std::string, Token> __comparison_ops_symbols__ = {
+std::unordered_map<std::string, Token> __complex_2_symbols__ = {
     {"==", {TokenType::EQUAL_EQUAL, "==", 0, 0}},
     {"!=", {TokenType::NOT_EQUAL, "!=", 0, 0}},
     {"<=", {TokenType::LESS_EQUAL, "<=", 0, 0}},
-    {">=", {TokenType::GREATER_EQUAL, ">=", 0, 0}}
+    {">=", {TokenType::GREATER_EQUAL, ">=", 0, 0}},
+    {"&&", {TokenType::LOGICAL_AND, "&&", 0, 0}},
+    {"||", {TokenType::LOGICAL_OR, "||", 0, 0}}
 };
 
 // All TokenTypes like string

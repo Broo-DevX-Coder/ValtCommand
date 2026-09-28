@@ -104,6 +104,8 @@ enum class TokenType {
     NOT_EQUAL,
     LESS_EQUAL,
     GREATER_EQUAL,
+    LOGICAL_AND,
+    LOGICAL_OR,
     UNKNOWN
 };
 
@@ -137,7 +139,7 @@ extern std::unordered_map<TokenType,std::string> TokenTypes_to_StringType; // Al
 extern std::vector<std::string> __types__; // All sepported types
 extern std::vector<std::string> __key_words__; // All seported key words
 extern std::unordered_map<char,Token> __symbols__; // All sepported symbols like <>:
-extern std::unordered_map<std::string, Token> __comparison_ops_symbols__; // Comparitions operations
+extern std::unordered_map<std::string, Token> __complex_2_symbols__; // All Complex symbols like `==` and `||` ()
 extern std::unordered_map<char,char> __backslashed_symbols__; // All symbols like `\n` or `\t`
 
 // ==================================================================

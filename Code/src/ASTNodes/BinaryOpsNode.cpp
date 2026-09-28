@@ -3,7 +3,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "ASTNodes/BynaryOpsNode.hpp"
+#include "ASTNodes/BinaryOpsNode.hpp"
 #include "Errors.hpp"
 
 // == Libs ==
@@ -41,7 +41,7 @@ BinOpsNode::get_str(
 
     for (int i=0;i<level;i++)
         ss << "|  ";
-    ss << "Bynary operation " << ":\n";
+    ss << "Binary operation " << ":\n";
 
     for (auto& part: Parts) {
         for (int i=0;i<level+1;i++)
@@ -327,4 +327,122 @@ CompOpsNode::exec(
 
     // Return result -----
     return {"",true,cp_result};
+}
+
+// ==================================================================
+// AND (||) and OR (||) Logical operation
+// ==================================================================
+
+// Constructor
+LogicOpsNode::LogicOpsNode(
+    OperationPartsList& parts
+):Parts(std::move(parts)) {}
+ 
+// Get str to print
+std::string 
+LogicOpsNode::get_str(
+    int level
+) {
+    std::stringstream ss;
+
+    for (int i=0;i<level;i++)
+        ss << "|  ";
+    ss << "Logical operation :\n";
+
+    for (auto& part: Parts) {
+        for (int i=0;i<level+1;i++)
+            ss << "|  ";
+
+        if (part.op == TokenType::LOGICAL_AND) ss << "and&&" << ":\n";
+        else if (part.op == TokenType::LOGICAL_OR) ss << "OR||" << ":\n";
+        else ss << "First: " << "\n";
+
+        ss << part.node->get_str(level+2);
+    }
+
+    return ss.str();
+}
+
+// get type of node
+ASTNodesTypes 
+LogicOpsNode::NType() {
+    return NT__LogicOpsNode;
+}
+
+// Get a new copy of class
+ASTNode*
+LogicOpsNode::clone() {
+    OperationPartsList new_parts;
+
+    for (auto& p: Parts) {
+        std::unique_ptr<ASTNode> value_node(p.node->clone());
+        new_parts.push_back({
+            p.op,
+            p.token,
+            std::move(value_node)
+        });
+    }
+
+    return new LogicOpsNode(new_parts);
+};
+
+// types and value checking 
+ReturnResult<bool> 
+LogicOpsNode::accept(
+    Scopes::Scope* ParentScope
+) {
+    return_type = "bool";
+
+    // Verifi all parts
+    for (auto& part: Parts) {
+        // verifi part
+        auto r = part.node->accept(ParentScope);
+        if (!r.success) return r;
+
+        // Verifi type
+        if(part.node->return_type != "bool") {
+            return {Errors::TypeError(
+                "bool", part.node->return_type,
+                part.token.line, part.token.column
+            ).msg,false,false};
+        }
+    }
+
+    return {"",true,true};
+}
+
+ReturnResult<Value> 
+LogicOpsNode::exec(
+    Scopes::Scope* ParentScope
+) {
+
+    // Get the first part node
+    auto r = Parts[0].node->exec(ParentScope);
+    if (!r.success) return r;
+
+    // Get the first part node value and put it in result
+    bool result = *(std::get_if<bool>(&r.value));
+
+    // Get values of auther parts
+    for (int i=1;i<Parts.size(); i++) {
+
+        auto& part = Parts[i];
+
+        // Execute part
+        r = part.node->exec(ParentScope);
+        if (!r.success) return r;
+
+        // Get part result
+        bool part_r = *(std::get_if<bool>(&r.value));
+
+        // Apply to main result
+        if (part.op == TokenType::LOGICAL_AND) {
+            result = result && part_r;
+        } else if (part.op == TokenType::LOGICAL_OR){
+            result = result || part_r;
+        }
+    }
+
+    // Return result
+    return {"",true,result};
 }

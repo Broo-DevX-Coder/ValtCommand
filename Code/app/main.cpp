@@ -64,7 +64,7 @@ int main () {
         secound_value<int> = 55
     )->bool
 
-        RETURN GET value == GET secound_value
+        RETURN GET value == GET secound_value || GET value < GET secound_value
 
     END
 

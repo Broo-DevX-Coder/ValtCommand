@@ -86,3 +86,17 @@ class CompOpsNode: public ASTNode {
         ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and get the result of compariton
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
+
+// AND (||) and OR (||) Logical operation
+class LogicOpsNode: public ASTNode {
+    private:
+        OperationPartsList Parts; // Parts of calculation
+
+    public:
+        LogicOpsNode(OperationPartsList& parts); // Constructure
+        std::string get_str(int level) override; // Get the str to print
+        ASTNodesTypes NType() override; // Get the type of node
+        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // types and value checking
+        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and get the result of compariton
+        ASTNode* clone() override; // Clone the class or get a new copy from them
+};

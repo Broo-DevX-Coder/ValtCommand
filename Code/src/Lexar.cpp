@@ -97,8 +97,8 @@ Lexar::get_the_next_token() {
         return {TokenType::END_CODE, "", curent_line, curent_column};
 
     // If char+char is a comparition
-    } else if (__comparison_ops_symbols__.contains( std::string(1, curent_c) + std::string(1, peek(1)) )) {
-        auto t = __comparison_ops_symbols__[std::string(1, curent_c) + std::string(1, peek(1))];
+    } else if (__complex_2_symbols__.contains( std::string(1, curent_c) + std::string(1, peek(1)) )) {
+        auto t = __complex_2_symbols__[std::string(1, curent_c) + std::string(1, peek(1))];
         t.line = curent_line;
         t.column = curent_column;
         advence();
