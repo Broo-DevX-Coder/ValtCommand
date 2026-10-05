@@ -37,7 +37,6 @@ ReturnResult<Value> print(ExternalFunInType inputs) {
             continue;
         }
             
-
         std::visit([](auto&& v){
             std::cout << v << std::endl << std::flush;
         }, i);
@@ -59,22 +58,37 @@ int main () {
     //Standardes::__init__();
 
     std::string code = R"CODE(
-    FUNCTION my_fun(
-        value<float>
-        secound_value<int> = 55
-    )->bool
+    
+    // Create my function
+    FUNCTION my_func (
+        arg<int>
+    )->bool 
 
-        RETURN GET value == GET secound_value || GET value < GET secound_value
+        // Verifi if input is less then 10
+        IF GET arg < 10 THEN
+            RETURN True
+            CALL print va<int>:45155146 END
+        END
+
+        // Returning false if the input is bigest then 10
+        RETURN False
 
     END
 
+    SET_CONST var<float> = 11.56
+
+    CALL print ca<str>:"-------------------------------------" END
     CALL print 
-        va<bool>: 
-            CALL my_fun 
-                value<float>:55.5
-                secound_value<int>:55
-            END
+        va<bool>:CALL my_func arg<int>:11 END
+        vaa<str>:"11 < 10 is:"
     END
+    CALL print ca<str>:"-------------------------------------" END
+    CALL print 
+        va<bool>:CALL my_func arg<int>:9 END
+        vaa<str>:"9 < 10 is:"
+    END
+
+
 
     )CODE";
     

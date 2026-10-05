@@ -195,7 +195,7 @@ CompOpsNode::get_str(
 
     for (int i=0;i<level+1;i++)
         ss << "|  ";
-    ss << "Type: " << op_type << ":\n";
+    ss << "Type: " << op_type << "\n";
 
     for (int i=0;i<level+1;i++)
         ss << "|  ";
@@ -294,6 +294,10 @@ CompOpsNode::exec(
     auto sresult = second_part.node->exec(ParentScope);
     if (!sresult.success) return sresult;
 
+    // get return nodes
+    auto FN_return_t = first_part.node->return_type;
+    auto SN_return_t = second_part.node->return_type;
+
     // Delete parts nodes
     first_part.node = nullptr;
     second_part.node = nullptr;
@@ -309,21 +313,45 @@ CompOpsNode::exec(
     else if(type == ComparitonOpsTypes::NOT_EQUAL)
         cp_result = fresult.value != sresult.value;
 
-    // Less-then op (<)
-    else if (type == ComparitonOpsTypes::LESS_THEN)
-        cp_result = fresult.value < sresult.value;
 
-    // GREATER-then op (>)
-    else if (type == ComparitonOpsTypes::GREATER_THEN)
-        cp_result = fresult.value > sresult.value;
+    if ((FN_return_t == "int" || FN_return_t == "float") && are_types_compatible(FN_return_t,SN_return_t)) {
 
-    // Less-then or equal op (<=)
-    else if (type == ComparitonOpsTypes::LESS_THEN_OR_EQUAL)
-        cp_result = fresult.value <= sresult.value;
+        auto fv  = turn_value_to_float(fresult.value).value;
+        auto sv  = turn_value_to_float(sresult.value).value;
+    
+        // Equal op (==)
+        if (type == ComparitonOpsTypes::EQUAL) 
+            cp_result = fv == sv;
 
-    // GREATER-then or equal op (>=)
-    else if (type == ComparitonOpsTypes::GREATER_THEN_OR_EQUAL)
-        cp_result = fresult.value >= sresult.value;
+        // Non-equal op (!=)
+        else if(type == ComparitonOpsTypes::NOT_EQUAL)
+            cp_result = fv != sv;
+
+        // Less-then op (<)
+        else if (type == ComparitonOpsTypes::LESS_THEN)
+            cp_result = fv < sv;
+
+        // GREATER-then op (>)
+        else if (type == ComparitonOpsTypes::GREATER_THEN)
+            cp_result = fv > sv;
+
+        // Less-then or equal op (<=)
+        else if (type == ComparitonOpsTypes::LESS_THEN_OR_EQUAL)
+            cp_result = fv <= sv;
+
+        // GREATER-then or equal op (>=)
+        else if (type == ComparitonOpsTypes::GREATER_THEN_OR_EQUAL)
+            cp_result = fv >= sv;
+        
+    } else {
+        // Equal op (==)
+        if (type == ComparitonOpsTypes::EQUAL) 
+            cp_result = fresult.value == sresult.value;
+
+        // Non-equal op (!=)
+        else if(type == ComparitonOpsTypes::NOT_EQUAL)
+            cp_result = fresult.value != sresult.value;
+    }
 
     // Return result -----
     return {"",true,cp_result};

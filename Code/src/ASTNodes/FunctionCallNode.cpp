@@ -9,7 +9,6 @@
 
 // == Locals ==
 #include "ASTNodes/FunctionCallNode.hpp"
-#include "ASTNodes/UserFunctionNode.hpp"
 #include "Errors.hpp"
 
 // ==================================================================
@@ -213,6 +212,42 @@ FunctionCallNode::accept(
             return {arg_accept_r.Message,false,false};
     }
 
+    if (search_result.value->type == Scopes::SymbolTableTypes::FunctionsTypes::Inside) {
+        user_func_copy = std::unique_ptr<UserProxyFunctionNode>(dynamic_cast<UserProxyFunctionNode*>(func->user_function->clone()));
+
+        // Create scoupe for function
+        auto func_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+
+        // Define list of arguments 
+        std::unordered_map<std::string,std::string> args_list;
+
+        // Add all arguments in scoupe
+        for (auto& arg: arguments) {
+            func_scoupe->add_var(
+                arg->name,
+                arg->type,
+                std::monostate{},
+                true
+            );
+            args_list[arg->name] = arg->type;
+        }
+
+        // search if there is any defualt arguments not defined in call to put them i scoupe
+        for (auto& [method_name, method]: func->methods) {
+            if (!args_list.contains(method_name)) {
+                func_scoupe->add_var(
+                    method_name,
+                    method.type,
+                    method.default_value,
+                    true
+                );
+            }
+        }
+
+        auto a_r = user_func_copy->accept(func_scoupe.get());        
+        if (!a_r.success) return a_r;
+    }
+
     return {"",true,true};
 }
 
@@ -253,9 +288,6 @@ FunctionCallNode::exec(
     // Create scoupe for function
     auto func_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
 
-    // Create a copy from function proxy node
-    std::unique_ptr<UserProxyFunctionNode> copy_func(dynamic_cast<UserProxyFunctionNode*>(func->user_function->clone()));
-
     // Put all args in function scoupe
     for (auto& [arg_name,arg_value]: args_list) {
         func_scoupe->add_var(
@@ -278,7 +310,7 @@ FunctionCallNode::exec(
         }
     }
 
-    return copy_func->exec(func_scoupe.get());
+    return user_func_copy->exec(func_scoupe.get());
 }
 
 // Get a copy from class

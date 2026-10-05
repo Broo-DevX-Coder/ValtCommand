@@ -106,7 +106,7 @@ SetVariableNode::exec(
     auto vnode_ar = VNode->exec(ParentScope);
     if (!vnode_ar.success) return {vnode_ar.Message,false,false};
 
-    auto value = vnode_ar.value;
+    auto value = reconsiliation_int_float(type,vnode_ar.value);
     ParentScope->add_var(name,type,value,is_const);
 
     return {"",true,std::monostate{}};
@@ -223,7 +223,7 @@ ResetVariableNode::exec(
 
     auto value = vnode_ar.value;
     auto search_r = ParentScope->search_var(NameToken);
-    search_r.value->value = value;
+    search_r.value->value = reconsiliation_int_float(type,value);
 
     return {"",true,std::monostate{}};
 }

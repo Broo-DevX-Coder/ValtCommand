@@ -66,7 +66,9 @@ std::vector<std::string> __key_words__ = {
     "SET_CONST", // Set const variable
     "GET", // Get a variable value 
     "FUNCTION", // Set user function
-    "RETURN" // Return a value from function to outside
+    "RETURN", // Return a value from function to outside
+    "IF", // Start of if statment
+    "THEN" // Start of executing block after condition
 };
 
 // All sepported symbols
@@ -217,4 +219,27 @@ reconsiliation_int_float(
     } else value=input;
 
     return value;
+}
+
+// Turn a Value type to float
+ReturnResult<long double>
+turn_value_to_float(
+    Value& input
+) {
+    long double value;
+
+    long double* v = std::get_if<long double>(&input);
+    if (v!=nullptr) {
+        value = *v;
+    } else {
+        int64_t* v = std::get_if<int64_t>(&input);
+
+        if (v != nullptr)
+            value = static_cast<long double>(*v);
+        else 
+            return {"The input is not a int64_t or long double",false};
+    }
+    
+
+    return {"",true,value};
 }

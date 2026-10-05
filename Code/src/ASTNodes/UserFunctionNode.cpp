@@ -228,6 +228,10 @@ ReturnResult<bool>
 UserProxyFunctionNode::accept(
     Scopes::Scope* ParentScope
 ) {
+    for (auto& stm: statements) {
+        auto r = stm->accept(ParentScope);
+        if (!r.success) return r;
+    }
     return {"",true,true};
 }
 
@@ -410,6 +414,18 @@ UserFunctionNode::accept(
         is_function_any
     );
     func_ptr->type = Scopes::SymbolTableTypes::FunctionsTypes::Inside;
+
+    // Create a new proxy function node
+    NodesListT statements_copy;
+
+    for (auto& stm: statements) {
+        auto t = stm->clone();
+        std::unique_ptr<ASTNode> t_ptr(t);
+        statements_copy.push_back(std::move(t_ptr));
+    }
+
+    auto proxy_node = new UserProxyFunctionNode(std::move(statements_copy),return_type_token.value);
+    func_ptr->user_function = proxy_node;
 
     return {"",true,true};
 }

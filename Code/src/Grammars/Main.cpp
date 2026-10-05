@@ -56,6 +56,9 @@ Parser::get_primary() {
         } else if (curent().value == "RETURN") {
             result = get_return_noode();
 
+        // Get If statment node
+        } else if (curent().value == "IF") {
+            result = get_if_statment_node();
         }
 
     // If the curent type is pure value

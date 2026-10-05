@@ -22,7 +22,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "ASTNodes/ASTNode.hpp"
+#include "ASTNodes/UserFunctionNode.hpp"
 
 // ==================================================================
 // Function Call Argument Node
@@ -60,6 +60,7 @@ class FunctionCallNode: public ASTNode
         std::string name; // Name of function
         ArgsT arguments; // Function arguments
         Token NameToken; // Token of function name in code
+        std::unique_ptr<UserProxyFunctionNode> user_func_copy; // The proxy of user's function copy
 
         FunctionCallNode(std::string Fname, ArgsT& Args_list, Token name_token); // Contructure
         std::string get_str(int level) override; // Get str of node to print

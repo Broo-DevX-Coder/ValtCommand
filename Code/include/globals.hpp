@@ -150,3 +150,4 @@ bool is_token_key_word_(std::string token); // Is the token a keyword
 std::string Get_ValueT(const Value& value); // Get Value type (what inside variant)
 bool are_types_compatible(const std::string& first, const std::string& secound); // Are two types compatible (like int with float)
 Value reconsiliation_int_float(const std::string& type, Value& input); // Reconsiliation between intiger and float
+ReturnResult<long double> turn_value_to_float(Value& input); // Turn a Value type to float
