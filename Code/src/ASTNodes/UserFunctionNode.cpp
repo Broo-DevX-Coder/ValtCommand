@@ -162,7 +162,10 @@ UserFunctionReturnNode::accept(
 
     return_type = VNode->return_type;
 
-    return {"",true,true,ExecState::Return,this};
+    ReturnResult<bool> res = {"",true,true,ExecState::Return};
+    res.return_nodes.push_back(this);
+
+    return res;
 }
 
 // Execute node and get value
@@ -170,12 +173,22 @@ ReturnResult<Value>
 UserFunctionReturnNode::exec(
     Scopes::Scope* ParentScope
 ) {
+    ReturnResult<Value> res;
+
     auto vnode_r = VNode->exec(ParentScope);
-    if (!vnode_r.success) return {vnode_r.Message,false,std::monostate{},ExecState::Return,this};
+    if (!vnode_r.success) {
+        res = {vnode_r.Message,false,std::monostate{},ExecState::Return};
+        res.return_nodes.push_back(this);
+        return res;
+    }
 
     VNode = nullptr;
 
-    return {"",true,std::monostate(),ExecState::Return,this,vnode_r.value};
+    res = {"",true,std::monostate(),ExecState::Return};
+    res.return_nodes.push_back(this);
+    res.return_data = vnode_r.value;
+
+    return res;
 }
 
 // Copy class
@@ -383,16 +396,18 @@ UserFunctionNode::accept(
         if (!r.success) 
             return r;
         
-        if (r.return_node != nullptr) {
-            if (!are_types_compatible(r.return_node->return_type,return_type_token.value)){
-                return {Errors::UserFunctionError(
-                    name_token.value,
-                    name_token.line,
-                    name_token.column
-                    ).return_type_error(return_type_token.value, r.return_node->return_type),false,false
-                };
+        for (auto& rnd: r.return_nodes) {
+            if (rnd != nullptr) {
+                if (!are_types_compatible(rnd->return_type,return_type_token.value)){
+                    return {Errors::UserFunctionError(
+                        name_token.value,
+                        name_token.line,
+                        name_token.column
+                        ).return_type_error(return_type_token.value, rnd->return_type),false,false
+                    };
+                }
+                is_there_return = true;
             }
-            is_there_return = true;
         }
     }
 

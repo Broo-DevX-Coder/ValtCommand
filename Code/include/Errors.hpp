@@ -103,4 +103,21 @@ namespace Errors {
             std::string missing_return_error(); // Not all paths return a value
             std::string function_already_defined(); // When user redifine a function by same name in same scope
     };
+
+    // Runtime Error
+    class RuntimeError : public Error {
+        private:
+            int line;
+            int column;
+            std::string comment = "";
+
+        public:
+            RuntimeError(
+                int line,
+                int column,
+                std::string comment = ""
+            );
+
+            std::string division_by_zero(); // When user devide on zero
+    };
 }

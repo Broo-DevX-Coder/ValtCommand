@@ -37,23 +37,61 @@ Parser::get_if_statment_node() {
             consume_result.value.column    
         ).msg,false,nullptr};
 
-    // Create statments list 
+    // Create statments lists
     IfStatmentsNode::Nodes_list statments;
+    IfStatmentsNode::Nodes_list else_statments;
 
     // Get all statments
-    while (!check(TokenType::END_BLOCK)) {
+    while (!check(TokenType::END_BLOCK) && !isAsEnd() && curent().value != "ELSE") {
         auto r = get_expretion();
         if (!r.success) return {r.Message,false,nullptr};
         statments.push_back(std::move(r.value));
     }
 
-    // Jump on `END`
-    consume_result = consume(TokenType::END_BLOCK); 
-    if (!consume_result.success) return {consume_result.Message,false,nullptr};
+    // Else statments
+    if (curent().value == "ELSE") {
+
+        // Jump on `ELSE`
+        consume(TokenType::KEY_WORD); 
+
+        // Jump on `THEN`
+        consume_result = consume(TokenType::KEY_WORD); 
+        if (!consume_result.success) return {consume_result.Message,false,nullptr};
+        if (consume_result.value.value != "THEN") 
+            return {Errors::SyntaxError(
+                consume_result.value.Type==TokenType::END_CODE?"(end of code!)":consume_result.value.value,
+                consume_result.value.line,
+                consume_result.value.column    
+            ).msg,false,nullptr};
+
+        while (!check(TokenType::END_BLOCK) && !isAsEnd()) {
+            auto r = get_expretion();
+            if (!r.success) return {r.Message,false,nullptr};
+            else_statments.push_back(std::move(r.value));
+        }
+
+        // Raise error if code ended
+        if (isAsEnd())
+            return {"SyntaxError: forgot to add END in after of ELSE Satament",false,nullptr};    
+
+        // Jump on `END`
+        consume_result = consume(TokenType::END_BLOCK); 
+        if (!consume_result.success) return {consume_result.Message,false,nullptr};
+
+    // If there is not any else statment
+    } else {
+        // Raise error if code ended
+        if (isAsEnd())
+            return {"SyntaxError: forgot to add END in after of IF Satament",false,nullptr};    
+
+        // Jump on `END`
+        consume_result = consume(TokenType::END_BLOCK); 
+        if (!consume_result.success) return {consume_result.Message,false,nullptr};
+    }
 
     // Creat the IF statment node
     return {
         "",true,
-        std::make_unique<IfStatmentsNode>(condition_FT,condition_N_r.value,statments)
+        std::make_unique<IfStatmentsNode>(condition_FT,condition_N_r.value,statments,else_statments)
     };
 };

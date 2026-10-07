@@ -118,26 +118,27 @@ BinOpsNode::exec(
 
     for (size_t i=0;i<Parts.size();i++) {
         auto& part = Parts[i];
-
+        
         auto exec_result = part.node->exec(ParentScope);
         if (!exec_result.success) return {exec_result.Message,false,std::monostate{}};
 
-        int64_t* val = std::get_if<int64_t>(&exec_result.value);
+        auto val = turn_value_to_float(exec_result.value);
 
-        if (val != nullptr) {
-            if (i==0) {
-                result = static_cast<long double>(*val);
-            } else {
-                push_to_result(result,part.op,static_cast<long double>(*val));
-            }
-        } else {
-            long double* val = std::get_if<long double>(&exec_result.value);
-            if (i==0) {
-                result = static_cast<long double>(*val);
-            } else {
-                push_to_result(result,part.op,static_cast<long double>(*val));
-            }
+        // Verifi that there is noot any devision oon zero
+        if (part.op == TokenType::SLASH && val.value == 0) {
+            Errors::RuntimeError error(
+                part.token.line,
+                part.token.column
+            );
+        
+            return {error.division_by_zero(),false,0};
         }
+
+        // Apply OP
+        if (i == 0)
+            result = val.value;
+        else 
+            push_to_result(result,part.op,val.value);
     }
 
     return {"",true,result};

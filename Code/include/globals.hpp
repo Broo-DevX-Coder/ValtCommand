@@ -61,7 +61,7 @@ struct ReturnResult {
     T value;
     ExecState state = ExecState::Normal;
 
-    ASTNode* return_node; // For function return: whow is the node that returns data
+    std::vector<ASTNode*> return_nodes; // For function return: whow is the node that returns data
     Value return_data; // For function return: what did the function return
 };
 

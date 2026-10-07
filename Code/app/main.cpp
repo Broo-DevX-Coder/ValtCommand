@@ -62,33 +62,28 @@ int main () {
     // Create my function
     FUNCTION my_func (
         arg<int>
-    )->bool 
+    )->float 
 
-        // Verifi if input is less then 10
-        IF GET arg < 10 THEN
-            RETURN True
-            CALL print va<int>:45155146 END
-        END
+        SET var_arg<float> = (GET arg + 2*1788.55) / 888 + 9
 
-        // Returning false if the input is bigest then 10
-        RETURN False
+        RETURN GET var_arg
 
     END
 
-    SET_CONST var<float> = 11.56
+    SET_CONST var<float> = CALL Pi END
 
     CALL print ca<str>:"-------------------------------------" END
     CALL print 
-        va<bool>:CALL my_func arg<int>:11 END
-        vaa<str>:"11 < 10 is:"
+        va<float>:CALL my_func arg<int>:100000 END
+        vaa<str>:"float is:"
     END
     CALL print ca<str>:"-------------------------------------" END
     CALL print 
-        va<bool>:CALL my_func arg<int>:9 END
-        vaa<str>:"9 < 10 is:"
+        va<int>:CALL my_func arg<int>:100000 END
+        vaa<str>:"int is:"
     END
 
-
+    SET var_arg<float> = 5/0
 
     )CODE";
     

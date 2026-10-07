@@ -68,6 +68,7 @@ std::vector<std::string> __key_words__ = {
     "FUNCTION", // Set user function
     "RETURN", // Return a value from function to outside
     "IF", // Start of if statment
+    "ELSE", // Start of else statment
     "THEN" // Start of executing block after condition
 };
 

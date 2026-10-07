@@ -250,3 +250,31 @@ Errors::UserFunctionError::function_already_defined() {
 
     return msg;
 }
+
+
+// ============== RuntimeError class constructure ==============
+
+Errors::RuntimeError::RuntimeError(
+    int l_,
+    int c_,
+    std::string com_
+):
+    line(l_),
+    column(c_),
+    comment(com_) {}
+
+
+// When trying to divide by zero
+std::string
+Errors::RuntimeError::division_by_zero() {
+    msg = fmt::format(
+        "RuntimeError: division by zero at line:{}, column:{}",
+        line,
+        column
+    );
+
+    if (!comment.empty())
+        msg += fmt::format("\n{}", comment);
+
+    return msg;
+}
