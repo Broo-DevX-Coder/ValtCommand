@@ -10,7 +10,7 @@
 #include <sstream>
 
 // ==================================================================
-// If statment node
+// If statment node functions
 // ==================================================================
 
 // Constructure
@@ -115,9 +115,12 @@ IfStatmentsNode::accept(
     // Create the returning nodes list
     std::vector<ASTNode*> return_nodes;
 
+    // Create a specific scoupe for if statment
+    auto if_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+
     // Verifi all Statments
     for (auto& smt: Statments) {
-        auto r = smt->accept(ParentScope);
+        auto r = smt->accept(if_scoupe.get());
         if (!r.success) return r;
         
         if (r.state == ExecState::Return) {
@@ -128,7 +131,7 @@ IfStatmentsNode::accept(
 
     // Verifi all Else Statments
     for (auto& smt: Else_statments) {
-        auto r = smt->accept(ParentScope);
+        auto r = smt->accept(if_scoupe.get());
         if (!r.success) return r;
         
         if (r.state == ExecState::Return) {
@@ -140,11 +143,13 @@ IfStatmentsNode::accept(
     return {"",true,true,return_nodes.empty()?ExecState::Normal:ExecState::Return,std::move(return_nodes)};
 }
 
-// execute and get the result of calculation
+// execute the node
 ReturnResult<Value> 
 IfStatmentsNode::exec(
     Scopes::Scope* ParentScope
 ) {
+    return_type = "void";
+    
     // Execute condition and get its result
     auto condition_result = condition_node->exec(ParentScope);
     if (!condition_result.success) return condition_result;

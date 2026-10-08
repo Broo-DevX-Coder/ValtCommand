@@ -52,7 +52,10 @@ enum ASTNodesTypes {
     NT__UserFunctionReturnNode,
     NT__LogicOpsNode,
     NT__UserProxyFunctionNode,
-    NT__IfStatmentsNode
+    NT__IfStatmentsNode,
+    NT__WhileLoopsNode,
+    NT__BreakLoopNode,
+    NT__ContinueLoopNode
 };
 
 // ==================================================================

@@ -69,7 +69,10 @@ std::vector<std::string> __key_words__ = {
     "RETURN", // Return a value from function to outside
     "IF", // Start of if statment
     "ELSE", // Start of else statment
-    "THEN" // Start of executing block after condition
+    "THEN", // Start of executing block after condition
+    "WHILE", // Start of While loop
+    "BREAK", // Break from a loop
+    "CONTINUE" // Continue a loop
 };
 
 // All sepported symbols
@@ -238,7 +241,7 @@ turn_value_to_float(
         if (v != nullptr)
             value = static_cast<long double>(*v);
         else 
-            return {"The input is not a int64_t or long double",false};
+            return {"The input is not a int64_t or long double",false,SIZE_MAX};
     }
     
 

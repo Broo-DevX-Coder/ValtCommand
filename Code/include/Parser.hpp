@@ -69,4 +69,7 @@ class API Parser {
         ReturnResult<Node> get_user_function_node(); // Get the node of user's function that put the function in symbol table
         ReturnResult<Node> get_return_noode(); // Get the node of returning value in function
         ReturnResult<Node> get_if_statment_node();// Get the node of `IF` keyword (if statment)
+        ReturnResult<Node> get_while_loop_node();// Get the node of While loop `WHILE`
+        ReturnResult<Node> get_break_loop_node();// Get the node of break a loop `BREAK`
+        ReturnResult<Node> get_continue_loop_node();// Get the node of continue a loop `CONTINUE`  
 };

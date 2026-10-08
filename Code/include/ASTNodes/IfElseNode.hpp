@@ -46,6 +46,6 @@ class IfStatmentsNode: public ASTNode{
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // types and value checking
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and get the result of calculation
+        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute condition and execute rest if condition is true
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };

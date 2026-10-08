@@ -59,6 +59,18 @@ Parser::get_primary() {
         // Get If statment node
         } else if (curent().value == "IF") {
             result = get_if_statment_node();
+        
+        // Get the while loop node
+        } else if (curent().value == "WHILE") {
+            result = get_while_loop_node();
+        
+        // Get the break a loop node
+        } else if (curent().value == "BREAK") {
+            result = get_break_loop_node();
+        
+        // Get the continue a loop node
+        } else if (curent().value == "CONTINUE") {
+            result = get_continue_loop_node();
         }
 
     // If the curent type is pure value

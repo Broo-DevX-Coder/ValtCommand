@@ -266,6 +266,7 @@ FunctionCallNode::exec(
             false,false
         };
     }
+    return_type = search_result.value->return_type;
     auto func = search_result.value;
 
 

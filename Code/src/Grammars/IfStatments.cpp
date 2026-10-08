@@ -34,7 +34,8 @@ Parser::get_if_statment_node() {
         return {Errors::SyntaxError(
             consume_result.value.Type==TokenType::END_CODE?"(end of code!)":consume_result.value.value,
             consume_result.value.line,
-            consume_result.value.column    
+            consume_result.value.column,
+            "Forgot to add `THEN` after the condition"
         ).msg,false,nullptr};
 
     // Create statments lists

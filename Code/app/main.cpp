@@ -58,32 +58,46 @@ int main () {
     //Standardes::__init__();
 
     std::string code = R"CODE(
+    SET_CONST Pi<int> = 3.14
     
     // Create my function
-    FUNCTION my_func (
-        arg<int>
+    FUNCTION power (
+        num<float> 
+        power<int>
     )->float 
 
-        SET var_arg<float> = (GET arg + 2*1788.55) / 888 + 9
+        SET var<int> = 1
+        SET pointer<int> = 0
 
-        RETURN GET var_arg
+        IF (GET power) == 0 THEN
+            RETURN 1
+
+        ELSE THEN IF (GET num) == 0 THEN
+            RETURN 0
+
+        END END
+
+        WHILE (GET pointer) < (GET power) THEN
+            CALL print c<float>: GET pointer END
+            SET var = (GET var)*(GET num) 
+            SET pointer = (GET pointer)+1
+            CONTINUE
+            CALL print d<str>:"-----" END
+        END
+
+        RETURN GET var
 
     END
-
-    SET_CONST var<float> = CALL Pi END
-
-    CALL print ca<str>:"-------------------------------------" END
+    
+    // Calculate 2 power 3 `should be 8`
     CALL print 
-        va<float>:CALL my_func arg<int>:100000 END
-        vaa<str>:"float is:"
+        s<float>: CALL power 
+            num<float>:5
+            power<int>:8
+        END 
+        cc<str>:"-----------------"
     END
-    CALL print ca<str>:"-------------------------------------" END
-    CALL print 
-        va<int>:CALL my_func arg<int>:100000 END
-        vaa<str>:"int is:"
-    END
-
-    SET var_arg<float> = 5/0
+    
 
     )CODE";
     

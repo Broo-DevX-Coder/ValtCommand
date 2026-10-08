@@ -103,6 +103,8 @@ ReturnResult<Value>
 SetVariableNode::exec(
     Scopes::Scope* ParentScope
 ) {
+    return_type = "void";
+
     auto vnode_ar = VNode->exec(ParentScope);
     if (!vnode_ar.success) return {vnode_ar.Message,false,false};
 
@@ -194,9 +196,9 @@ ResetVariableNode::accept(
     }
 
     // variable is in auther scope
-    if (parent_scope_id != search_r.value->scope_id){
-        return {err.reset_var_from_auther_scope(),false,false};
-    }
+    // if (parent_scope_id != search_r.value->scope_id){
+    //     return {err.reset_var_from_auther_scope(),false,false};
+    // }
 
     type = var_ptr->type;
 
@@ -204,7 +206,7 @@ ResetVariableNode::accept(
     if (!vnode_ar.success) return {vnode_ar.Message,false,false};
 
     // value type is incompatible with variable type
-    if (VNode->return_type != type){
+    if (!are_types_compatible(VNode->return_type,type)){
         return {
             err.reset_var_value_by_other_type(type,VNode->return_type),false,false
         };
@@ -218,6 +220,8 @@ ReturnResult<Value>
 ResetVariableNode::exec(
     Scopes::Scope* ParentScope
 ) {
+    return_type = "void";
+
     auto vnode_ar = VNode->exec(ParentScope);
     if (!vnode_ar.success) return {vnode_ar.Message,false,false};
 
@@ -292,6 +296,8 @@ GetVariableNode::exec(
     Scopes::Scope* ParentScope
 ) {
     auto search_r = ParentScope->search_var(NameToken);
+    return_type = search_r.value->type;
+
     return {"",true,search_r.value->value};
 }
 

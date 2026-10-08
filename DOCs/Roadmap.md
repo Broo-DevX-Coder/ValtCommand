@@ -57,9 +57,9 @@
 - ✅ Recursive Comparition operations `(55 == 5 || ((66 != 2) && 5 == 5) )`
 - ✅ IF Statements
 - ✅ ELSE Statements
-- Block statment `BLOCK`
+- ✅ WHILE Loops
 - FOR Loops
-- WHILE Loops
+- Block statment `BLOCK`
 
 ---
 

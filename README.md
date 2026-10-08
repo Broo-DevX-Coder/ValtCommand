@@ -44,12 +44,18 @@ The language focuses on:
 # Example
 
 ```txt
-CALL print
-    text<str>:"Hello World"
+// set varable of type integer
+SET var<int> = 10
 
-CALL open_chart
-    symbol<str>:"BTCUSDT"
-    timeframe<str>:"1h"
+// call print function
+CALL print 
+     value<int>:(GET var)+10
+END
+
+// call print function again
+CALL print 
+     value<str>:"Hellow, i am from ValtCommand :D"
+END
 ```
 
 # Version Documents
@@ -60,35 +66,6 @@ Detailed specifications are maintained separately.
 |----------|----------|-----------|
 | v0.1 | [v0.1.md](./DOCs/Versions/V0.1.md) | [V0.1]() |
 | v0.1 | [v0.2.md](./DOCs/Versions/V0.2.md) | [V0.2]() |
-
----
-
-# Architecture
-
-```text
-Source File
-     │
-     ▼
-Lexer
-     │
-     ▼
-Tokens
-     │
-     ▼
-Parser
-     │
-     ▼
-AST
-     │
-     ▼
-Runtime
-     │
-     ▼
-Function Registry
-     │
-     ▼
-Application
-```
 
 ---
 
@@ -107,33 +84,4 @@ The language specification evolves through versioned documents.
 | Roadmap | [Roadmap.md](./DOCs/Roadmap.md) |
 | License | [LICENSE](./LICENCE) |
 | Version Specifications | [Folder](./DOCs/Versions/) |
-
----
-
-# Roadmap
-
-## v0.1
-
-- Lexer
-- Parser
-- AST
-- Runtime
-- Function Registry
-- Type Validation
-- Error Handling
-
-## Future
-
-- Diagnostics
-- Additional Types
-- Workspace Integration
-- Automation Features
-- Runtime Extensions
-
----
-
-# License
-
-This project is currently under development.
-
-License information will be published before the first stable release.
+| Some Exemples | [Folder](./DOCs/Examples/) |

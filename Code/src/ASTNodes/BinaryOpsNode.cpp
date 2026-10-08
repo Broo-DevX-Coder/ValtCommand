@@ -114,6 +114,7 @@ ReturnResult<Value>
 BinOpsNode::exec(
     Scopes::Scope* ParentScope
 ) { 
+    return_type = "float";
     long double result = 0;
 
     for (size_t i=0;i<Parts.size();i++) {
@@ -288,6 +289,7 @@ ReturnResult<Value>
 CompOpsNode::exec(
     Scopes::Scope* ParentScope
 ) {
+    return_type = "bool";
 
     // Execute parts
     auto fresult = first_part.node->exec(ParentScope);
@@ -444,6 +446,7 @@ ReturnResult<Value>
 LogicOpsNode::exec(
     Scopes::Scope* ParentScope
 ) {
+    return_type = "bool";
 
     // Get the first part node
     auto r = Parts[0].node->exec(ParentScope);

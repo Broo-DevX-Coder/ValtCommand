@@ -88,6 +88,7 @@ ReturnResult<Value>
 UserFunctionMethodNode::exec(
     Scopes::Scope* ParentScope
 ) {
+    return_type = type_token.value;
     if (default_value_node != nullptr) {
         auto vnode_r = default_value_node->exec(ParentScope);
         if (!vnode_r.success)
@@ -182,6 +183,7 @@ UserFunctionReturnNode::exec(
         return res;
     }
 
+    return_type = VNode->return_type;
     VNode = nullptr;
 
     res = {"",true,std::monostate(),ExecState::Return};
@@ -450,6 +452,8 @@ ReturnResult<Value>
 UserFunctionNode::exec(
     Scopes::Scope* ParentScope
 ) {
+    return_type = "void";
+    
     // Create proxy node
     auto proxy_node = new UserProxyFunctionNode(std::move(statements),return_type_token.value);
 
