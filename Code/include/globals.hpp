@@ -92,6 +92,8 @@ enum class TokenType {
     RIGHT_PAREN,
     SLASH,
     BACKSLASH,
+    SEMICOLON,
+    COMMA,
     STAR,
     MINUS,
     PLUS,

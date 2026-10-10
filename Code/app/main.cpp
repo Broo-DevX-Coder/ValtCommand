@@ -12,7 +12,6 @@
 
 // == Locals ==
 #include "Runtime.hpp"
-
 #include "Lexar.hpp"
 
 std::ostream& operator<<(std::ostream& os, const std::monostate&) {
@@ -67,7 +66,6 @@ int main () {
     )->float 
 
         SET var<int> = 1
-        SET pointer<int> = 0
 
         IF (GET power) == 0 THEN
             RETURN 1
@@ -77,10 +75,12 @@ int main () {
 
         END END
 
-        WHILE (GET pointer) < (GET power) THEN
-            CALL print c<float>: GET pointer END
+        FOR 
+            SET i<int> = 0;
+            (GET i) < (GET power);
+            SET i = (GET i)+1
+        THEN
             SET var = (GET var)*(GET num) 
-            SET pointer = (GET pointer)+1
             CONTINUE
             CALL print d<str>:"-----" END
         END
@@ -89,13 +89,23 @@ int main () {
 
     END
     
+    /*
     // Calculate 2 power 3 `should be 8`
     CALL print 
         s<float>: CALL power 
             num<float>:5
             power<int>:8
-        END 
-        cc<str>:"-----------------"
+        END
+        cc<str>:"-----------------" 
+    END
+    */
+
+    FOR
+        SET i<int> = 0;
+        (GET i) < 1000000;
+        SET i = (GET i) + 1
+    THEN
+        CALL print a<int>:(GET i) END
     END
     
 

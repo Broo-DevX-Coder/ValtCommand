@@ -63,6 +63,10 @@ Parser::get_primary() {
         // Get the while loop node
         } else if (curent().value == "WHILE") {
             result = get_while_loop_node();
+
+        // Get the for loop node
+        } else if (curent().value == "FOR") {
+            result = get_for_loop_node();
         
         // Get the break a loop node
         } else if (curent().value == "BREAK") {

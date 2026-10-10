@@ -55,7 +55,8 @@ enum ASTNodesTypes {
     NT__IfStatmentsNode,
     NT__WhileLoopsNode,
     NT__BreakLoopNode,
-    NT__ContinueLoopNode
+    NT__ContinueLoopNode,
+    NT__ForLoopsNode
 };
 
 // ==================================================================

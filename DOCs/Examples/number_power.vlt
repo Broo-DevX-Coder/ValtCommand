@@ -27,7 +27,7 @@ FUNCTION power (
 
 END
     
-// Emp: Calculate 2 power 3 `should be 8`
+// Ex: Calculate 2 power 3 `should be 8`
 CALL print 
     value<float>: CALL power 
         num<float>:2

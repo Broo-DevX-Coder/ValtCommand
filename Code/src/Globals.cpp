@@ -32,6 +32,8 @@ std::unordered_map<TokenType,std::string> TokenTypesStr = {
     {TokenType::RIGHT_PAREN,"RIGHT_PAREN"},
     {TokenType::SLASH,"SLASH"},
     {TokenType::BACKSLASH,"BACKSLASH"},
+    {TokenType::SEMICOLON,"SEMICOLON"},
+    {TokenType::COMMA,"COMMA"},
     {TokenType::STAR,"STAR"},
     {TokenType::MINUS,"MINUS"},
     {TokenType::PLUS,"PLUS"},
@@ -46,7 +48,7 @@ std::unordered_map<TokenType,std::string> TokenTypesStr = {
     {TokenType::GREATER_EQUAL,"GREATER_EQUAL"},
     {TokenType::LOGICAL_AND,"LOGICAL_AND"},
     {TokenType::LOGICAL_OR,"LOGICAL_OR"},
-    {TokenType::UNKNOWN,"UNKNOWN"}
+    {TokenType::UNKNOWN,"UNKNOWN"} 
 };
 
 
@@ -62,15 +64,16 @@ std::vector<std::string> __types__ = {
 // All sepported keywords
 std::vector<std::string> __key_words__ = {
     "CALL", // Call function
-    "SET", // Set of reset variable
+    "SET", // Set reset variable
     "SET_CONST", // Set const variable
     "GET", // Get a variable value 
     "FUNCTION", // Set user function
     "RETURN", // Return a value from function to outside
-    "IF", // Start of if statment
-    "ELSE", // Start of else statment
-    "THEN", // Start of executing block after condition
-    "WHILE", // Start of While loop
+    "IF", // Start if statment
+    "ELSE", // Start a else statment
+    "THEN", // Start executing block after condition
+    "WHILE", // Start a While loop
+    "FOR", // Start a for loop
     "BREAK", // Break from a loop
     "CONTINUE" // Continue a loop
 };
@@ -88,6 +91,8 @@ std::unordered_map<char,Token> __symbols__ = {
     {')',{TokenType::RIGHT_PAREN,")",0,0}},
     {'/',{TokenType::SLASH,"/",0,0}},
     {'\\',{TokenType::BACKSLASH,"\\",0,0}},
+    {';',{TokenType::SEMICOLON,";",0,0}},
+    {',',{TokenType::COMMA,",",0,0}},
     {'*',{TokenType::STAR,"*",0,0}},
     {'-',{TokenType::MINUS,"-",0,0}},
     {'+',{TokenType::PLUS,"+",0,0}},
