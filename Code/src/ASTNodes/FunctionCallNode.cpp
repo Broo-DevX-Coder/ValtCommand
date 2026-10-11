@@ -57,16 +57,18 @@ FunctionCallArgumentNode::accept(
     Scopes::Scope* ParentScope
 ) {
     auto vnode_ar = VNode->accept(ParentScope);
-    if (!vnode_ar.success) return {vnode_ar.Message,false,false};
+    if (!vnode_ar.success) return vnode_ar;
 
     if (!are_types_compatible(VNode->return_type,type)){
-        return {
-            Errors::TypeError(
+        auto err = Errors::TypeError(
                 type,VNode->return_type,
                 TypeToken.line,
-                TypeToken.column
-            ).msg,false,false
-        };
+                TypeToken.column,
+                TypeToken.value.size()
+            );
+        ReturnResult<bool> re = {err.msg,false,false};
+        re.error_info = err.info;
+        return re; 
     }
 
     return {"",true,true};
@@ -78,8 +80,7 @@ FunctionCallArgumentNode::exec(
     Scopes::Scope* ParentScope
 ) {
     auto vnode_r = VNode->exec(ParentScope);
-    if (!vnode_r.success)
-        return {vnode_r.Message,false,std::monostate{}};
+    if (!vnode_r.success) return vnode_r;
     
     value=reconsiliation_int_float(type,vnode_r.value);
     VNode = nullptr;
@@ -145,10 +146,9 @@ FunctionCallNode::accept(
 ) {
     auto search_result = ParentScope->search_function(NameToken);
     if (!search_result.success){
-        return {
-            search_result.Message,
-            false,false
-        };
+        ReturnResult<bool> re = {search_result.Message,false,false};
+        re.error_info = search_result.error_info;
+        return re;
     }
     return_type = search_result.value->return_type;
     auto func = search_result.value;
@@ -156,23 +156,28 @@ FunctionCallNode::accept(
     auto error_obj = Errors::ArgumentError(
         name,
         NameToken.line,
-        NameToken.column
+        NameToken.column,
+        NameToken.value.size()
     );
     if (!func->is_sepport_any_methods_) {
 
         if (arguments.size() > func->methods.size()) {
-            return {
+            ReturnResult<bool> re = {
                 error_obj.too_many_arguments(func->methods.size(),arguments.size()),
                 false,false
             };
+            re.error_info = error_obj.info;
+            return re;
 
         } else {
             for (auto& ar: arguments) {
                 if (!func->methods.contains(ar->name)) {
-                    return {
+                    ReturnResult<bool> re = {
                         error_obj.unexpected_argument(ar->name),
                         false,false
                     };
+                    re.error_info = error_obj.info;
+                    return re;
                 }
             }
 
@@ -186,10 +191,12 @@ FunctionCallNode::accept(
                         }
                     );
                     if (it == arguments.end()) {
-                        return {
+                        ReturnResult<bool> re = {
                             error_obj.unplaced_arg(mt_n),
                             false,false
                         };
+                        re.error_info = error_obj.info;
+                        return re;
                     }
                 }
             }
@@ -197,10 +204,12 @@ FunctionCallNode::accept(
             for (auto& ar: arguments) {
                 auto method = func->methods[ar->name];
                 if (!method.is_any && !are_types_compatible(method.type,ar->type) ) {
-                    return {
+                    ReturnResult<bool> re = {
                         error_obj.unexpected_argument_type(ar->name,method.type,ar->type),
                         false,false
                     };
+                    re.error_info = error_obj.info;
+                    return re;
                 }
             }
         }
@@ -208,8 +217,7 @@ FunctionCallNode::accept(
     
     for (auto& ar: arguments){
         auto arg_accept_r = ar->accept(ParentScope);
-        if (!arg_accept_r.success) 
-            return {arg_accept_r.Message,false,false};
+        if (!arg_accept_r.success) return arg_accept_r;
     }
 
     if (search_result.value->type == Scopes::SymbolTableTypes::FunctionsTypes::Inside) {
@@ -261,10 +269,9 @@ FunctionCallNode::exec(
 
     auto search_result = ParentScope->search_function(NameToken);
     if (!search_result.success){
-        return {
-            search_result.Message,
-            false,false
-        };
+        ReturnResult<Value> re = {search_result.Message,false,std::monostate{}};
+        re.error_info = search_result.error_info;
+        return re;
     }
     return_type = search_result.value->return_type;
     auto func = search_result.value;
@@ -272,8 +279,7 @@ FunctionCallNode::exec(
 
     for (auto& ar: arguments){
         auto arg_exec_r = ar->exec(ParentScope);
-        if (!arg_exec_r.success)
-            return {arg_exec_r.Message,false,std::monostate()};
+        if (!arg_exec_r.success) return arg_exec_r;
 
         args_list[ar->name] = ar->value;
         ar = nullptr;

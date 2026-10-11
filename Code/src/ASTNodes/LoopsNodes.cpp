@@ -167,13 +167,18 @@ WhileLoopsNode::accept(
     if (!r.success) return r;
 
     // Verifi condition type
-    if (condition_node->return_type != "bool")
-        return {Errors::TypeError(
+    if (condition_node->return_type != "bool"){
+        auto err = Errors::TypeError(
             "bool",
             condition_node->return_type,
             FirstToken.line,
-            FirstToken.column
-        ).msg,false,false};
+            FirstToken.column,
+            FirstToken.value.size()
+        );
+        ReturnResult<bool> re = {err.msg,false,false};
+        re.error_info = err.info;
+        return re;
+    }
 
     // Create the returning nodes list
     std::vector<ASTNode*> return_nodes;
@@ -363,15 +368,17 @@ ForLoopsNode::accept(
 
     // Verifi condition node
     if (Condition.node->return_type != "bool") {
-        return {
-            Errors::TypeError(
-                "bool",
-                Condition.node->return_type,
-                Condition.first_token.line,
-                Condition.first_token.column,
-                "Condition of for loop need to be bolean !!"
-            ).msg,false,false
-        };
+        auto err = Errors::TypeError(
+            "bool",
+            Condition.node->return_type,
+            Condition.first_token.line,
+            Condition.first_token.column,
+            Condition.first_token.value.size(),
+            "Condition of for loop need to be bolean !!"
+        );
+        ReturnResult<bool> re = {err.msg,false,false};
+        re.error_info = err.info;
+        return re;
     }
 
     // Create the returning nodes list

@@ -50,8 +50,7 @@ ModuleNode::exec(
     ReturnResult<Value> r;
     for (auto& stmt: statements) {
         r = stmt->exec(ParentScope);
-        if (!r.success)
-            return {r.Message,false,std::monostate()};
+        if (!r.success) return r;
         stmt = nullptr;
     }
     return {"",true,std::monostate()};
@@ -67,8 +66,7 @@ ModuleNode::accept(
     for (auto& stmt: statements) {
         r = stmt->accept(ParentScope);
 
-        if (!r.success)
-            return {r.Message,false,false};
+        if (!r.success) return r;
     }
     return {"",true,true};
 }

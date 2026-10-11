@@ -5,6 +5,9 @@
 // == Locals ==
 #include "utils.hpp"
 
+// == Libs ==
+#include <sstream>
+
 // ==================================================================
 // Functions
 // ==================================================================
@@ -22,4 +25,20 @@ Utils::random_num(
         to
     );
     return dist(gen);
+}
+
+// Split string to vector of lines
+std::vector<std::string> 
+Utils::split_lines(
+    const std::string& source
+) {
+    std::vector<std::string> lines;
+    std::istringstream stream(source);
+    std::string line;
+
+    while (std::getline(stream, line)) {
+        lines.push_back(line);
+    }
+
+    return lines;
 }

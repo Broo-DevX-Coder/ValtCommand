@@ -1,0 +1,12 @@
+SET_CONST var<int> = 5
+SET_CONST var2<int> = 11
+
+SET result<int> = (GET var2) / (GET var)
+SET rest<int> = (GET var2) - (GET var)*(GET result)
+
+CALL print 
+    result_<int>:(GET result)
+    __<str>:"result:"
+    rest_<int>:(GET rest)
+    ___<str>:"rest:"
+END

@@ -58,8 +58,7 @@
 - ✅ IF Statements
 - ✅ ELSE Statements
 - ✅ WHILE Loops
-- FOR Loops
-- Block statment `BLOCK`
+- ✅ FOR Loops
 
 ---
 

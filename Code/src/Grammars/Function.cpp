@@ -4,7 +4,6 @@
 
 // == Locals ==
 #include "Parser.hpp"
-#include "Errors.hpp"
 
 // Nodes
 #include "ASTNodes/FunctionCallNode.hpp"
@@ -20,34 +19,62 @@ Parser::get_functioncall_node() {
 
     // Jump on `CALL`
     consume_result = consume(TokenType::KEY_WORD); 
-    if (!consume_result.success) return {consume_result.Message,false,nullptr};
+    if (!consume_result.success){ 
+        ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+        re.error_info = consume_result.error_info;
+        return re;
+    }
 
     // Get function name
     auto func_name_t = consume(TokenType::IDENTIFIER);
-    if (!func_name_t.success) return {func_name_t.Message,false,nullptr};
+    if (!func_name_t.success) { 
+        ReturnResult<Node> re =  {func_name_t.Message,false,nullptr};
+        re.error_info = func_name_t.error_info;
+        return re;
+    }
 
     FunctionCallNode::ArgsT arg_list;
     while (!check(TokenType::END_BLOCK) && !isAsEnd()) {
         
         // Get argument name
         auto arg_name_t = consume(TokenType::IDENTIFIER);
-        if (!arg_name_t.success) return {arg_name_t.Message,false,nullptr};
+        if (!arg_name_t.success) { 
+            ReturnResult<Node> re =  {arg_name_t.Message,false,nullptr};
+            re.error_info = arg_name_t.error_info;
+            return re;
+        }
 
         // Jump on `<`
         consume_result = consume(TokenType::LESS_THAN); 
-        if (!consume_result.success) return {consume_result.Message,false,nullptr};
+        if (!consume_result.success) { 
+            ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+            re.error_info = consume_result.error_info;
+            return re;
+        };
 
         // Get expected type of arg
         auto arg_type_t = consume(TokenType::TYPE);
-        if (!arg_type_t.success) return {arg_type_t.Message,false,nullptr};
+        if (!arg_type_t.success) { 
+            ReturnResult<Node> re =  {arg_type_t.Message,false,nullptr};
+            re.error_info = arg_type_t.error_info;
+            return re;
+        }
 
         // Jump on `>`
         consume_result = consume(TokenType::GREATER_THAN); 
-        if (!consume_result.success) return {consume_result.Message,false,nullptr};
+        if (!consume_result.success) { 
+            ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+            re.error_info = consume_result.error_info;
+            return re;
+        };
 
         // Jump on `:`
         consume_result = consume(TokenType::COLON); 
-        if (!consume_result.success) return {consume_result.Message,false,nullptr};
+        if (!consume_result.success) { 
+            ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+            re.error_info = consume_result.error_info;
+            return re;
+        };
 
         // Get arg value node
         auto arg_value = get_expretion();
@@ -63,9 +90,11 @@ Parser::get_functioncall_node() {
 
     // Jump on `END`
     consume_result = consume(TokenType::END_BLOCK); 
-    if (!consume_result.success) {
-        return {consume_result.Message,false,nullptr};
-    }
+    if (!consume_result.success) { 
+        ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+        re.error_info = consume_result.error_info;
+        return re;
+    };
 
     // Create FunctionCallNode and get the value
     return {"",true,std::make_unique<FunctionCallNode>(

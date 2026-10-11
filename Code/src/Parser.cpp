@@ -6,10 +6,6 @@
 #include "Parser.hpp"
 #include "Errors.hpp"
 
-// Nodes
-
-
-
 // ==================================================================
 // Parses's functions
 // ==================================================================
@@ -35,7 +31,7 @@ Parser::advence() {
         if (curent_token_.Type == TokenType::END_CODE)
             is_code_ended_ = true;
         //std::cout << curent_token_.value << std::endl << std::flush;
-        
+
     } else {
         is_code_ended_ = true;
         curent_token_ = tokens_list_[tokens_list_.size()-1];
@@ -44,13 +40,13 @@ Parser::advence() {
 }
 
 // Get the curent token
-const Token& 
+const Token&
 Parser::curent() {
     return curent_token_;
 }
 
 // Get the next <offset> token
-const Token& 
+const Token&
 Parser::peek(
     size_t offset
 ) {
@@ -60,37 +56,38 @@ Parser::peek(
 }
 
 // Check the curent token
-bool 
+bool
 Parser::check(TokenType type) {
     return curent().Type == type;
 }
 
 // Check the curent token and move to next
-ReturnResult<Token> 
+ReturnResult<Token>
 Parser::consume(TokenType type) {
-    if (curent().Type != type)
-        return {
-            Errors::SyntaxError(
-                isAsEnd()?"(end of code!)":curent_token_.value,
-                curent_token_.line,
-                curent_token_.column
-            ).msg,
-            false,
-            curent()
-        };
+    if (curent().Type != type){
+        auto err = Errors::SyntaxError(
+            isAsEnd()?"(end of code!)":curent_token_.value,
+            curent_token_.line,
+            curent_token_.column,
+            curent_token_.value.size()
+        );
+
+        ReturnResult<Token> re = {err.msg, false, curent()};
+        re.error_info = err.info;
+        return re;
+    }
 
     auto t = curent();
     advence();
-    
-    return {"",true,t};
+
+    return {"", true, t};
 }
 
 // Is the code as end
-bool 
+bool
 Parser::isAsEnd() {
     return is_code_ended_;
 }
-
 
 // Get clear module node ==================================================
 ReturnResult<Parser::PNode>
@@ -101,8 +98,10 @@ Parser::get_module_node() {
 
     do {
         nt = get_expretion();
-        if(!nt.success){
-            return {nt.Message,false,nullptr};
+        if (!nt.success) {
+            ReturnResult<PNode> re = {nt.Message, false, nullptr};
+            re.error_info = nt.error_info;
+            return re;
         }
         s_list.push_back(std::move(nt.value));
     } while (!isAsEnd());

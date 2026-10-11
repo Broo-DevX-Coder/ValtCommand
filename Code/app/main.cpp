@@ -13,6 +13,7 @@
 // == Locals ==
 #include "Runtime.hpp"
 #include "Lexar.hpp"
+#include "Errors.hpp"
 
 std::ostream& operator<<(std::ostream& os, const std::monostate&) {
     os << "null";
@@ -56,58 +57,25 @@ int main () {
     // ====== initialyze standards ==========
     //Standardes::__init__();
 
+    std::cout << "======== Start exec =========" << "\n" << std::flush;
+
+
     std::string code = R"CODE(
-    SET_CONST Pi<int> = 3.14
-    
-    // Create my function
-    FUNCTION power (
-        num<float> 
-        power<int>
-    )->float 
+    SET_CONST var<int> = 6
+    SET_CONST var2<int> = 150
 
-        SET var<int> = 1
+    SET result<int> = (GET var2) / (GET var)
+    SET rest<int> = (GET var2) - (GET var)*(GET result)
 
-        IF (GET power) == 0 THEN
-            RETURN 1
-
-        ELSE THEN IF (GET num) == 0 THEN
-            RETURN 0
-
-        END END
-
-        FOR 
-            SET i<int> = 0;
-            (GET i) < (GET power);
-            SET i = (GET i)+1
-        THEN
-            SET var = (GET var)*(GET num) 
-            CONTINUE
-            CALL print d<str>:"-----" END
-        END
-
-        RETURN GET var
-
-    END
-    
-    /*
-    // Calculate 2 power 3 `should be 8`
     CALL print 
-        s<float>: CALL power 
-            num<float>:5
-            power<int>:8
-        END
-        cc<str>:"-----------------" 
+        result_<int>:(GET result)
+        __<str>:"result:"
+        rest_<int>:(GET rest)
+        ___<str>:"rest:"
     END
-    */
 
-    FOR
-        SET i<int> = 0;
-        (GET i) < 1000000;
-        SET i = (GET i) + 1
-    THEN
-        CALL print a<int>:(GET i) END
-    END
-    
+    SET_CONST zero<int> = 0
+    SET f = 5/GET zero
 
     )CODE";
     
@@ -117,19 +85,16 @@ int main () {
 
     auto semantic_analyses = r.semantic_analyses();
     if (!semantic_analyses.success){
-        std::cout << "======== Semantic error =========" << std::endl << std::flush;
-        std::cout << semantic_analyses.Message << std::endl << std::flush;
+        std::cout << Errors::formatter(semantic_analyses.error_info,code) << "\n\n" << std::flush;
         return 1;
     }
-    std::cout << "======== Semantic end =========" << std::endl << std::flush;
 
     auto execute = r.execute_code();
     if (!execute.success){
-        std::cout << "======== Runtime error =========" << std::endl << std::flush;
-        std::cout << execute.Message << std::endl << std::flush;
+        std::cout << Errors::formatter(execute.error_info,code) << "\n\n" << std::flush;
         return 1;
     }
-    std::cout << "======== exec end =========" << std::endl << std::flush;
+    std::cout << std::endl << "======== exec end =========" << std::endl << std::flush;
 
     return 0;
 }

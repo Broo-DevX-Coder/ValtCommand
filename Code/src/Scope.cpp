@@ -74,15 +74,17 @@ Scopes::Scope::search_function(
             return Parent->search_function(nToken);
         }
 
-        return {
-            Errors::NameError(
-                nToken.value,
-                nToken.line,
-                nToken.column,
-                "Unknown function"
-            ).msg,
-            false,nullptr
-        };
+        auto err = Errors::NameError(
+            nToken.value,
+            nToken.line,
+            nToken.column,
+            nToken.value.size(),
+            "Unknown function"
+        );
+
+        ReturnResult<Scopes::SymbolTableTypes::Function*> re = {err.msg,false,nullptr}; 
+        re.error_info = err.info;
+        return re;
     }
     
     return {"",true,functions[nToken.value].get()};
@@ -98,15 +100,17 @@ Scopes::Scope::search_var(
             return Parent->search_var(nToken);
         }
 
-        return {
-            Errors::NameError(
-                nToken.value,
-                nToken.line,
-                nToken.column,
-                "Unknown variable"
-            ).msg,
-            false,nullptr
-        };
+        auto err = Errors::NameError(
+            nToken.value,
+            nToken.line,
+            nToken.column,
+            nToken.value.size(),
+            "Unknown variable"
+        );
+
+        ReturnResult<Scopes::SymbolTableTypes::RVar*> re = {err.msg,false,nullptr}; 
+        re.error_info = err.info;
+        return re;
     }
 
     return {"",true,variables[nToken.value].get()};

@@ -20,23 +20,36 @@ Parser::get_if_statment_node() {
 
     // Jump on `IF`
     consume_result = consume(TokenType::KEY_WORD); 
-    if (!consume_result.success) return {consume_result.Message,false,nullptr};
+    if (!consume_result.success) { 
+        ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+        re.error_info = consume_result.error_info;
+        return re;
+    }
 
     // Get condition node
     auto condition_FT = curent();
     auto condition_N_r = get_expretion();
-    if (!condition_N_r.success) return {condition_N_r.Message,false,nullptr};
+    if (!condition_N_r.success) return condition_N_r;
 
     // Jump on `THEN`
     consume_result = consume(TokenType::KEY_WORD); 
-    if (!consume_result.success) return {consume_result.Message,false,nullptr};
-    if (consume_result.value.value != "THEN") 
-        return {Errors::SyntaxError(
+    if (!consume_result.success) { 
+        ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+        re.error_info = consume_result.error_info;
+        return re;
+    }
+    if (consume_result.value.value != "THEN") {
+        auto err = Errors::SyntaxError(
             consume_result.value.Type==TokenType::END_CODE?"(end of code!)":consume_result.value.value,
             consume_result.value.line,
             consume_result.value.column,
+            consume_result.value.value.size(),
             "Forgot to add `THEN` after the condition"
-        ).msg,false,nullptr};
+        );
+        ReturnResult<Node> re = {err.msg,false,nullptr};
+        re.error_info = err.info;
+        return re;
+    }
 
     // Create statments lists
     IfStatmentsNode::Nodes_list statments;
@@ -45,7 +58,7 @@ Parser::get_if_statment_node() {
     // Get all statments
     while (!check(TokenType::END_BLOCK) && !isAsEnd() && curent().value != "ELSE") {
         auto r = get_expretion();
-        if (!r.success) return {r.Message,false,nullptr};
+        if (!r.success) return r;
         statments.push_back(std::move(r.value));
     }
 
@@ -57,17 +70,27 @@ Parser::get_if_statment_node() {
 
         // Jump on `THEN`
         consume_result = consume(TokenType::KEY_WORD); 
-        if (!consume_result.success) return {consume_result.Message,false,nullptr};
-        if (consume_result.value.value != "THEN") 
-            return {Errors::SyntaxError(
+        if (!consume_result.success) { 
+            ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+            re.error_info = consume_result.error_info;
+            return re;
+        }
+        if (consume_result.value.value != "THEN") {
+            auto err = Errors::SyntaxError(
                 consume_result.value.Type==TokenType::END_CODE?"(end of code!)":consume_result.value.value,
                 consume_result.value.line,
-                consume_result.value.column    
-            ).msg,false,nullptr};
+                consume_result.value.column,
+                consume_result.value.value.size(),
+                "Forgot to add `THEN` after the condition"
+            );
+            ReturnResult<Node> re = {err.msg,false,nullptr};
+            re.error_info = err.info;
+            return re;
+        }
 
         while (!check(TokenType::END_BLOCK) && !isAsEnd()) {
             auto r = get_expretion();
-            if (!r.success) return {r.Message,false,nullptr};
+            if (!r.success) return r;
             else_statments.push_back(std::move(r.value));
         }
 
@@ -77,7 +100,11 @@ Parser::get_if_statment_node() {
 
         // Jump on `END`
         consume_result = consume(TokenType::END_BLOCK); 
-        if (!consume_result.success) return {consume_result.Message,false,nullptr};
+        if (!consume_result.success) { 
+            ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+            re.error_info = consume_result.error_info;
+            return re;
+        }
 
     // If there is not any else statment
     } else {
@@ -87,7 +114,11 @@ Parser::get_if_statment_node() {
 
         // Jump on `END`
         consume_result = consume(TokenType::END_BLOCK); 
-        if (!consume_result.success) return {consume_result.Message,false,nullptr};
+        if (!consume_result.success) { 
+            ReturnResult<Node> re =  {consume_result.Message,false,nullptr};
+            re.error_info = consume_result.error_info;
+            return re;
+        }
     }
 
     // Creat the IF statment node

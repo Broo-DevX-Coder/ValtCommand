@@ -22,8 +22,8 @@
 // ==================================================================
 
 // == Libs ==
-#include <string>
 #include <fmt/format.h>
+#include <globals.hpp>
 
 // ==================================================================
 // Namespace
@@ -32,41 +32,42 @@
 // Namespace of All errors classes
 namespace Errors {
 
+    // Errors formatter
+    std::string formatter(ErrorInfo info, const std::string& code);
+
     // Main Error class
     class Error {
         public:
             std::string msg; // Message of error
+            ErrorInfo info; // Error info struct
     };
 
     // Error in syntax of code
     class SyntaxError: public Error {
         public:
-            SyntaxError(std::string token, int line, int column, std::string comment=""); // Constructure
+            SyntaxError(std::string token, size_t line, size_t column, size_t lenth, std::string comment=""); // Constructure
     };
 
     // The type that got is not compatible with expected type
     class TypeError: public Error {
         public:
-            TypeError(std::string expected, std::string got, int line, int column, std::string comment=""); // Constructure
+            TypeError(std::string expected, std::string got, size_t line, size_t column, size_t lenth, std::string comment=""); // Constructure
     };
 
     // Name that declared not found
     class NameError: public Error {
         public:
-            NameError(std::string name, int line, int column, std::string comment=""); // Constructure
+            NameError(std::string name, size_t line, size_t column, size_t lenth, std::string comment=""); // Constructure
     };
 
     // Argument error in function
     class ArgumentError: public Error {
         private:
             std::string function_name;
-            int line;
-            int column;
-            std::string comment="";
 
         public:
-            ArgumentError(std::string function_name, int line, int column, std::string comment=""); // Constructure
-            std::string too_many_arguments(int expected, int placed); // When the user places more arguments than expacted
+            ArgumentError(std::string function_name, size_t line, size_t column, size_t lenth, std::string comment=""); // Constructure
+            std::string too_many_arguments(size_t expected, size_t placed); // When the user places more arguments than expacted
             std::string unexpected_argument(std::string arg_name); // When user places unknown argument
             std::string unexpected_argument_type(std::string arg_name, std::string expected_type, std::string placed_type); // When user places flase type of function
             std::string unplaced_arg(std::string arg_name); // When user don't places all required arguments
@@ -76,14 +77,10 @@ namespace Errors {
     class VariableError: public Error {
         private:
             std::string var_name;
-            int line;
-            int column;
-            std::string comment="";
         public:
-            VariableError(std::string var_name, int line, int column, std::string comment="");  // Constructure
+            VariableError(std::string var_name, size_t line, size_t column, size_t lenth, std::string comment="");  // Constructure
             std::string reset_var_in_same_scope(); // When recreate variable in same scope
             std::string reset_const_var(); // When user reset a const variable
-            std::string reset_var_from_auther_scope(); // When user reset variable value but from auther scoupe (inside function or authe module)
             std::string reset_var_value_by_other_type(std::string var_type, std::string got_type); // When reset variable value but new value is incompatible type with variable type
 
     };
@@ -92,29 +89,21 @@ namespace Errors {
     class UserFunctionError : public Error {
         private:
             std::string function_name;
-            int line;
-            int column;
-            std::string comment = "";
 
         public:
-            UserFunctionError(std::string function_name,int line,int column,std::string comment = ""); // Constructure
+            UserFunctionError(std::string function_name,size_t line,size_t column, size_t lenth,std::string comment = ""); // Constructure
             std::string return_type_error(std::string expected_type,std::string got_type); // When user returns uncompatible type data with function return type
-            std::string missing_return_statement(); // Forgot to return data else thene void
             std::string missing_return_error(); // Not all paths return a value
             std::string function_already_defined(); // When user redifine a function by same name in same scope
     };
 
     // Runtime Error
     class RuntimeError : public Error {
-        private:
-            int line;
-            int column;
-            std::string comment = "";
-
         public:
             RuntimeError(
-                int line,
-                int column,
+                size_t line,
+                size_t column, 
+                size_t lenth,
                 std::string comment = ""
             );
 

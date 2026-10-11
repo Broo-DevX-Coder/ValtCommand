@@ -29,14 +29,13 @@ Runtime::RunTime::analyze(Scopes::Scope* Scope) {
 
     Parser p(tokens_list);
     auto pars_result = p.get_module_node();
+    if (!pars_result.success) return pars_result;
 
-    if (!pars_result.success){
-        return {pars_result.Message,false,nullptr};
-    }
     auto accept_result = pars_result.value->accept(Scope);
-
     if (!accept_result.success){
-        return {accept_result.Message,false,nullptr};
+        ReturnResult<Parser::PNode> re = {accept_result.Message,false,nullptr};
+        re.error_info = accept_result.error_info;
+        return re;
     }
 
     return {"",true,std::move(pars_result.value)}; 
@@ -47,7 +46,9 @@ ReturnResult<bool>
 Runtime::RunTime::semantic_analyses() {
     auto r = analyze(semantic_scope.get());
     if (!r.success) {
-        return {r.Message,false,false};
+        ReturnResult<bool> re = {r.Message,false,false};
+        re.error_info = r.error_info;
+        return re;
     }
     return {r.Message,true,true};
 }
@@ -57,15 +58,17 @@ ReturnResult<bool>
 Runtime::RunTime::execute_code() {
     auto analyze_result = analyze(run_semantic_scope.get());
     if (!analyze_result.success) {
-        return {analyze_result.Message,false,false};
+        ReturnResult<bool> re = {analyze_result.Message,false,false};
+        re.error_info = analyze_result.error_info;
+        return re;
     }
-
-    std::cout << analyze_result.value->get_str(0) << "\n" << std::flush;
 
     auto exec_result = analyze_result.value->exec(run_scope.get());
 
     if (!exec_result.success){
-        return {exec_result.Message,false,false};
+        ReturnResult<bool> re = {exec_result.Message,false,false};
+        re.error_info = exec_result.error_info;
+        return re;
     }
 
     return {"",true,true};

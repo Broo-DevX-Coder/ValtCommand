@@ -34,10 +34,23 @@
 // Forwarding declarations
 // ==================================================================
 class ASTNode;
+namespace Errors {struct ErrorInfo;}
 
 // ==================================================================
 // Types 
 // ==================================================================
+namespace Errors {
+    struct ErrorInfo {
+        std::string type;
+        std::string message;
+        std::string comment;
+
+        std::size_t line = 0;
+        std::size_t column = 0;
+        std::size_t length = 1;
+    };
+}
+
 using Value = std::variant<
     std::monostate,
     int64_t, 
@@ -63,6 +76,8 @@ struct ReturnResult {
 
     std::vector<ASTNode*> return_nodes; // For function return: whow is the node that returns data
     Value return_data; // For function return: what did the function return
+
+    Errors::ErrorInfo error_info; // The error info struct that encluded line column type and auther info
 };
 
 using ExternalFunInType = std::unordered_map<std::string, Value>; // External functin input type
@@ -126,6 +141,7 @@ struct Token {
     std::string value;
     size_t line;
     size_t column;
+    size_t last_column;
     void print() {
         std::cout << fmt::format(
             "[ T:{} | V:{} | L:{} | C:{} ]",

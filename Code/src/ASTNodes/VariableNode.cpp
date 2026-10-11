@@ -71,25 +71,31 @@ SetVariableNode::accept(
     Errors::VariableError err(
         name,
         NameToken.line,
-        NameToken.column
+        NameToken.column,
+        NameToken.value.size()
     );
 
     if (search_r.success) {
-        if (parent_scope_id == search_r.value->scope_id)
-            return {err.reset_var_in_same_scope(),false,false};
+        if (parent_scope_id == search_r.value->scope_id){
+            ReturnResult<bool> re = {err.reset_var_in_same_scope(),false,false};
+            re.error_info = err.info;
+            return re;
+        }
     }
 
     auto vnode_ar = VNode->accept(ParentScope);
-    if (!vnode_ar.success) return {vnode_ar.Message,false,false};
+    if (!vnode_ar.success) return vnode_ar;
 
     if (!are_types_compatible(VNode->return_type,type)){
-        return {
-            Errors::TypeError(
-                type,VNode->return_type,
-                TypeToken.line,
-                TypeToken.column
-            ).msg,false,false
-        };
+        auto err = Errors::TypeError(
+            type,VNode->return_type,
+            TypeToken.line,
+            TypeToken.column,
+            TypeToken.value.size()
+        );
+        ReturnResult<bool> re = {err.msg,false,false};
+        re.error_info = err.info;
+        return re;
     }
 
     Value v = "";
@@ -106,7 +112,7 @@ SetVariableNode::exec(
     return_type = "void";
 
     auto vnode_ar = VNode->exec(ParentScope);
-    if (!vnode_ar.success) return {vnode_ar.Message,false,false};
+    if (!vnode_ar.success) return vnode_ar;
 
     auto value = reconsiliation_int_float(type,vnode_ar.value);
     ParentScope->add_var(name,type,value,is_const);
@@ -180,19 +186,24 @@ ResetVariableNode::accept(
     Errors::VariableError err(
         name,
         NameToken.line,
-        NameToken.column
+        NameToken.column,
+        NameToken.value.size()
     );
 
     // Variable not found
     if (!search_r.success) {
-        return {search_r.Message,false,false};
+        ReturnResult<bool> re = {search_r.Message,false,false};
+        re.error_info = search_r.error_info;
+        return re;
     }
 
     auto var_ptr = search_r.value;
 
     // Variable is const
     if (var_ptr->is_const) {
-        return {err.reset_const_var(),false,false};
+        ReturnResult<bool> re = {err.reset_const_var(),false,false};
+        re.error_info = err.info;
+        return re;
     }
 
     // variable is in auther scope
@@ -203,7 +214,7 @@ ResetVariableNode::accept(
     type = var_ptr->type;
 
     auto vnode_ar = VNode->accept(ParentScope);
-    if (!vnode_ar.success) return {vnode_ar.Message,false,false};
+    if (!vnode_ar.success) return vnode_ar;
 
     // value type is incompatible with variable type
     if (!are_types_compatible(VNode->return_type,type)){
@@ -223,7 +234,7 @@ ResetVariableNode::exec(
     return_type = "void";
 
     auto vnode_ar = VNode->exec(ParentScope);
-    if (!vnode_ar.success) return {vnode_ar.Message,false,false};
+    if (!vnode_ar.success) return vnode_ar;
 
     auto value = vnode_ar.value;
     auto search_r = ParentScope->search_var(NameToken);
@@ -283,7 +294,9 @@ GetVariableNode::accept(
 
     // Variable not found
     if (!search_r.success) {
-        return {search_r.Message,false,false};
+        ReturnResult<bool> re = {search_r.Message,false,false};
+        re.error_info = search_r.error_info;
+        return re;
     }
 
     return_type = search_r.value->type;

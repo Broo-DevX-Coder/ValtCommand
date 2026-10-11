@@ -94,7 +94,7 @@ Lexar::get_the_next_token() {
 
     // If there is not any char
     if (code_ended == true) {
-        return {TokenType::END_CODE, "", curent_line, curent_column};
+        return {TokenType::END_CODE, "", curent_line, curent_column, curent_column};
 
     // If char+char is a comparition
     } else if (__complex_2_symbols__.contains( std::string(1, curent_c) + std::string(1, peek(1)) )) {
@@ -102,6 +102,7 @@ Lexar::get_the_next_token() {
         t.line = curent_line;
         t.column = curent_column;
         advence();
+        t.last_column = curent_column;
         advence();
         return t;
 
@@ -110,6 +111,7 @@ Lexar::get_the_next_token() {
         auto t = __symbols__[curent_c];
         t.line = curent_line;
         t.column = curent_column;
+        t.last_column = curent_column;
         advence();
         return t;
 
@@ -119,6 +121,7 @@ Lexar::get_the_next_token() {
         std::string tk;
 
         tk += curent_c;
+        auto f_column = curent_column;
         advence();
 
         while ((std::isdigit(curent_c) || (!dot && curent_c == '.')) && !code_ended) {
@@ -128,19 +131,24 @@ Lexar::get_the_next_token() {
             advence();
         }
 
+        auto l_column = curent_column-1;
+
         if (dot)
-            return {TokenType::FLOAT, tk, curent_line, curent_column};
+            return {TokenType::FLOAT, tk, curent_line, f_column,l_column};
         else 
-            return {TokenType::INTEGER, tk, curent_line, curent_column};
+            return {TokenType::INTEGER, tk, curent_line, f_column,l_column};
 
     // If curent char is letter
     } else if (std::isalpha(curent_c) || curent_c == '_') {
         std::string tk;
+        auto f_column = curent_column;
 
         do {
             tk += curent_c;
             advence(); 
         } while ((std::isdigit(curent_c) || std::isalpha(curent_c) || curent_c == '_') && !code_ended);
+
+        auto l_column = curent_column-1;
 
         TokenType tk_t = TokenType::IDENTIFIER;
 
@@ -159,12 +167,13 @@ Lexar::get_the_next_token() {
         ) 
             tk_t = TokenType::BOOLEAN;
         
-        return {tk_t, tk, curent_line, curent_column};
+        return {tk_t, tk, curent_line, f_column,l_column};
 
     // If curent type is string
     } else if (curent_c == '"' || curent_c == '\'') {
         std::string tk;
         char c = curent_c;
+        auto f_column = curent_column;
 
         advence();
 
@@ -182,9 +191,10 @@ Lexar::get_the_next_token() {
 
             advence(); 
         }
+        auto l_column = curent_column;
         advence();
 
-        return {TokenType::STRING, tk, curent_line, curent_column};
+        return {TokenType::STRING, tk, curent_line, f_column,l_column};
     } else {
         Token t = {TokenType::UNKNOWN, std::string(1,curent_c), curent_line, curent_column};
         advence();

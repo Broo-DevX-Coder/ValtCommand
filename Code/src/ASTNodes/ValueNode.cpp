@@ -70,15 +70,19 @@ ReturnResult<bool>
 StringValueNode::accept(
     Scopes::Scope* ParentScope
 ) {
-    if (vToken.Type != TokenType::STRING)
-        return {
-            Errors::TypeError(
-                type,
-                TokenTypes_to_StringType[vToken.Type],
-                vToken.line,
-                vToken.column
-            ).msg,false,false};
-    
+    if (vToken.Type != TokenType::STRING){ 
+        auto err = Errors::TypeError(
+            type,
+            TokenTypes_to_StringType[vToken.Type],
+            vToken.line,
+            vToken.column,
+            vToken.value.size()
+        );
+        ReturnResult<bool> re = {err.msg,false,false};
+        re.error_info = err.info;
+        return re;
+    }
+
     return {"",true,true};
 }
 
@@ -116,15 +120,19 @@ ReturnResult<bool>
 NumberValueNode::accept(
     Scopes::Scope* ParentScope
 ) {
-    if (vToken.Type != TokenType::INTEGER && vToken.Type != TokenType::FLOAT)
-        return {
-            Errors::TypeError(
-                type,
-                TokenTypes_to_StringType[vToken.Type],
-                vToken.line,
-                vToken.column
-            ).msg,false,false};
-    
+    if (vToken.Type != TokenType::INTEGER && vToken.Type != TokenType::FLOAT){
+        auto err = Errors::TypeError(
+            type,
+            TokenTypes_to_StringType[vToken.Type],
+            vToken.line,
+            vToken.column,
+            vToken.value.size()
+        );
+        ReturnResult<bool> re = {err.msg,false,false};
+        re.error_info = err.info;
+        return re;
+    }
+
     return {"",true,true};
 }
 
@@ -163,15 +171,19 @@ ReturnResult<bool>
 BooleanValueNode::accept(
     Scopes::Scope* ParentScope
 ) {
-    if (vToken.Type != TokenType::BOOLEAN)
-        return {
-            Errors::TypeError(
-                type,
-                TokenTypes_to_StringType[vToken.Type],
-                vToken.line,
-                vToken.column
-            ).msg,false,false};
-
+    if (vToken.Type != TokenType::BOOLEAN){
+        auto err = Errors::TypeError(
+            type,
+            TokenTypes_to_StringType[vToken.Type],
+            vToken.line,
+            vToken.column,
+            vToken.value.size()
+        );
+        ReturnResult<bool> re = {err.msg,false,false};
+        re.error_info = err.info;
+        return re;
+    }
+    
     return {"",true,true};
 }
 

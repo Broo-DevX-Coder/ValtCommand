@@ -75,17 +75,19 @@ BinOpsNode::accept(
     return_type = "float";
     for (auto& part: Parts) {
         auto accept_result = part.node->accept(ParentScope);
-        if (!accept_result.success) {
-            return {accept_result.Message,false,false};
-        }
+        if (!accept_result.success) return accept_result;
         if (part.node->return_type != "int" && part.node->return_type != "float") {
-            return {Errors::TypeError(
+            auto e = Errors::TypeError(
                 "int | float",
                 part.node->return_type,
                 part.token.line,
                 part.token.column,
+                part.token.value.size(),
                 "This operation does not support type else then int or float"
-            ).msg,false,false};
+            );
+            ReturnResult<bool> re = {e.msg,false,false};
+            re.error_info = e.info;
+            return re;
         }
     }
     return {"",true,true};
@@ -121,7 +123,7 @@ BinOpsNode::exec(
         auto& part = Parts[i];
         
         auto exec_result = part.node->exec(ParentScope);
-        if (!exec_result.success) return {exec_result.Message,false,std::monostate{}};
+        if (!exec_result.success) return exec_result;
 
         auto val = turn_value_to_float(exec_result.value);
 
@@ -129,10 +131,12 @@ BinOpsNode::exec(
         if (part.op == TokenType::SLASH && val.value == 0) {
             Errors::RuntimeError error(
                 part.token.line,
-                part.token.column
+                part.token.column,
+                part.token.value.size()
             );
-        
-            return {error.division_by_zero(),false,0};
+            ReturnResult<Value> re = {error.division_by_zero(),false,0};
+            re.error_info = error.info;
+            return re;
         }
 
         // Apply OP
@@ -432,10 +436,14 @@ LogicOpsNode::accept(
 
         // Verifi type
         if(part.node->return_type != "bool") {
-            return {Errors::TypeError(
+            auto err = Errors::TypeError(
                 "bool", part.node->return_type,
-                part.token.line, part.token.column
-            ).msg,false,false};
+                part.token.line, part.token.column,
+                part.token.value.size()
+            );
+            ReturnResult<bool> re = {err.msg,false,false};
+            re.error_info = err.info;
+            return re;
         }
     }
 

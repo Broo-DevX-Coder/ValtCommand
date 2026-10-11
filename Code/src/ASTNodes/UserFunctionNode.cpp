@@ -68,17 +68,19 @@ UserFunctionMethodNode::accept(
     if (default_value_node != nullptr) {
         auto result = default_value_node->accept(ParentScope);
 
-        if (!result.success)
-            return {result.Message,false,false};
+        if (!result.success) return result;
         
-        if (!are_types_compatible(default_value_node->return_type,return_type))
-            return {
-                Errors::TypeError(
-                    return_type, default_value_node->return_type,
-                    default_value_ftoekn.line,
-                    default_value_ftoekn.column
-                ).msg, false, false
-            };
+        if (!are_types_compatible(default_value_node->return_type,return_type)){
+            auto err = Errors::TypeError(
+                return_type, default_value_node->return_type,
+                default_value_ftoekn.line,
+                default_value_ftoekn.column,
+                default_value_ftoekn.value.size()
+            );
+            ReturnResult<bool> re = {err.msg, false, false};
+            re.error_info = err.info;
+            return re;
+        }
     }
     return {"",true,true};
 }
@@ -91,8 +93,7 @@ UserFunctionMethodNode::exec(
     return_type = type_token.value;
     if (default_value_node != nullptr) {
         auto vnode_r = default_value_node->exec(ParentScope);
-        if (!vnode_r.success)
-            return {vnode_r.Message,false,std::monostate{}};
+        if (!vnode_r.success) return vnode_r;
         
         default_value=reconsiliation_int_float(type_token.value,vnode_r.value);
 
@@ -159,7 +160,11 @@ UserFunctionReturnNode::accept(
     Scopes::Scope* ParentScope
 ) {
     auto r = VNode->accept(ParentScope);
-    if (!r.success) return {r.Message,false,false,ExecState::Return};
+    if (!r.success) {
+        ReturnResult<bool> re = {r.Message,false,false,ExecState::Return};
+        re.error_info = r.error_info;
+        return re;  
+    }
 
     return_type = VNode->return_type;
 
@@ -180,6 +185,7 @@ UserFunctionReturnNode::exec(
     if (!vnode_r.success) {
         res = {vnode_r.Message,false,std::monostate{},ExecState::Return};
         res.return_nodes.push_back(this);
+        res.error_info = vnode_r.error_info;
         return res;
     }
 
@@ -350,14 +356,17 @@ UserFunctionNode::accept(
     // When find the function in same scoupe
     auto search_result = ParentScope->search_function(name_token);
     if (search_result.success)  {
-        if (search_result.value->scope_id == ParentScope->get_id())
-            return {
-                Errors::UserFunctionError(
-                    name_token.value,
-                    name_token.line,
-                    name_token.column
-                ).function_already_defined(), false, false
-            };
+        if (search_result.value->scope_id == ParentScope->get_id()){
+            auto err = Errors::UserFunctionError(
+                name_token.value,
+                name_token.line,
+                name_token.column,
+                name_token.value.size()
+            );
+            ReturnResult<bool> re = {err.function_already_defined(), false, false};
+            re.error_info = err.info;
+            return re;
+        }
     }
 
     // Create a new scope for verifi
@@ -401,12 +410,14 @@ UserFunctionNode::accept(
         for (auto& rnd: r.return_nodes) {
             if (rnd != nullptr) {
                 if (!are_types_compatible(rnd->return_type,return_type_token.value)){
-                    return {Errors::UserFunctionError(
+                    auto err = Errors::UserFunctionError(
                         name_token.value,
                         name_token.line,
-                        name_token.column
-                        ).return_type_error(return_type_token.value, rnd->return_type),false,false
-                    };
+                        name_token.column,
+                        name_token.value.size()
+                    );
+                    ReturnResult<bool>  re = {err.return_type_error(return_type_token.value, rnd->return_type),false,false};
+                    return re;
                 }
                 is_there_return = true;
             }
@@ -414,14 +425,17 @@ UserFunctionNode::accept(
     }
 
 
-    if (return_type_token.value != "void" && !is_there_return)
-        return {
-            Errors::UserFunctionError(
-                name_token.value,
-                name_token.line,
-                name_token.column
-            ).missing_return_statement(), false, false
-        };
+    if (return_type_token.value != "void" && !is_there_return){
+        auto err = Errors::UserFunctionError(
+            name_token.value,
+            name_token.line,
+            name_token.column,
+            name_token.value.size()
+        );
+        ReturnResult<bool> re = {err.missing_return_error(), false, false};
+        re.error_info = err.info;
+        return re;
+    }
 
     // create function in scope
     auto func_ptr = ParentScope->add_function(

@@ -104,14 +104,18 @@ IfStatmentsNode::accept(
     if (!r.success) return r;
 
     // Verifi condition type
-    if (condition_node->return_type != "bool")
-        return {Errors::TypeError(
+    if (condition_node->return_type != "bool"){
+        auto err = Errors::TypeError(
             "bool",
             condition_node->return_type,
             condition_FT.line,
-            condition_FT.column
-        ).msg,false,false};
-
+            condition_FT.column,
+            condition_FT.value.size()
+        );
+        ReturnResult<bool> re = {err.msg,false,false};
+        re.error_info = err.info;
+        return re;
+    }
     // Create the returning nodes list
     std::vector<ASTNode*> return_nodes;
 
