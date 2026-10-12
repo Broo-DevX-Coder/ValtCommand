@@ -68,7 +68,7 @@ StringValueNode::StringValueNode(
 // The node verifi it self befor runnig
 ReturnResult<bool> 
 StringValueNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     if (vToken.Type != TokenType::STRING){ 
         auto err = Errors::TypeError(
@@ -89,7 +89,7 @@ StringValueNode::accept(
 // Execute the node and get result
 ReturnResult<Value> 
 StringValueNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ){
     value = vToken.value;
     return {"",true,std::move(value)};
@@ -118,7 +118,7 @@ NumberValueNode::NumberValueNode(
 // The node verifi it self befor runnig
 ReturnResult<bool> 
 NumberValueNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     if (vToken.Type != TokenType::INTEGER && vToken.Type != TokenType::FLOAT){
         auto err = Errors::TypeError(
@@ -139,7 +139,7 @@ NumberValueNode::accept(
 // Execute the node and get result
 ReturnResult<Value> 
 NumberValueNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ){
     auto v = std::stold(vToken.value);
     value = type == "int"? (int64_t)v : (long double)v;
@@ -169,7 +169,7 @@ BooleanValueNode::BooleanValueNode(
 // The node verifi it self befor runnig
 ReturnResult<bool> 
 BooleanValueNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     if (vToken.Type != TokenType::BOOLEAN){
         auto err = Errors::TypeError(
@@ -190,7 +190,7 @@ BooleanValueNode::accept(
 // Execute the node and get result
 ReturnResult<Value> 
 BooleanValueNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ){
     value = vToken.value == "True";
     return {"",true,std::move(value)};

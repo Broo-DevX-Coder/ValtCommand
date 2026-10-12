@@ -70,11 +70,11 @@ BinOpsNode::NType() {
 // Typess checking
 ReturnResult<bool> 
 BinOpsNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "float";
     for (auto& part: Parts) {
-        auto accept_result = part.node->accept(ParentScope);
+        auto accept_result = part.node->accept(Context);
         if (!accept_result.success) return accept_result;
         if (part.node->return_type != "int" && part.node->return_type != "float") {
             auto e = Errors::TypeError(
@@ -114,7 +114,7 @@ BinOpsNode::push_to_result(
 // execute operation node
 ReturnResult<Value> 
 BinOpsNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) { 
     return_type = "float";
     long double result = 0;
@@ -122,7 +122,7 @@ BinOpsNode::exec(
     for (size_t i=0;i<Parts.size();i++) {
         auto& part = Parts[i];
         
-        auto exec_result = part.node->exec(ParentScope);
+        auto exec_result = part.node->exec(Context);
         if (!exec_result.success) return exec_result;
 
         auto val = turn_value_to_float(exec_result.value);
@@ -244,14 +244,14 @@ CompOpsNode::clone() {
 // type and value checking
 ReturnResult<bool> 
 CompOpsNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "bool";
 
     // Verifi parts
-    auto fresult = first_part.node->accept(ParentScope);
+    auto fresult = first_part.node->accept(Context);
     if (!fresult.success) return fresult;
-    auto sresult = second_part.node->accept(ParentScope);
+    auto sresult = second_part.node->accept(Context);
     if (!sresult.success) return sresult;
 
     // Verifi parts's types
@@ -291,14 +291,14 @@ CompOpsNode::accept(
 // execute and get the result of compariton
 ReturnResult<Value> 
 CompOpsNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "bool";
 
     // Execute parts
-    auto fresult = first_part.node->exec(ParentScope);
+    auto fresult = first_part.node->exec(Context);
     if (!fresult.success) return fresult;
-    auto sresult = second_part.node->exec(ParentScope);
+    auto sresult = second_part.node->exec(Context);
     if (!sresult.success) return sresult;
 
     // get return nodes
@@ -424,14 +424,14 @@ LogicOpsNode::clone() {
 // types and value checking 
 ReturnResult<bool> 
 LogicOpsNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "bool";
 
     // Verifi all parts
     for (auto& part: Parts) {
         // verifi part
-        auto r = part.node->accept(ParentScope);
+        auto r = part.node->accept(Context);
         if (!r.success) return r;
 
         // Verifi type
@@ -452,12 +452,12 @@ LogicOpsNode::accept(
 
 ReturnResult<Value> 
 LogicOpsNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "bool";
 
     // Get the first part node
-    auto r = Parts[0].node->exec(ParentScope);
+    auto r = Parts[0].node->exec(Context);
     if (!r.success) return r;
 
     // Get the first part node value and put it in result
@@ -469,7 +469,7 @@ LogicOpsNode::exec(
         auto& part = Parts[i];
 
         // Execute part
-        r = part.node->exec(ParentScope);
+        r = part.node->exec(Context);
         if (!r.success) return r;
 
         // Get part result

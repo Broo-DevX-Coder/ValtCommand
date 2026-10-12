@@ -42,8 +42,8 @@ class SetVariableNode: public ASTNode {
         SetVariableNode(Token name_token, Token type_token, std::unique_ptr<ASTNode> value_node, bool is_const = false); // Constructure
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // type and value checking
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and set the var in symbols table
+        ReturnResult<bool> accept(NodesContext Context) override; // type and value checking
+        ReturnResult<Value> exec(NodesContext Context) override; // execute and set the var in symbols table
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
@@ -59,8 +59,8 @@ class ResetVariableNode: public ASTNode {
         ResetVariableNode(Token name_token, std::unique_ptr<ASTNode> value_node); // Constructure
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // type and value checking
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and set the var's value in symbols table
+        ReturnResult<bool> accept(NodesContext Context) override; // type and value checking
+        ReturnResult<Value> exec(NodesContext Context) override; // execute and set the var's value in symbols table
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
@@ -76,7 +76,7 @@ class GetVariableNode: public ASTNode {
         GetVariableNode(Token name_token); // Constructure
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // type and value checking
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute and get the value from symbols table
+        ReturnResult<bool> accept(NodesContext Context) override; // type and value checking
+        ReturnResult<Value> exec(NodesContext Context) override; // execute and get the value from symbols table
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };

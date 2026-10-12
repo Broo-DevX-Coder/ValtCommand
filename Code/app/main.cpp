@@ -67,13 +67,6 @@ int main () {
     SET result<int> = (GET var2) / (GET var)
     SET rest<int> = (GET var2) - (GET var)*(GET result)
 
-    CALL print 
-        result_<int>:(GET result)
-        __<str>:"result:"
-        rest_<int>:(GET rest)
-        ___<str>:"rest:"
-    END
-
     SET_CONST zero<int> = 0
     SET f = 5/GET zero
 
@@ -82,12 +75,6 @@ int main () {
     auto r = Runtime::RunTime(code);
     r.add_external_function(print,"print","void",{},true);
     r.add_external_function(Pi,"Pi","float",{});
-
-    auto semantic_analyses = r.semantic_analyses();
-    if (!semantic_analyses.success){
-        std::cout << Errors::formatter(semantic_analyses.error_info,code) << "\n\n" << std::flush;
-        return 1;
-    }
 
     auto execute = r.execute_code();
     if (!execute.success){

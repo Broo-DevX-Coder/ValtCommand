@@ -49,8 +49,8 @@ class ValueNode: public ASTNode
 class StringValueNode: public ValueNode {
     public:
         StringValueNode(Token token); // Constructure
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute the node and get result
+        ReturnResult<bool> accept(NodesContext Context) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(NodesContext Context) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
@@ -59,8 +59,8 @@ class StringValueNode: public ValueNode {
 class NumberValueNode: public ValueNode {   
     public:
         NumberValueNode(Token token, std::string type="float"); // Constructure
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute the node and get result
+        ReturnResult<bool> accept(NodesContext Context) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(NodesContext Context) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
@@ -69,8 +69,8 @@ class NumberValueNode: public ValueNode {
 class BooleanValueNode: public ValueNode {
     public:
         BooleanValueNode(Token token); // Constructure
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute the node and get result
+        ReturnResult<bool> accept(NodesContext Context) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(NodesContext Context) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };

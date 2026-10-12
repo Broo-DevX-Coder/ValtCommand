@@ -33,8 +33,8 @@ class BreakLoopNode: public ASTNode {
     public:
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // types and value checking
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute the loop
+        ReturnResult<bool> accept(NodesContext Context) override; // types and value checking
+        ReturnResult<Value> exec(NodesContext Context) override; // execute the loop
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
@@ -43,8 +43,8 @@ class ContinueLoopNode: public ASTNode {
     public:
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // types and value checking
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute the loop
+        ReturnResult<bool> accept(NodesContext Context) override; // types and value checking
+        ReturnResult<Value> exec(NodesContext Context) override; // execute the loop
         ASTNode* clone() override; // Clone the class then get a new copy from them
 };
 
@@ -67,8 +67,8 @@ class WhileLoopsNode: public ASTNode {
         WhileLoopsNode(Token& FirstToken, Node& condition, NodesL& nodes_list); // Constructure
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // types and value checking
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute the loop
+        ReturnResult<bool> accept(NodesContext Context) override; // types and value checking
+        ReturnResult<Value> exec(NodesContext Context) override; // execute the loop
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
@@ -96,7 +96,7 @@ class ForLoopsNode: public ASTNode {
         ForLoopsNode(Component& Initialization, Component& Condition, Component& Update, NodesL& statments); // Constructure
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // types and value checking
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // execute the loop
+        ReturnResult<bool> accept(NodesContext Context) override; // types and value checking
+        ReturnResult<Value> exec(NodesContext Context) override; // execute the loop
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };

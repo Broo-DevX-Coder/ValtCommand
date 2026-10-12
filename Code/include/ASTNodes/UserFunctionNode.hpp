@@ -41,8 +41,8 @@ class UserFunctionMethodNode: public ASTNode {
         UserFunctionMethodNode(Token& nameT, Token& typeT, Token& default_value_ftoekn, std::unique_ptr<ASTNode> default_value_node = nullptr, bool is_method_any=false); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verify it self befor runnig
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
+        ReturnResult<bool> accept(NodesContext Context) override; // The node verify it self befor runnig
+        ReturnResult<Value> exec(NodesContext Context) override; // Execute node
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
@@ -59,8 +59,8 @@ class UserFunctionReturnNode: public ASTNode {
         UserFunctionReturnNode(std::unique_ptr<ASTNode> value_node); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verify it self befor runnig
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
+        ReturnResult<bool> accept(NodesContext Context) override; // The node verify it self befor runnig
+        ReturnResult<Value> exec(NodesContext Context) override; // Execute node
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
@@ -78,8 +78,8 @@ class UserProxyFunctionNode: public ASTNode {
         UserProxyFunctionNode(NodesListT statements, const std::string& type); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verify it self befor runnig
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
+        ReturnResult<bool> accept(NodesContext Context) override; // The node verify it self befor runnig
+        ReturnResult<Value> exec(NodesContext Context) override; // Execute node
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
 
@@ -106,7 +106,7 @@ class UserFunctionNode: public ASTNode {
         UserFunctionNode(Token& nameT, Token& typeT, MethodsList methods_list, NodesListT statements, bool is_any=false); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verify it self befor runnig
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
+        ReturnResult<bool> accept(NodesContext Context) override; // The node verify it self befor runnig
+        ReturnResult<Value> exec(NodesContext Context) override; // Execute node
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };

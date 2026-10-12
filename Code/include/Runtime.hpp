@@ -25,6 +25,7 @@
 #include "globals.hpp"
 #include "Parser.hpp"
 #include "Scope.hpp"
+#include "DevTools/Debugger.hpp"
 
 // ==================================================================
 // Runtime namespace
@@ -37,9 +38,10 @@ namespace Runtime {
             std::unique_ptr<Scopes::Scope> run_scope; // Global scope (main global scope and other modules's scopes) in running
             std::unique_ptr<Scopes::Scope> run_semantic_scope; // Global scope in analyzing befor run
             std::unique_ptr<Scopes::Scope> semantic_scope; // Global scope in pure analyzing
-            std::string Code;
+            std::string Code; // The programming code
             
         public:
+            DevTools::Debugger Debugger; // The debugger of runtime
             RunTime(const std::string& code); // Constructure
             RunTime(RunTime& runtime) = delete; // 2nd constructure
             ReturnResult<Parser::PNode> analyze(Scopes::Scope* scope); // Analyze the code and get the module node

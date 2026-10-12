@@ -30,6 +30,7 @@
 // == Locals ==
 #include "globals.hpp"
 #include "Scope.hpp"
+#include "DevTools/Debugger.hpp"
 
 // ==================================================================
 // ASTNodes Types
@@ -60,6 +61,14 @@ enum ASTNodesTypes {
 };
 
 // ==================================================================
+// Nodes accept and exec context
+// ==================================================================
+struct NodesContext {
+    Scopes::Scope* ParentScope;
+    DevTools::Debugger* Debugger;
+};
+
+// ==================================================================
 // ASTNode
 // ==================================================================
 class ASTNode {
@@ -68,8 +77,8 @@ class ASTNode {
         virtual ~ASTNode() = default;
         virtual std::string get_str(int level) = 0; // Get the string of node to print AST
         virtual ASTNodesTypes NType() = 0; // get the type of node
-        virtual ReturnResult<bool> accept(Scopes::Scope* ParentScope) = 0; // The node verifi it self befor runnig
-        virtual ReturnResult<Value> exec(Scopes::Scope* ParentScope) = 0; // Run the node
+        virtual ReturnResult<bool> accept(NodesContext Context) = 0; // The node verifi it self befor runnig
+        virtual ReturnResult<Value> exec(NodesContext Context) = 0; // Run the node
         virtual ASTNode* clone() = 0; // Clone the class or get a new copy from them
 };
 
@@ -86,7 +95,7 @@ class ModuleNode : public ASTNode
         ModuleNode(StatmentsT& s_); // Constructure
         std::string get_str(int level=0) override; // get the str of node to print
         ASTNodesTypes NType() override; // Get the type of node
-        ReturnResult<bool> accept(Scopes::Scope* ParentScope) override; // The node verifi it self befor runnig
-        ReturnResult<Value> exec(Scopes::Scope* ParentScope) override; // Execute node
+        ReturnResult<bool> accept(NodesContext Context) override; // The node verifi it self befor runnig
+        ReturnResult<Value> exec(NodesContext Context) override; // Execute node
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };

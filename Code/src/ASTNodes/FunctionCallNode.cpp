@@ -54,9 +54,9 @@ FunctionCallArgumentNode::NType() {
 // Verifi the node 
 ReturnResult<bool>
 FunctionCallArgumentNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
-    auto vnode_ar = VNode->accept(ParentScope);
+    auto vnode_ar = VNode->accept(Context);
     if (!vnode_ar.success) return vnode_ar;
 
     if (!are_types_compatible(VNode->return_type,type)){
@@ -77,9 +77,9 @@ FunctionCallArgumentNode::accept(
 // Execute node
 ReturnResult<Value> 
 FunctionCallArgumentNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
-    auto vnode_r = VNode->exec(ParentScope);
+    auto vnode_r = VNode->exec(Context);
     if (!vnode_r.success) return vnode_r;
     
     value=reconsiliation_int_float(type,vnode_r.value);
@@ -142,9 +142,9 @@ FunctionCallNode::NType() {
 // Execute node
 ReturnResult<bool> 
 FunctionCallNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
-    auto search_result = ParentScope->search_function(NameToken);
+    auto search_result = Context.ParentScope->search_function(NameToken);
     if (!search_result.success){
         ReturnResult<bool> re = {search_result.Message,false,false};
         re.error_info = search_result.error_info;
@@ -216,7 +216,7 @@ FunctionCallNode::accept(
     }
     
     for (auto& ar: arguments){
-        auto arg_accept_r = ar->accept(ParentScope);
+        auto arg_accept_r = ar->accept(Context);
         if (!arg_accept_r.success) return arg_accept_r;
     }
 
@@ -224,7 +224,7 @@ FunctionCallNode::accept(
         user_func_copy = std::unique_ptr<UserProxyFunctionNode>(dynamic_cast<UserProxyFunctionNode*>(func->user_function->clone()));
 
         // Create scoupe for function
-        auto func_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+        auto func_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
 
         // Define list of arguments 
         std::unordered_map<std::string,std::string> args_list;
@@ -252,7 +252,7 @@ FunctionCallNode::accept(
             }
         }
 
-        auto a_r = user_func_copy->accept(func_scoupe.get());        
+        auto a_r = user_func_copy->accept({func_scoupe.get(),Context.Debugger});        
         if (!a_r.success) return a_r;
     }
 
@@ -263,11 +263,11 @@ FunctionCallNode::accept(
 // Execute node
 ReturnResult<Value> 
 FunctionCallNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     ExternalFunInType args_list;
 
-    auto search_result = ParentScope->search_function(NameToken);
+    auto search_result = Context.ParentScope->search_function(NameToken); 
     if (!search_result.success){
         ReturnResult<Value> re = {search_result.Message,false,std::monostate{}};
         re.error_info = search_result.error_info;
@@ -278,7 +278,7 @@ FunctionCallNode::exec(
 
 
     for (auto& ar: arguments){
-        auto arg_exec_r = ar->exec(ParentScope);
+        auto arg_exec_r = ar->exec(Context);
         if (!arg_exec_r.success) return arg_exec_r;
 
         args_list[ar->name] = ar->value;
@@ -293,7 +293,7 @@ FunctionCallNode::exec(
     // If the function is user Function ===========
 
     // Create scoupe for function
-    auto func_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+    auto func_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
 
     // Put all args in function scoupe
     for (auto& [arg_name,arg_value]: args_list) {
@@ -317,7 +317,7 @@ FunctionCallNode::exec(
         }
     }
 
-    return user_func_copy->exec(func_scoupe.get());
+    return user_func_copy->exec({func_scoupe.get(),Context.Debugger});
 }
 
 // Get a copy from class

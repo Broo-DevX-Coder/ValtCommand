@@ -45,11 +45,11 @@ ModuleNode::NType() {
 // Execute node
 ReturnResult<Value>
 ModuleNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     ReturnResult<Value> r;
     for (auto& stmt: statements) {
-        r = stmt->exec(ParentScope);
+        r = stmt->exec(Context);
         if (!r.success) return r;
         stmt = nullptr;
     }
@@ -59,12 +59,12 @@ ModuleNode::exec(
 // Execute node
 ReturnResult<bool>
 ModuleNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     ReturnResult<bool> r;
 
     for (auto& stmt: statements) {
-        r = stmt->accept(ParentScope);
+        r = stmt->accept(Context);
 
         if (!r.success) return r;
     }

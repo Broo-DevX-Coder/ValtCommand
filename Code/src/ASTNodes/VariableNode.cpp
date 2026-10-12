@@ -61,12 +61,12 @@ SetVariableNode::NType() {
 // type and value checking
 ReturnResult<bool> 
 SetVariableNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "void";
 
-    auto parent_scope_id = ParentScope->get_id();
-    auto search_r = ParentScope->search_var(NameToken);
+    auto parent_scope_id = Context.ParentScope->get_id();
+    auto search_r = Context.ParentScope->search_var(NameToken);
 
     Errors::VariableError err(
         name,
@@ -75,6 +75,7 @@ SetVariableNode::accept(
         NameToken.value.size()
     );
 
+    Context.Debugger->emit({DevTools::Events_level::Analyses,"Verifying if var '"+name+"' is in this scoupe",NameToken.line});
     if (search_r.success) {
         if (parent_scope_id == search_r.value->scope_id){
             ReturnResult<bool> re = {err.reset_var_in_same_scope(),false,false};
@@ -83,7 +84,7 @@ SetVariableNode::accept(
         }
     }
 
-    auto vnode_ar = VNode->accept(ParentScope);
+    auto vnode_ar = VNode->accept(Context);
     if (!vnode_ar.success) return vnode_ar;
 
     if (!are_types_compatible(VNode->return_type,type)){
@@ -99,7 +100,7 @@ SetVariableNode::accept(
     }
 
     Value v = "";
-    ParentScope->add_var(name,type,v,is_const);
+    Context.ParentScope->add_var(name,type,v,is_const);
 
     return {"",true,true};
 }
@@ -107,15 +108,15 @@ SetVariableNode::accept(
 // execute and set the var in symbols table
 ReturnResult<Value> 
 SetVariableNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "void";
 
-    auto vnode_ar = VNode->exec(ParentScope);
+    auto vnode_ar = VNode->exec(Context);
     if (!vnode_ar.success) return vnode_ar;
 
     auto value = reconsiliation_int_float(type,vnode_ar.value);
-    ParentScope->add_var(name,type,value,is_const);
+    Context.ParentScope->add_var(name,type,value,is_const);
 
     return {"",true,std::monostate{}};
 }
@@ -176,12 +177,12 @@ ResetVariableNode::NType() {
 // type and value checking
 ReturnResult<bool> 
 ResetVariableNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "void";
 
-    auto parent_scope_id = ParentScope->get_id();
-    auto search_r = ParentScope->search_var(NameToken);
+    auto parent_scope_id = Context.ParentScope->get_id();
+    auto search_r = Context.ParentScope->search_var(NameToken);
 
     Errors::VariableError err(
         name,
@@ -213,7 +214,7 @@ ResetVariableNode::accept(
 
     type = var_ptr->type;
 
-    auto vnode_ar = VNode->accept(ParentScope);
+    auto vnode_ar = VNode->accept(Context);
     if (!vnode_ar.success) return vnode_ar;
 
     // value type is incompatible with variable type
@@ -229,15 +230,15 @@ ResetVariableNode::accept(
 // Excute node
 ReturnResult<Value> 
 ResetVariableNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "void";
 
-    auto vnode_ar = VNode->exec(ParentScope);
+    auto vnode_ar = VNode->exec(Context);
     if (!vnode_ar.success) return vnode_ar;
 
     auto value = vnode_ar.value;
-    auto search_r = ParentScope->search_var(NameToken);
+    auto search_r = Context.ParentScope->search_var(NameToken);
     search_r.value->value = reconsiliation_int_float(type,value);
 
     return {"",true,std::monostate{}};
@@ -288,9 +289,9 @@ GetVariableNode::NType() {
 // type and value checking
 ReturnResult<bool> 
 GetVariableNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
-    auto search_r = ParentScope->search_var(NameToken);
+    auto search_r = Context.ParentScope->search_var(NameToken);
 
     // Variable not found
     if (!search_r.success) {
@@ -306,9 +307,9 @@ GetVariableNode::accept(
 // Execute node
 ReturnResult<Value> 
 GetVariableNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
-    auto search_r = ParentScope->search_var(NameToken);
+    auto search_r = Context.ParentScope->search_var(NameToken);
     return_type = search_r.value->type;
 
     return {"",true,search_r.value->value};

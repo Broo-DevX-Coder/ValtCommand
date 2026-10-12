@@ -94,13 +94,13 @@ IfStatmentsNode::clone() {
 // types and value checking
 ReturnResult<bool> 
 IfStatmentsNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     // Set return type to void
     return_type = "void";
 
     // Verifi condition node
-    auto r = condition_node->accept(ParentScope);
+    auto r = condition_node->accept(Context);
     if (!r.success) return r;
 
     // Verifi condition type
@@ -120,11 +120,11 @@ IfStatmentsNode::accept(
     std::vector<ASTNode*> return_nodes;
 
     // Create a specific scoupe for if statment
-    auto if_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+    auto if_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
 
     // Verifi all Statments
     for (auto& smt: Statments) {
-        auto r = smt->accept(if_scoupe.get());
+        auto r = smt->accept({if_scoupe.get(),Context.Debugger});
         if (!r.success) return r;
         
         if (r.state == ExecState::Return) {
@@ -135,7 +135,7 @@ IfStatmentsNode::accept(
 
     // Verifi all Else Statments
     for (auto& smt: Else_statments) {
-        auto r = smt->accept(if_scoupe.get());
+        auto r = smt->accept({if_scoupe.get(),Context.Debugger});
         if (!r.success) return r;
         
         if (r.state == ExecState::Return) {
@@ -150,24 +150,24 @@ IfStatmentsNode::accept(
 // execute the node
 ReturnResult<Value> 
 IfStatmentsNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "void";
     
     // Execute condition and get its result
-    auto condition_result = condition_node->exec(ParentScope);
+    auto condition_result = condition_node->exec(Context);
     if (!condition_result.success) return condition_result;
 
     // Delete condition node
     condition_node = nullptr;
 
     // Create a specific scoupe for if statment
-    auto if_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+    auto if_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
 
     // Execute statments if condition is true
     if (condition_result.value == Value(true))  {
         for (auto& stm: Statments) {
-            auto r = stm->exec(if_scoupe.get()); // Exucute statment
+            auto r = stm->exec({if_scoupe.get(),Context.Debugger}); // Exucute statment
             if (!r.success) return r; // return statment if there is an error
             if (r.state != ExecState::Normal)
                 return r;
@@ -177,7 +177,7 @@ IfStatmentsNode::exec(
     // Execute else statments if the condition is false
     } else {
         for (auto& stm: Else_statments) {
-            auto r = stm->exec(if_scoupe.get()); // Exucute statment
+            auto r = stm->exec({if_scoupe.get(),Context.Debugger}); // Exucute statment
             if (!r.success) return r; // return statment if there is an error
             if (r.state != ExecState::Normal)
                 return r;

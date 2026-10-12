@@ -55,25 +55,25 @@ ContinueLoopNode::NType() {
 
 // types and value checking
 ReturnResult<bool> 
-BreakLoopNode::accept(Scopes::Scope* ParentScope) {
+BreakLoopNode::accept(NodesContext Context) {
     return {"",true,true,ExecState::Break};
 }
 
 // types and value checking
 ReturnResult<bool> 
-ContinueLoopNode::accept(Scopes::Scope* ParentScope) {
+ContinueLoopNode::accept(NodesContext Context) {
     return {"",true,true,ExecState::Continue};
 }
 
 // execute the loop
 ReturnResult<Value> 
-BreakLoopNode::exec(Scopes::Scope* ParentScope) {
+BreakLoopNode::exec(NodesContext Context) {
     return {"",true,std::monostate{},ExecState::Break};
 }
 
 // execute the loop
 ReturnResult<Value> 
-ContinueLoopNode::exec(Scopes::Scope* ParentScope) {
+ContinueLoopNode::exec(NodesContext Context) {
     return {"",true,std::monostate{},ExecState::Continue};
 }
 
@@ -157,13 +157,13 @@ WhileLoopsNode::clone() {
 // types and value checking
 ReturnResult<bool> 
 WhileLoopsNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     // Set return type to void
     return_type = "void";
 
     // Verifi condition node
-    auto r = condition_node->accept(ParentScope);
+    auto r = condition_node->accept(Context);
     if (!r.success) return r;
 
     // Verifi condition type
@@ -184,11 +184,11 @@ WhileLoopsNode::accept(
     std::vector<ASTNode*> return_nodes;
 
     // Create a specific scoupe for statments block
-    auto while_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+    auto while_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
 
     // Verifi all Statments
     for (auto& smt: Statments) {
-        auto r = smt->accept(while_scoupe.get());
+        auto r = smt->accept({while_scoupe.get(), Context.Debugger});
         if (!r.success) return r;
         
         if (r.state == ExecState::Return) {
@@ -203,7 +203,7 @@ WhileLoopsNode::accept(
 // execute the node
 ReturnResult<Value> 
 WhileLoopsNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "void";
 
@@ -215,7 +215,7 @@ WhileLoopsNode::exec(
         Node condition_node_cp(condition_node_cp_raw_ptr);
 
         // Execute condition and get its result
-        condition_result = condition_node_cp->exec(ParentScope);
+        condition_result = condition_node_cp->exec(Context);
         if (!condition_result.success) return condition_result;
     }
 
@@ -224,7 +224,7 @@ WhileLoopsNode::exec(
     while (condition_result.value == Value(true) && steel_running)  {
 
         // Create a specific scoupe for if statment
-        auto while_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+        auto while_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
 
         for (auto& stm: Statments) {
             // Create a copy of node
@@ -232,7 +232,7 @@ WhileLoopsNode::exec(
             Node stm_ptr(stm_raw_ptr);
 
             // execute node
-            auto r = stm_ptr->exec(while_scoupe.get()); // Exucute statment
+            auto r = stm_ptr->exec({while_scoupe.get(), Context.Debugger}); // Exucute statment
             if (!r.success) return r; // return statment if there is an error
 
             if (r.state == ExecState::Return) return r; // If there is a return of data
@@ -246,7 +246,7 @@ WhileLoopsNode::exec(
             Node condition_node_cp(condition_node_cp_raw_ptr);
 
             // Execute condition and get its result
-            condition_result = condition_node_cp->exec(ParentScope);
+            condition_result = condition_node_cp->exec(Context);
             if (!condition_result.success) return condition_result;
         }
     }
@@ -352,17 +352,17 @@ ForLoopsNode::clone() {
 // types and value checking
 ReturnResult<bool> 
 ForLoopsNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     // Create a for loop scoupe
-    auto for_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+    auto for_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
 
     // Create the list of instruction
     std::vector<Component*> stndard_components = {&Initialization,&Condition,&Update};
 
     // Verifi components
     for (auto& comp: stndard_components) {
-        auto r = comp->node->accept(for_scoupe.get());
+        auto r = comp->node->accept({for_scoupe.get(),Context.Debugger});
         if (!r.success) return r;
     }
 
@@ -386,7 +386,7 @@ ForLoopsNode::accept(
 
     // Verifi all statments
     for (auto& stm: Statments) {
-        auto r = stm->accept(for_scoupe.get());
+        auto r = stm->accept({for_scoupe.get(),Context.Debugger});
         if (!r.success) return r;
 
         if (r.state == ExecState::Return) {
@@ -401,17 +401,17 @@ ForLoopsNode::accept(
 // execute the node
 ReturnResult<Value> 
 ForLoopsNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     // Create a for loop scoupe
-    auto for_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+    auto for_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
 
     // Initilyze condition result var
     ReturnResult<Value> condition_result;
 
     // Run Initialyze
     {
-        auto r = Initialization.node->exec(for_scoupe.get());
+        auto r = Initialization.node->exec({for_scoupe.get(),Context.Debugger});
         if (!r.success) return r;
     }
 
@@ -420,7 +420,7 @@ ForLoopsNode::exec(
         auto condition_cp_raw_ptr = Condition.node->clone();
         Node condition_cp(condition_cp_raw_ptr);
 
-        condition_result = condition_cp->exec(for_scoupe.get());
+        condition_result = condition_cp->exec({for_scoupe.get(),Context.Debugger});
         if (!condition_result.success) return condition_result;
     }
 
@@ -437,7 +437,7 @@ ForLoopsNode::exec(
             Node stm_ptr(stm_raw_ptr);
 
             // execute node
-            auto r = stm_ptr->exec(while_scoupe.get()); // Exucute statment
+            auto r = stm_ptr->exec({while_scoupe.get(),Context.Debugger}); // Exucute statment
             if (!r.success) return r; // return statment if there is an error
 
             if (r.state == ExecState::Return) return r; // If there is a return of data
@@ -454,7 +454,7 @@ ForLoopsNode::exec(
                 Node upadte_node_cp(upadte_node_cp_raw_ptr);
     
                 // Execute update and get its result
-                auto upadte_result = upadte_node_cp->exec(for_scoupe.get());
+                auto upadte_result = upadte_node_cp->exec({for_scoupe.get(),Context.Debugger});
                 if (!upadte_result.success) return upadte_result;
             }
 
@@ -463,7 +463,7 @@ ForLoopsNode::exec(
             Node condition_node_cp(condition_node_cp_raw_ptr);
 
             // Execute condition and get its result
-            condition_result = condition_node_cp->exec(for_scoupe.get());
+            condition_result = condition_node_cp->exec({for_scoupe.get(),Context.Debugger});
             if (!condition_result.success) return condition_result;
         }
     }

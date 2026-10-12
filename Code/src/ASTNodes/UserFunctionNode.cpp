@@ -61,12 +61,12 @@ ASTNodesTypes UserFunctionMethodNode::NType() {
 // Verify method
 ReturnResult<bool> 
 UserFunctionMethodNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = type_token.value;
     // Verifi defualt value node
     if (default_value_node != nullptr) {
-        auto result = default_value_node->accept(ParentScope);
+        auto result = default_value_node->accept(Context);
 
         if (!result.success) return result;
         
@@ -88,11 +88,11 @@ UserFunctionMethodNode::accept(
 // Execute node
 ReturnResult<Value> 
 UserFunctionMethodNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = type_token.value;
     if (default_value_node != nullptr) {
-        auto vnode_r = default_value_node->exec(ParentScope);
+        auto vnode_r = default_value_node->exec(Context);
         if (!vnode_r.success) return vnode_r;
         
         default_value=reconsiliation_int_float(type_token.value,vnode_r.value);
@@ -157,9 +157,9 @@ UserFunctionReturnNode::NType() {
 // Verifi befor running
 ReturnResult<bool> 
 UserFunctionReturnNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
-    auto r = VNode->accept(ParentScope);
+    auto r = VNode->accept(Context);
     if (!r.success) {
         ReturnResult<bool> re = {r.Message,false,false,ExecState::Return};
         re.error_info = r.error_info;
@@ -177,11 +177,11 @@ UserFunctionReturnNode::accept(
 // Execute node and get value
 ReturnResult<Value> 
 UserFunctionReturnNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     ReturnResult<Value> res;
 
-    auto vnode_r = VNode->exec(ParentScope);
+    auto vnode_r = VNode->exec(Context);
     if (!vnode_r.success) {
         res = {vnode_r.Message,false,std::monostate{},ExecState::Return};
         res.return_nodes.push_back(this);
@@ -247,10 +247,10 @@ UserProxyFunctionNode::NType() {
 // Verify befor runnig
 ReturnResult<bool> 
 UserProxyFunctionNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     for (auto& stm: statements) {
-        auto r = stm->accept(ParentScope);
+        auto r = stm->accept(Context);
         if (!r.success) return r;
     }
     return {"",true,true};
@@ -259,10 +259,10 @@ UserProxyFunctionNode::accept(
 // Execute node
 ReturnResult<Value> 
 UserProxyFunctionNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     for (auto& statement: statements) {
-        auto r = statement->exec(ParentScope);
+        auto r = statement->exec(Context);
         if (!r.success) 
             return r;
         if (r.state == ExecState::Return){
@@ -346,7 +346,7 @@ UserFunctionNode::NType() {
 // verify node
 ReturnResult<bool> 
 UserFunctionNode::accept(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
 
     return_type = "void";
@@ -354,9 +354,9 @@ UserFunctionNode::accept(
 
 
     // When find the function in same scoupe
-    auto search_result = ParentScope->search_function(name_token);
+    auto search_result = Context.ParentScope->search_function(name_token);
     if (search_result.success)  {
-        if (search_result.value->scope_id == ParentScope->get_id()){
+        if (search_result.value->scope_id == Context.ParentScope->get_id()){
             auto err = Errors::UserFunctionError(
                 name_token.value,
                 name_token.line,
@@ -370,14 +370,14 @@ UserFunctionNode::accept(
     }
 
     // Create a new scope for verifi
-    auto func_scoupe = std::make_unique<Scopes::Scope>(ParentScope);
+    auto func_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
 
     // Create methods list to add function in Scope
     std::unordered_map<std::string, Scopes::SymbolTableTypes::Method> MList;
 
     // Verifi all args
     for (auto& method: methods_list) {
-        auto r = method->accept(ParentScope);
+        auto r = method->accept(Context);
         if (!r.success) 
             return r;
         
@@ -403,7 +403,7 @@ UserFunctionNode::accept(
 
     // Verifi all statments
     for (auto& statement: statements) {
-        auto r = statement->accept(func_scoupe.get());
+        auto r = statement->accept({func_scoupe.get(), Context.Debugger});
         if (!r.success) 
             return r;
         
@@ -438,7 +438,7 @@ UserFunctionNode::accept(
     }
 
     // create function in scope
-    auto func_ptr = ParentScope->add_function(
+    auto func_ptr = Context.ParentScope->add_function(
         name_token.value,
         return_type_token.value,
         std::move(MList),
@@ -464,7 +464,7 @@ UserFunctionNode::accept(
 // Execute node
 ReturnResult<Value> 
 UserFunctionNode::exec(
-    Scopes::Scope* ParentScope
+    NodesContext Context
 ) {
     return_type = "void";
     
@@ -476,7 +476,7 @@ UserFunctionNode::exec(
     for(auto& method: methods_list) {
 
         // execute method
-        auto r = method->exec(ParentScope);
+        auto r = method->exec(Context);
         if (!r.success) return r;
 
         // Add method to methods list
@@ -490,7 +490,7 @@ UserFunctionNode::exec(
     }
 
     // create function in scope
-    auto func_ptr = ParentScope->add_function(
+    auto func_ptr = Context.ParentScope->add_function(
         name_token.value,
         return_type_token.value,
         std::move(MList),
