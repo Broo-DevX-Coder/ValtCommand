@@ -61,42 +61,13 @@ int main () {
 
 
     std::string code = R"CODE(
-    // Title: Calculate number power number (x^n) sush that: n belong to R
-
-// Create my function
-FUNCTION power (
-    num<float> // Number that we want
-    power<int> // Power that we want to raise the numer
-)->float 
-
-    SET var<float> = 1 // Set the result in first 1
-    SET pointer<int> = 0 // The pointer should be 0
-
-    IF (GET power) == 0 THEN // If the power is 0, so the result will be 1
-        RETURN 1
-    ELSE THEN IF (GET num) == 0 THEN // If the number is 0, of cors the result is 0
-        RETURN 0
-    END END
-
-    // Calculating operation 
-    WHILE (GET pointer) < (GET power) THEN
-        SET var = (GET var)*(GET num) 
-        SET pointer = (GET pointer)+1
+    FOR 
+        SET s<int> = 0;
+        GET s<1000000;
+        SET s = (GET s)+1
+    THEN
+        
     END
-
-    // Return reslt
-    RETURN GET var
-
-END
-    
-// Ex: Calculate 2 power 3 `should be 8`
-CALL print 
-    value<float>: CALL power 
-        num<float>:2
-        power<int>:3
-    END 
-END
-
     )CODE";
     
     auto r = Runtime::RunTime(code);

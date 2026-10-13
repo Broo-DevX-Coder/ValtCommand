@@ -19,7 +19,7 @@ Runtime::RunTime::RunTime(
     run_scope = std::make_unique<Scopes::Scope>();
     semantic_scope = std::make_unique<Scopes::Scope>();
     run_semantic_scope = std::make_unique<Scopes::Scope>();
-    Debugger = new DevTools::Debugger();
+    //Debugger = new DevTools::Debugger();
 }
 
 ReturnResult<Parser::PNode> 
