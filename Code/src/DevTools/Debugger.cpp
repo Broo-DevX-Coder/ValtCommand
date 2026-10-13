@@ -8,6 +8,25 @@
 // == Libs ==
 #include <sstream>
 
+
+
+std::string 
+DevTools::event_type_to_string(
+    DevTools::EventsT category
+) {
+    switch (category) {
+        case EventsT::Info:     return "Info";
+        case EventsT::Analysis: return "Analysis";
+        case EventsT::Runtime:  return "Runtime";
+        case EventsT::Debug:    return "Debug";
+        case EventsT::Warning:  return "Warning";
+        case EventsT::Error:    return "Error";
+    }
+
+    return "Unknown";
+}
+
+
 // ==================================================================
 // Debugger functions
 // ==================================================================

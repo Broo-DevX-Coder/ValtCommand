@@ -34,20 +34,25 @@
 namespace DevTools {
 
     // All levels of evens
-    enum class Events_level {
-        Analyses, // In semantic analyses step (verifi all codes berof running)
-        Runtime, // When running the program
-        Unknown // Unknown level
+    enum class EventsT {
+        Info,
+        Analysis,  // In semantic analyses step (verifi all codes berof running)
+        Runtime, // Events when runing
+        Debug, // Debuger events (breakpoint ...)
+        Warning, // A warning
+        Error // Errors that staped the program
     };
 
+    std::string event_type_to_string(EventsT tegory); // Convert event type to string
+
     struct event {
-        Events_level level; // The level of event
+        EventsT type; // The level of event
         std::string message; // Message of event
         size_t line; // Line of event
 
         // print event
         std::string get_str() {
-            return fmt::format("[{}] line:{} -> {}\n", level==Events_level::Analyses? "ANALYSES":level==Events_level::Unknown?"UNKNOWN":"RUNTIME" , line, message);
+            return fmt::format("[{}] line:{} -> {}\n", event_type_to_string(type), line, message);
         };
     };
 

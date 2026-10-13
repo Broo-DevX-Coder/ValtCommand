@@ -337,7 +337,7 @@ Parser::get_break_loop_node() {
     return {
         "",
         true,
-        std::make_unique<BreakLoopNode>()
+        std::make_unique<BreakLoopNode>(consume_result.value)
     };
 }
 
@@ -363,6 +363,6 @@ Parser::get_continue_loop_node() {
     return {
         "",
         true,
-        std::make_unique<ContinueLoopNode>()
+        std::make_unique<ContinueLoopNode>(consume_result.value)
     };
 }

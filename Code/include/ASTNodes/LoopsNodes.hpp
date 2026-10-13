@@ -30,7 +30,10 @@
 
 // Break loop
 class BreakLoopNode: public ASTNode {
+    private:
+        Token BreakT;
     public:
+        BreakLoopNode(Token& token);
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // types and value checking
@@ -40,7 +43,10 @@ class BreakLoopNode: public ASTNode {
 
 // Continue loop
 class ContinueLoopNode: public ASTNode {
+    private:
+        Token ContinueT;
     public:
+        ContinueLoopNode(Token& token);
         std::string get_str(int level) override; // Get the str to print
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // types and value checking

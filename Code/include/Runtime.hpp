@@ -41,7 +41,7 @@ namespace Runtime {
             std::string Code; // The programming code
             
         public:
-            DevTools::Debugger Debugger; // The debugger of runtime
+            DevTools::Debugger* Debugger = nullptr; // The debugger of runtime
             RunTime(const std::string& code); // Constructure
             RunTime(RunTime& runtime) = delete; // 2nd constructure
             ReturnResult<Parser::PNode> analyze(Scopes::Scope* scope); // Analyze the code and get the module node

@@ -53,10 +53,11 @@ class UserFunctionMethodNode: public ASTNode {
 // User Function's return node
 class UserFunctionReturnNode: public ASTNode {
     private:
+        Token ReturnT;
         std::unique_ptr<ASTNode> VNode; // Node of value of return
 
     public:
-        UserFunctionReturnNode(std::unique_ptr<ASTNode> value_node); // Constructure
+        UserFunctionReturnNode(Token& t_, std::unique_ptr<ASTNode> value_node); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // The node verify it self befor runnig

@@ -1,5 +1,5 @@
 // ==================================================================
-// Include neccessary headers
+// Include necessary headers
 // ==================================================================
 
 // == Locals ==
@@ -8,142 +8,259 @@
 
 // == Libs ==
 #include <sstream>
+#include <string>
 
 // ==================================================================
-// Classes of break and continue node
+// Runtime Tracker Helper
 // ==================================================================
 
-// Get the str to print
-std::string 
+static void emit_event(
+    NodesContext& Context,
+    DevTools::EventsT type,
+    const std::string& message,
+    std::size_t line
+) {
+    if (Context.Debugger) {
+        Context.Debugger->emit({
+            type,
+            message,
+            line
+        });
+    }
+}
+
+// ==================================================================
+// Classes of break and continue nodes
+// ==================================================================
+
+// Constructor
+BreakLoopNode::BreakLoopNode(
+    Token& t_
+): BreakT(t_) {}
+
+// Constructor
+ContinueLoopNode::ContinueLoopNode(
+    Token& t_
+): ContinueT(t_) {}
+
+// Get the string to print
+std::string
 BreakLoopNode::get_str(
     int level
 ) {
     std::stringstream ss;
 
-    for (int i=0;i<level;i++)
+    for (int i = 0; i < level; i++)
         ss << "|  ";
+
     ss << "Break \n";
 
     return ss.str();
 }
 
-// Get the str to print
-std::string 
+// Get the string to print
+std::string
 ContinueLoopNode::get_str(
     int level
 ) {
     std::stringstream ss;
 
-    for (int i=0;i<level;i++)
+    for (int i = 0; i < level; i++)
         ss << "|  ";
+
     ss << "Continue \n";
 
     return ss.str();
 }
 
 // Get the type of node
-ASTNodesTypes 
+ASTNodesTypes
 BreakLoopNode::NType() {
-    return NT__BreakLoopNode; 
+    return NT__BreakLoopNode;
 }
 
 // Get the type of node
-ASTNodesTypes 
+ASTNodesTypes
 ContinueLoopNode::NType() {
-    return NT__ContinueLoopNode; 
+    return NT__ContinueLoopNode;
 }
 
-// types and value checking
-ReturnResult<bool> 
-BreakLoopNode::accept(NodesContext Context) {
-    return {"",true,true,ExecState::Break};
+// ==================================================================
+// Break node: semantic analysis
+// ==================================================================
+
+ReturnResult<bool>
+BreakLoopNode::accept(
+    NodesContext Context
+) {
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "Analyzing BREAK statement",
+        BreakT.line
+    );
+
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "BREAK statement analysis completed",
+        BreakT.line
+    );
+
+    return {"", true, true, ExecState::Break};
 }
 
-// types and value checking
-ReturnResult<bool> 
-ContinueLoopNode::accept(NodesContext Context) {
-    return {"",true,true,ExecState::Continue};
+// ==================================================================
+// Continue node: semantic analysis
+// ==================================================================
+
+ReturnResult<bool>
+ContinueLoopNode::accept(
+    NodesContext Context
+) {
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "Analyzing CONTINUE statement",
+        ContinueT.line
+    );
+
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "CONTINUE statement analysis completed",
+        ContinueT.line
+    );
+
+    return {"", true, true, ExecState::Continue};
 }
 
-// execute the loop
-ReturnResult<Value> 
-BreakLoopNode::exec(NodesContext Context) {
-    return {"",true,std::monostate{},ExecState::Break};
+// ==================================================================
+// Break node: runtime execution
+// ==================================================================
+
+ReturnResult<Value>
+BreakLoopNode::exec(
+    NodesContext Context
+) {
+    emit_event(
+        Context,
+        DevTools::EventsT::Runtime,
+        "BREAK encountered; exiting the current loop",
+        BreakT.line
+    );
+
+    return {
+        "",
+        true,
+        std::monostate{},
+        ExecState::Break
+    };
 }
 
-// execute the loop
-ReturnResult<Value> 
-ContinueLoopNode::exec(NodesContext Context) {
-    return {"",true,std::monostate{},ExecState::Continue};
+// ==================================================================
+// Continue node: runtime execution
+// ==================================================================
+
+ReturnResult<Value>
+ContinueLoopNode::exec(
+    NodesContext Context
+) {
+    emit_event(
+        Context,
+        DevTools::EventsT::Runtime,
+        "CONTINUE encountered; skipping the remaining loop body",
+        ContinueT.line
+    );
+
+    return {
+        "",
+        true,
+        std::monostate{},
+        ExecState::Continue
+    };
 }
 
-// Clone the class then get a new copy from them
-ASTNode* 
+// ==================================================================
+// Clone break and continue nodes
+// ==================================================================
+
+ASTNode*
 BreakLoopNode::clone() {
-    return new BreakLoopNode();
+    return new BreakLoopNode(BreakT);
 }
 
-// Clone the class then get a new copy from them
-ASTNode* 
+ASTNode*
 ContinueLoopNode::clone() {
-    return new ContinueLoopNode();
+    return new ContinueLoopNode(ContinueT);
 }
 
 // ==================================================================
 // While loop node functions
 // ==================================================================
 
-// Constructure
+// Constructor
 WhileLoopsNode::WhileLoopsNode(
-    Token& FirstToken, 
-    Node& condition, 
+    Token& FirstToken,
+    Node& condition,
     NodesL& nodes_list
-
-):  condition_node(std::move(condition)),
+):
+    condition_node(std::move(condition)),
     FirstToken(FirstToken),
-    Statments(std::move(nodes_list)) {
+    Statments(std::move(nodes_list))
+{
     return_type = "void";
 }
 
-// Get the str to print
-std::string 
+// Get the string to print
+std::string
 WhileLoopsNode::get_str(
     int level
 ) {
     std::stringstream ss;
 
-    for (int i=0;i<level;i++)
+    for (int i = 0; i < level; i++)
         ss << "|  ";
+
     ss << "While Loop \n";
 
-    for (int i=0;i<level+1;i++)
+    for (int i = 0; i < level + 1; i++)
         ss << "|  ";
-    ss << "Condition: \n" << condition_node->get_str(level+2);
 
-    for (int i=0;i<level+1;i++)
+    ss << "Condition: \n"
+       << condition_node->get_str(level + 2);
+
+    for (int i = 0; i < level + 1; i++)
         ss << "|  ";
+
     ss << "Statments: \n";
 
-    for (auto& stm: Statments) 
-        ss << stm->get_str(level+2);
+    for (auto& stm : Statments)
+        ss << stm->get_str(level + 2);
 
     return ss.str();
 }
 
 // Get the type of node
-ASTNodesTypes 
+ASTNodesTypes
 WhileLoopsNode::NType() {
-    return NT__WhileLoopsNode; 
+    return NT__WhileLoopsNode;
 }
 
-// Clone the class or get a new copy from them
-ASTNode* 
+// ==================================================================
+// Clone while loop node
+// ==================================================================
+
+ASTNode*
 WhileLoopsNode::clone() {
-    Node new_condition(condition_node?condition_node->clone():nullptr);
+    Node new_condition(
+        condition_node ? condition_node->clone() : nullptr
+    );
+
     NodesL new_stms_list;
 
-    for (auto& stm: Statments) {
-        Node new_stm(stm?stm->clone():nullptr);
+    for (auto& stm : Statments) {
+        Node new_stm(stm ? stm->clone() : nullptr);
         new_stms_list.push_back(std::move(new_stm));
     }
 
@@ -154,20 +271,69 @@ WhileLoopsNode::clone() {
     );
 }
 
-// types and value checking
-ReturnResult<bool> 
+// ==================================================================
+// While loop: semantic analysis
+// ==================================================================
+
+ReturnResult<bool>
 WhileLoopsNode::accept(
     NodesContext Context
 ) {
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "Starting WHILE loop semantic analysis",
+        FirstToken.line
+    );
+
     // Set return type to void
     return_type = "void";
 
-    // Verifi condition node
-    auto r = condition_node->accept(Context);
-    if (!r.success) return r;
+    // Verify condition node
+    if (!condition_node) {
+        emit_event(
+            Context,
+            DevTools::EventsT::Analysis,
+            "WHILE condition node is null",
+            FirstToken.line
+        );
 
-    // Verifi condition type
-    if (condition_node->return_type != "bool"){
+        return {
+            "WHILE condition node is null",
+            false,
+            false
+        };
+    }
+
+    auto r = condition_node->accept(Context);
+
+    if (!r.success) {
+        emit_event(
+            Context,
+            DevTools::EventsT::Analysis,
+            "WHILE condition analysis failed",
+            FirstToken.line
+        );
+
+        return r;
+    }
+
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "WHILE condition analysis completed",
+        FirstToken.line
+    );
+
+    // Verify condition type
+    if (condition_node->return_type != "bool") {
+        emit_event(
+            Context,
+            DevTools::EventsT::Analysis,
+            "WHILE condition type mismatch: expected bool",
+            FirstToken.line
+        );
+
         auto err = Errors::TypeError(
             "bool",
             condition_node->return_type,
@@ -175,199 +341,486 @@ WhileLoopsNode::accept(
             FirstToken.column,
             FirstToken.value.size()
         );
-        ReturnResult<bool> re = {err.msg,false,false};
+
+        ReturnResult<bool> re = {
+            err.msg,
+            false,
+            false
+        };
+
         re.error_info = err.info;
+
         return re;
     }
 
     // Create the returning nodes list
     std::vector<ASTNode*> return_nodes;
 
-    // Create a specific scoupe for statments block
-    auto while_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
+    // Create a specific scope for statements
+    auto while_scoupe =
+        std::make_unique<Scopes::Scope>(Context.ParentScope);
 
-    // Verifi all Statments
-    for (auto& smt: Statments) {
-        auto r = smt->accept({while_scoupe.get(), Context.Debugger});
-        if (!r.success) return r;
-        
-        if (r.state == ExecState::Return) {
-            for (auto rptr: r.return_nodes)
+    // Verify all statements
+    for (auto& smt : Statments) {
+        if (!smt) {
+            emit_event(
+                Context,
+                DevTools::EventsT::Analysis,
+                "Null statement found in WHILE loop",
+                FirstToken.line
+            );
+
+            continue;
+        }
+
+        emit_event(
+            Context,
+            DevTools::EventsT::Analysis,
+            "Analyzing WHILE loop statement",
+            FirstToken.line
+        );
+
+        auto statement_result = smt->accept({
+            while_scoupe.get(),
+            Context.Debugger
+        });
+
+        if (!statement_result.success) {
+            emit_event(
+                Context,
+                DevTools::EventsT::Analysis,
+                "WHILE loop statement analysis failed",
+                FirstToken.line
+            );
+
+            return statement_result;
+        }
+
+        if (statement_result.state == ExecState::Return) {
+            for (auto rptr : statement_result.return_nodes)
                 return_nodes.push_back(rptr);
         }
     }
 
-    return {"",true,true,return_nodes.empty()?ExecState::Normal:ExecState::Return,std::move(return_nodes)};
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "WHILE loop semantic analysis completed",
+        FirstToken.line
+    );
+
+    return {
+        "",
+        true,
+        true,
+        return_nodes.empty()
+            ? ExecState::Normal
+            : ExecState::Return,
+        std::move(return_nodes)
+    };
 }
 
-// execute the node
-ReturnResult<Value> 
+// ==================================================================
+// While loop: runtime execution
+// ==================================================================
+
+ReturnResult<Value>
 WhileLoopsNode::exec(
     NodesContext Context
 ) {
+    emit_event(
+        Context,
+        DevTools::EventsT::Runtime,
+        "Starting WHILE loop execution",
+        FirstToken.line
+    );
+
     return_type = "void";
 
+    if (!condition_node) {
+        emit_event(
+            Context,
+            DevTools::EventsT::Runtime,
+            "Cannot execute WHILE loop: condition node is null",
+            FirstToken.line
+        );
+
+        return {
+            "WHILE condition node is null",
+            false,
+            std::monostate{}
+        };
+    }
+
     ReturnResult<Value> condition_result;
-    
+
     {
         // Copy condition node
         auto condition_node_cp_raw_ptr = condition_node->clone();
         Node condition_node_cp(condition_node_cp_raw_ptr);
 
-        // Execute condition and get its result
+        // Execute condition
         condition_result = condition_node_cp->exec(Context);
-        if (!condition_result.success) return condition_result;
+
+        if (!condition_result.success) {
+            emit_event(
+                Context,
+                DevTools::EventsT::Runtime,
+                "WHILE condition execution failed",
+                FirstToken.line
+            );
+
+            return condition_result;
+        }
     }
 
-    // Execute statments if condition is true
+    emit_event(
+        Context,
+        DevTools::EventsT::Runtime,
+        condition_result.value == Value(true)
+            ? "WHILE condition evaluated to true"
+            : "WHILE condition evaluated to false",
+        FirstToken.line
+    );
+
+    // Execute statements while condition is true
     bool steel_running = true;
-    while (condition_result.value == Value(true) && steel_running)  {
 
-        // Create a specific scoupe for if statment
-        auto while_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
+    while (
+        condition_result.value == Value(true) &&
+        steel_running
+    ) {
+        emit_event(
+            Context,
+            DevTools::EventsT::Runtime,
+            "Entering WHILE loop iteration",
+            FirstToken.line
+        );
 
-        for (auto& stm: Statments) {
-            // Create a copy of node
+        // Create a specific scope for this iteration
+        auto while_scoupe =
+            std::make_unique<Scopes::Scope>(Context.ParentScope);
+
+        for (auto& stm : Statments) {
+            if (!stm)
+                continue;
+
+            // Copy statement node
             auto stm_raw_ptr = stm->clone();
             Node stm_ptr(stm_raw_ptr);
 
-            // execute node
-            auto r = stm_ptr->exec({while_scoupe.get(), Context.Debugger}); // Exucute statment
-            if (!r.success) return r; // return statment if there is an error
+            emit_event(
+                Context,
+                DevTools::EventsT::Runtime,
+                "Executing WHILE loop statement",
+                FirstToken.line
+            );
 
-            if (r.state == ExecState::Return) return r; // If there is a return of data
-            if (r.state == ExecState::Continue) break; // stop executing all statments and reenter in new loop
-            if (r.state == ExecState::Break) {steel_running = false; break;}; // stop all the node
+            // Execute statement
+            auto r = stm_ptr->exec({
+                while_scoupe.get(),
+                Context.Debugger
+            });
+
+            if (!r.success) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "WHILE loop statement execution failed",
+                    FirstToken.line
+                );
+
+                return r;
+            }
+
+            // Return from function
+            if (r.state == ExecState::Return) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "RETURN propagated from WHILE loop",
+                    FirstToken.line
+                );
+
+                return r;
+            }
+
+            // Continue to the next iteration
+            if (r.state == ExecState::Continue) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "CONTINUE propagated by WHILE loop",
+                    FirstToken.line
+                );
+
+                break;
+            }
+
+            // Exit the loop
+            if (r.state == ExecState::Break) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "BREAK propagated by WHILE loop",
+                    FirstToken.line
+                );
+
+                steel_running = false;
+                break;
+            }
         }
-        
-        if (steel_running){
+
+        if (steel_running) {
             // Copy condition node
             auto condition_node_cp_raw_ptr = condition_node->clone();
             Node condition_node_cp(condition_node_cp_raw_ptr);
 
-            // Execute condition and get its result
+            // Evaluate condition again
             condition_result = condition_node_cp->exec(Context);
-            if (!condition_result.success) return condition_result;
+
+            if (!condition_result.success) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "WHILE condition reevaluation failed",
+                    FirstToken.line
+                );
+
+                return condition_result;
+            }
+
+            emit_event(
+                Context,
+                DevTools::EventsT::Runtime,
+                condition_result.value == Value(true)
+                    ? "WHILE condition evaluated to true"
+                    : "WHILE condition evaluated to false",
+                FirstToken.line
+            );
         }
     }
 
-    // Delete all statments
+    emit_event(
+        Context,
+        DevTools::EventsT::Runtime,
+        "WHILE loop execution completed",
+        FirstToken.line
+    );
+
+    // Delete all statements
     Statments.clear();
 
     // Delete condition node
     condition_node = nullptr;
 
-    return {"",true,std::monostate()};
+    return {
+        "",
+        true,
+        std::monostate{}
+    };
 }
 
 // ==================================================================
 // Class of for loops
 // ==================================================================
 
-// Constructure
+// Constructor
 ForLoopsNode::ForLoopsNode(
-    Component& Initialization, 
-    Component& Condition, 
-    Component& Update, 
+    Component& Initialization,
+    Component& Condition,
+    Component& Update,
     NodesL& statments
-    ):
-        Initialization(std::move(Initialization)),
-        Condition(std::move(Condition)),
-        Update(std::move(Update)),
-        Statments(std::move(statments))
+):
+    Initialization(std::move(Initialization)),
+    Condition(std::move(Condition)),
+    Update(std::move(Update)),
+    Statments(std::move(statments))
 {
     return_type = "void";
 }
 
-// Get the str to print
-std::string 
+// Get the string to print
+std::string
 ForLoopsNode::get_str(
     int level
 ) {
     std::stringstream ss;
 
-    for (int i=0;i<level;i++)
+    for (int i = 0; i < level; i++)
         ss << "|  ";
+
     ss << "For Loop \n";
 
-    for (int i=0;i<level+1;i++)
+    for (int i = 0; i < level + 1; i++)
         ss << "|  ";
-    ss << "Initialization: \n" << Initialization.node->get_str(level+2);
 
-    for (int i=0;i<level+1;i++)
-        ss << "|  ";
-    ss << "Condition: \n" << Condition.node->get_str(level+2);
+    ss << "Initialization: \n"
+       << Initialization.node->get_str(level + 2);
 
-    for (int i=0;i<level+1;i++)
+    for (int i = 0; i < level + 1; i++)
         ss << "|  ";
-    ss << "Update: \n" << Update.node->get_str(level+2);
 
-    for (int i=0;i<level+1;i++)
+    ss << "Condition: \n"
+       << Condition.node->get_str(level + 2);
+
+    for (int i = 0; i < level + 1; i++)
         ss << "|  ";
+
+    ss << "Update: \n"
+       << Update.node->get_str(level + 2);
+
+    for (int i = 0; i < level + 1; i++)
+        ss << "|  ";
+
     ss << "Statments: \n";
 
-    for (auto& stm: Statments) 
-        ss << stm->get_str(level+2);
+    for (auto& stm : Statments)
+        ss << stm->get_str(level + 2);
 
     return ss.str();
 }
 
 // Get the type of node
-ASTNodesTypes 
+ASTNodesTypes
 ForLoopsNode::NType() {
     return NT__ForLoopsNode;
 }
 
-// Clone the class or get a new copy from them
-ASTNode* 
+// ==================================================================
+// Clone for loop node
+// ==================================================================
+
+ASTNode*
 ForLoopsNode::clone() {
+    // Create new unique_ptrs for components
+    Node Initialization_cp(
+        Initialization.node
+            ? Initialization.node->clone()
+            : nullptr
+    );
 
-    // Create new unique_ptrs of components
-    Node Initialization_cp(Initialization.node?Initialization.node->clone():nullptr);
-    Node Condition_cp(Condition.node?Condition.node->clone():nullptr);
-    Node Update_cp(Update.node?Update.node->clone():nullptr);
+    Node Condition_cp(
+        Condition.node
+            ? Condition.node->clone()
+            : nullptr
+    );
 
-    // Create components objects
-    Component new_Initialization = {Initialization.first_token, std::move(Initialization_cp)};
-    Component new_Condition = {Condition.first_token, std::move(Condition_cp)};
-    Component new_Update = {Update.first_token, std::move(Update_cp)};
+    Node Update_cp(
+        Update.node
+            ? Update.node->clone()
+            : nullptr
+    );
 
-    // Copy statments
+    // Create component objects
+    Component new_Initialization = {
+        Initialization.first_token,
+        std::move(Initialization_cp)
+    };
+
+    Component new_Condition = {
+        Condition.first_token,
+        std::move(Condition_cp)
+    };
+
+    Component new_Update = {
+        Update.first_token,
+        std::move(Update_cp)
+    };
+
+    // Copy statements
     NodesL new_stms_list;
-    for (auto& stm: Statments) {
-        Node new_stm(stm?stm->clone():nullptr);
+
+    for (auto& stm : Statments) {
+        Node new_stm(stm ? stm->clone() : nullptr);
         new_stms_list.push_back(std::move(new_stm));
     }
 
-    // Create a new and return node ptr
+    // Create and return the new node
     return new ForLoopsNode(
         new_Initialization,
         new_Condition,
         new_Update,
         new_stms_list
     );
-
 }
 
-// types and value checking
-ReturnResult<bool> 
+// ==================================================================
+// For loop: semantic analysis
+// ==================================================================
+
+ReturnResult<bool>
 ForLoopsNode::accept(
     NodesContext Context
 ) {
-    // Create a for loop scoupe
-    auto for_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "Starting FOR loop semantic analysis",
+        Initialization.first_token.line
+    );
 
-    // Create the list of instruction
-    std::vector<Component*> stndard_components = {&Initialization,&Condition,&Update};
+    // Create a scope for the for loop
+    auto for_scoupe =
+        std::make_unique<Scopes::Scope>(Context.ParentScope);
 
-    // Verifi components
-    for (auto& comp: stndard_components) {
-        auto r = comp->node->accept({for_scoupe.get(),Context.Debugger});
-        if (!r.success) return r;
+    // Create the list of components
+    std::vector<Component*> standard_components = {
+        &Initialization,
+        &Condition,
+        &Update
+    };
+
+    // Verify components
+    for (auto& comp : standard_components) {
+        if (!comp->node) {
+            emit_event(
+                Context,
+                DevTools::EventsT::Analysis,
+                "FOR loop contains a null component",
+                comp->first_token.line
+            );
+
+            return {
+                "FOR loop contains a null component",
+                false,
+                false
+            };
+        }
+
+        emit_event(
+            Context,
+            DevTools::EventsT::Analysis,
+            "Analyzing FOR loop component",
+            comp->first_token.line
+        );
+
+        auto r = comp->node->accept({
+            for_scoupe.get(),
+            Context.Debugger
+        });
+
+        if (!r.success) {
+            emit_event(
+                Context,
+                DevTools::EventsT::Analysis,
+                "FOR loop component analysis failed",
+                comp->first_token.line
+            );
+
+            return r;
+        }
     }
 
-    // Verifi condition node
+    // Verify condition node
     if (Condition.node->return_type != "bool") {
+        emit_event(
+            Context,
+            DevTools::EventsT::Analysis,
+            "FOR condition type mismatch: expected bool",
+            Condition.first_token.line
+        );
+
         auto err = Errors::TypeError(
             "bool",
             Condition.node->return_type,
@@ -376,105 +829,382 @@ ForLoopsNode::accept(
             Condition.first_token.value.size(),
             "Condition of for loop need to be bolean !!"
         );
-        ReturnResult<bool> re = {err.msg,false,false};
+
+        ReturnResult<bool> re = {
+            err.msg,
+            false,
+            false
+        };
+
         re.error_info = err.info;
+
         return re;
     }
+
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "FOR loop components validated",
+        Initialization.first_token.line
+    );
 
     // Create the returning nodes list
     std::vector<ASTNode*> return_nodes;
 
-    // Verifi all statments
-    for (auto& stm: Statments) {
-        auto r = stm->accept({for_scoupe.get(),Context.Debugger});
-        if (!r.success) return r;
+    // Verify all statements
+    for (auto& stm : Statments) {
+        if (!stm) {
+            emit_event(
+                Context,
+                DevTools::EventsT::Analysis,
+                "Null statement found in FOR loop",
+                Initialization.first_token.line
+            );
+
+            continue;
+        }
+
+        emit_event(
+            Context,
+            DevTools::EventsT::Analysis,
+            "Analyzing FOR loop statement",
+            Initialization.first_token.line
+        );
+
+        auto r = stm->accept({
+            for_scoupe.get(),
+            Context.Debugger
+        });
+
+        if (!r.success) {
+            emit_event(
+                Context,
+                DevTools::EventsT::Analysis,
+                "FOR loop statement analysis failed",
+                Initialization.first_token.line
+            );
+
+            return r;
+        }
 
         if (r.state == ExecState::Return) {
-            for (auto rptr: r.return_nodes)
+            for (auto rptr : r.return_nodes)
                 return_nodes.push_back(rptr);
         }
     }
 
-    return {"",true,true,return_nodes.empty()?ExecState::Normal:ExecState::Return,std::move(return_nodes)};
+    emit_event(
+        Context,
+        DevTools::EventsT::Analysis,
+        "FOR loop semantic analysis completed",
+        Initialization.first_token.line
+    );
+
+    return {
+        "",
+        true,
+        true,
+        return_nodes.empty()
+            ? ExecState::Normal
+            : ExecState::Return,
+        std::move(return_nodes)
+    };
 }
 
-// execute the node
-ReturnResult<Value> 
+// ==================================================================
+// For loop: runtime execution
+// ==================================================================
+
+ReturnResult<Value>
 ForLoopsNode::exec(
     NodesContext Context
 ) {
-    // Create a for loop scoupe
-    auto for_scoupe = std::make_unique<Scopes::Scope>(Context.ParentScope);
+    emit_event(
+        Context,
+        DevTools::EventsT::Runtime,
+        "Starting FOR loop execution",
+        Initialization.first_token.line
+    );
 
-    // Initilyze condition result var
+    // Create a scope for the for loop
+    auto for_scoupe =
+        std::make_unique<Scopes::Scope>(Context.ParentScope);
+
+    // Initialize condition result
     ReturnResult<Value> condition_result;
 
-    // Run Initialyze
-    {
-        auto r = Initialization.node->exec({for_scoupe.get(),Context.Debugger});
-        if (!r.success) return r;
+    // Run initialization
+    if (!Initialization.node) {
+        emit_event(
+            Context,
+            DevTools::EventsT::Runtime,
+            "FOR initialization node is null",
+            Initialization.first_token.line
+        );
+
+        return {
+            "FOR initialization node is null",
+            false,
+            std::monostate{}
+        };
     }
 
+    {
+        auto r = Initialization.node->exec({
+            for_scoupe.get(),
+            Context.Debugger
+        });
+
+        if (!r.success) {
+            emit_event(
+                Context,
+                DevTools::EventsT::Runtime,
+                "FOR initialization failed",
+                Initialization.first_token.line
+            );
+
+            return r;
+        }
+    }
+
+    emit_event(
+        Context,
+        DevTools::EventsT::Runtime,
+        "FOR initialization completed",
+        Initialization.first_token.line
+    );
+
     // Run the condition for the first time
+    if (!Condition.node) {
+        emit_event(
+            Context,
+            DevTools::EventsT::Runtime,
+            "FOR condition node is null",
+            Condition.first_token.line
+        );
+
+        return {
+            "FOR condition node is null",
+            false,
+            std::monostate{}
+        };
+    }
+
     {
         auto condition_cp_raw_ptr = Condition.node->clone();
         Node condition_cp(condition_cp_raw_ptr);
 
-        condition_result = condition_cp->exec({for_scoupe.get(),Context.Debugger});
-        if (!condition_result.success) return condition_result;
+        condition_result = condition_cp->exec({
+            for_scoupe.get(),
+            Context.Debugger
+        });
+
+        if (!condition_result.success) {
+            emit_event(
+                Context,
+                DevTools::EventsT::Runtime,
+                "Initial FOR condition evaluation failed",
+                Condition.first_token.line
+            );
+
+            return condition_result;
+        }
     }
 
-    // Execute statments if condition is true (start loop)
+    emit_event(
+        Context,
+        DevTools::EventsT::Runtime,
+        condition_result.value == Value(true)
+            ? "FOR condition evaluated to true"
+            : "FOR condition evaluated to false",
+        Condition.first_token.line
+    );
+
+    // Execute statements while the condition is true
     bool steel_running = true;
-    while (condition_result.value == Value(true) && steel_running)  {
 
-        // Create a specific scoupe for if statment
-        auto while_scoupe = std::make_unique<Scopes::Scope>(for_scoupe.get());
+    while (
+        condition_result.value == Value(true) &&
+        steel_running
+    ) {
+        emit_event(
+            Context,
+            DevTools::EventsT::Runtime,
+            "Entering FOR loop iteration",
+            Initialization.first_token.line
+        );
 
-        for (auto& stm: Statments) {
-            // Create a copy of node
+        // Create a scope for this iteration
+        auto while_scoupe =
+            std::make_unique<Scopes::Scope>(for_scoupe.get());
+
+        for (auto& stm : Statments) {
+            if (!stm)
+                continue;
+
+            // Copy statement node
             auto stm_raw_ptr = stm->clone();
             Node stm_ptr(stm_raw_ptr);
 
-            // execute node
-            auto r = stm_ptr->exec({while_scoupe.get(),Context.Debugger}); // Exucute statment
-            if (!r.success) return r; // return statment if there is an error
+            emit_event(
+                Context,
+                DevTools::EventsT::Runtime,
+                "Executing FOR loop statement",
+                Initialization.first_token.line
+            );
 
-            if (r.state == ExecState::Return) return r; // If there is a return of data
-            if (r.state == ExecState::Continue) break; // stop executing all statments and reenter in new loop
-            if (r.state == ExecState::Break) {steel_running = false; break;} // stop all the node
+            // Execute statement
+            auto r = stm_ptr->exec({
+                while_scoupe.get(),
+                Context.Debugger
+            });
+
+            if (!r.success) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "FOR loop statement execution failed",
+                    Initialization.first_token.line
+                );
+
+                return r;
+            }
+
+            // Return from function
+            if (r.state == ExecState::Return) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "RETURN propagated from FOR loop",
+                    Initialization.first_token.line
+                );
+
+                return r;
+            }
+
+            // Continue to the next iteration
+            if (r.state == ExecState::Continue) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "CONTINUE propagated by FOR loop",
+                    Initialization.first_token.line
+                );
+
+                break;
+            }
+
+            // Exit the loop
+            if (r.state == ExecState::Break) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "BREAK propagated by FOR loop",
+                    Initialization.first_token.line
+                );
+
+                steel_running = false;
+                break;
+            }
         }
-        
-        // Run the update and the 
-        if (steel_running){
+
+        // Run update and reevaluate condition
+        if (steel_running) {
+            if (!Update.node) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "FOR update node is null",
+                    Update.first_token.line
+                );
+
+                return {
+                    "FOR update node is null",
+                    false,
+                    std::monostate{}
+                };
+            }
 
             {
                 // Copy update node
-                auto upadte_node_cp_raw_ptr = Update.node->clone();
-                Node upadte_node_cp(upadte_node_cp_raw_ptr);
-    
-                // Execute update and get its result
-                auto upadte_result = upadte_node_cp->exec({for_scoupe.get(),Context.Debugger});
-                if (!upadte_result.success) return upadte_result;
+                auto update_node_cp_raw_ptr = Update.node->clone();
+                Node update_node_cp(update_node_cp_raw_ptr);
+
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "Executing FOR update",
+                    Update.first_token.line
+                );
+
+                // Execute update
+                auto update_result = update_node_cp->exec({
+                    for_scoupe.get(),
+                    Context.Debugger
+                });
+
+                if (!update_result.success) {
+                    emit_event(
+                        Context,
+                        DevTools::EventsT::Runtime,
+                        "FOR update execution failed",
+                        Update.first_token.line
+                    );
+
+                    return update_result;
+                }
             }
 
             // Copy condition node
             auto condition_node_cp_raw_ptr = Condition.node->clone();
             Node condition_node_cp(condition_node_cp_raw_ptr);
 
-            // Execute condition and get its result
-            condition_result = condition_node_cp->exec({for_scoupe.get(),Context.Debugger});
-            if (!condition_result.success) return condition_result;
+            // Evaluate condition again
+            condition_result = condition_node_cp->exec({
+                for_scoupe.get(),
+                Context.Debugger
+            });
+
+            if (!condition_result.success) {
+                emit_event(
+                    Context,
+                    DevTools::EventsT::Runtime,
+                    "FOR condition reevaluation failed",
+                    Condition.first_token.line
+                );
+
+                return condition_result;
+            }
+
+            emit_event(
+                Context,
+                DevTools::EventsT::Runtime,
+                condition_result.value == Value(true)
+                    ? "FOR condition evaluated to true"
+                    : "FOR condition evaluated to false",
+                Condition.first_token.line
+            );
         }
     }
 
-    // Delete all statments
+    emit_event(
+        Context,
+        DevTools::EventsT::Runtime,
+        "FOR loop execution completed",
+        Initialization.first_token.line
+    );
+
+    // Delete all statements
     Statments.clear();
 
-    // Delete all components's nodes
+    // Delete all component nodes
     Initialization.node = nullptr;
     Condition.node = nullptr;
     Update.node = nullptr;
 
-    return {"",true,std::monostate()};
+    return {
+        "",
+        true,
+        std::monostate{}
+    };
 }

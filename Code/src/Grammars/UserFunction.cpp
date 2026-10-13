@@ -257,15 +257,15 @@ ReturnResult<Parser::Node>
 Parser::get_return_noode() {
     ReturnResult<Token> consume_result; // The global cunsum return result object
 
-    // Jump on 'RETURN'
-    consume_result = consume(TokenType::KEY_WORD);
-    if (!consume_result.success) {
+    // Get 'RETURN'
+    auto return_token = consume(TokenType::KEY_WORD);
+    if (!return_token.success) {
         ReturnResult<Node> re = {
-            consume_result.Message,
+            return_token.Message,
             false,
             nullptr
         };
-        re.error_info = consume_result.error_info;
+        re.error_info = return_token.error_info;
         return re;
     }
 
@@ -296,6 +296,7 @@ Parser::get_return_noode() {
         "",
         true,
         std::make_unique<UserFunctionReturnNode>(
+            return_token.value,
             std::move(value_node)
         )
     };

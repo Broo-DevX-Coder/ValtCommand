@@ -17,7 +17,6 @@ FUNCTION power (
 
     // Calculating operation 
     WHILE (GET pointer) < (GET power) THEN
-        CALL print c<float>: GET pointer END
         SET var = (GET var)*(GET num) 
         SET pointer = (GET pointer)+1
     END
