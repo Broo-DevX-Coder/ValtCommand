@@ -95,15 +95,17 @@ Parser::get_module_node() {
 
     ModuleNode::StatmentsT s_list;
     ReturnResult<Parser::Node> nt;
+    Token FirstT = curent();
 
     do {
+        Token FT = curent();
         nt = get_expretion();
         if (!nt.success) {
             ReturnResult<PNode> re = {nt.Message, false, nullptr};
             re.error_info = nt.error_info;
             return re;
         }
-        s_list.push_back(std::move(nt.value));
+        s_list.push_back({std::move(nt.value),FT});
     } while (!isAsEnd());
 
     // make module node and return them
@@ -111,7 +113,8 @@ Parser::get_module_node() {
         "",
         true,
         std::make_unique<ModuleNode>(
-            s_list
+            s_list,
+            FirstT
         )
     };
 }

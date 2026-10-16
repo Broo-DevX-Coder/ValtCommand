@@ -34,8 +34,10 @@ static void emit_event(
 
 // Constructor
 ModuleNode::ModuleNode(
-    StatmentsT& s_
-): statements(std::move(s_)) {
+    StatmentsT& s_,
+    Token& First_token
+): statements(std::move(s_)),
+   FToken(First_token) {
     return_type = "void";
 }
 
@@ -52,8 +54,8 @@ ModuleNode::get_str(
     ss << "Program:\n";
 
     for (auto& statement : statements) {
-        if (statement)
-            ss << statement->get_str(level + 1);
+        if (statement.node)
+            ss << statement.node->get_str(level + 1);
     }
 
     return ss.str();
@@ -77,7 +79,7 @@ ModuleNode::exec(
         Context,
         DevTools::EventsT::Runtime,
         "Starting program execution",
-        0
+        FToken.line
     );
 
     ReturnResult<Value> r;
@@ -87,13 +89,13 @@ ModuleNode::exec(
     for (auto& stmt : statements) {
         ++statement_index;
 
-        if (!stmt) {
+        if (!stmt.node) {
             emit_event(
                 Context,
                 DevTools::EventsT::Runtime,
                 "Skipping null statement #" +
                     std::to_string(statement_index),
-                0
+                FToken.line
             );
 
             continue;
@@ -104,10 +106,10 @@ ModuleNode::exec(
             DevTools::EventsT::Runtime,
             "Executing program statement #" +
                 std::to_string(statement_index),
-            0
+            FToken.line
         );
 
-        r = stmt->exec(Context);
+        r = stmt.node->exec(Context);
 
         if (!r.success) {
             emit_event(
@@ -116,7 +118,7 @@ ModuleNode::exec(
                 "Program statement #" +
                     std::to_string(statement_index) +
                     " execution failed",
-                0
+                FToken.line
             );
 
             return r;
@@ -132,21 +134,21 @@ ModuleNode::exec(
                 DevTools::EventsT::Runtime,
                 "Control-flow state propagated from program statement #" +
                     std::to_string(statement_index),
-                0
+                FToken.line
             );
 
             return r;
         }
 
         // Preserve the original ownership behavior.
-        stmt = nullptr;
+        stmt.node = nullptr;
     }
 
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
         "Program execution completed successfully",
-        0
+        FToken.line
     );
 
     return {"", true, std::monostate{}};
@@ -164,7 +166,7 @@ ModuleNode::accept(
         Context,
         DevTools::EventsT::Analysis,
         "Starting program semantic analysis",
-        0
+        FToken.line
     );
 
     ReturnResult<bool> r;
@@ -174,13 +176,13 @@ ModuleNode::accept(
     for (auto& stmt : statements) {
         ++statement_index;
 
-        if (!stmt) {
+        if (!stmt.node) {
             emit_event(
                 Context,
                 DevTools::EventsT::Analysis,
                 "Skipping null statement #" +
                     std::to_string(statement_index),
-                0
+                FToken.line
             );
 
             continue;
@@ -191,10 +193,10 @@ ModuleNode::accept(
             DevTools::EventsT::Analysis,
             "Analyzing program statement #" +
                 std::to_string(statement_index),
-            0
+            FToken.line
         );
 
-        r = stmt->accept(Context);
+        r = stmt.node->accept(Context);
 
         if (!r.success) {
             emit_event(
@@ -203,7 +205,7 @@ ModuleNode::accept(
                 "Program statement #" +
                     std::to_string(statement_index) +
                     " semantic analysis failed",
-                0
+                FToken.line
             );
 
             return r;
@@ -214,7 +216,7 @@ ModuleNode::accept(
         Context,
         DevTools::EventsT::Analysis,
         "Program semantic analysis completed successfully",
-        0
+        FToken.line
     );
 
     return {"", true, true};
@@ -229,14 +231,14 @@ ModuleNode::clone() {
     StatmentsT new_statments;
 
     for (auto& s : statements) {
-        if (!s) {
-            new_statments.push_back(nullptr);
+        if (!s.node) {
+            new_statments.push_back({nullptr});
             continue;
         }
 
-        std::unique_ptr<ASTNode> statment_c(s->clone());
-        new_statments.push_back(std::move(statment_c));
+        std::unique_ptr<ASTNode> statment_c(s.node->clone());
+        new_statments.push_back({std::move(statment_c),s.first_token});
     }
 
-    return new ModuleNode(new_statments);
+    return new ModuleNode(new_statments,FToken);
 }

@@ -61,13 +61,7 @@ int main () {
 
 
     std::string code = R"CODE(
-    FOR 
-        SET s<int> = 0;
-        GET s<1000000;
-        SET s = (GET s)+1
-    THEN
-        
-    END
+    CALL print sa<str>:"hellow" END
     )CODE";
     
     auto r = Runtime::RunTime(code);

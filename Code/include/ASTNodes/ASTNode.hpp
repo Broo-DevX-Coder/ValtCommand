@@ -88,11 +88,18 @@ class ASTNode {
 class ModuleNode : public ASTNode
 {
     public:
-        using StatmentsT = std::vector<std::unique_ptr<ASTNode>>;
-        
-        StatmentsT statements;
+        struct statment {
+            std::unique_ptr<ASTNode> node;
+            Token first_token;
+        };
+        using StatmentsT = std::vector<statment>;
 
-        ModuleNode(StatmentsT& s_); // Constructure
+    private:
+        StatmentsT statements;
+        Token FToken;
+
+    public:
+        ModuleNode(StatmentsT& s_,Token& First_token); // Constructure
         std::string get_str(int level=0) override; // get the str of node to print
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // The node verifi it self befor runnig

@@ -66,11 +66,11 @@
 
 ### Debugging
 
-- Runtime Tracer
+- ✅ Better error handling
+- ✅ Runtime Tracer
 - Scope Inspector
 - Variable Inspector
 - Function Inspector
-- Better error handling
 
 ### Developer Tools
 

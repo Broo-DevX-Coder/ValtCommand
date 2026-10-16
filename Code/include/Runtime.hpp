@@ -39,9 +39,9 @@ namespace Runtime {
             std::unique_ptr<Scopes::Scope> run_semantic_scope; // Global scope in analyzing befor run
             std::unique_ptr<Scopes::Scope> semantic_scope; // Global scope in pure analyzing
             std::string Code; // The programming code
+            DevTools::Debugger* Debugger = nullptr; // The debugger of runtime
             
         public:
-            DevTools::Debugger* Debugger = nullptr; // The debugger of runtime
             RunTime(const std::string& code); // Constructure
             RunTime(RunTime& runtime) = delete; // 2nd constructure
             ReturnResult<Parser::PNode> analyze(Scopes::Scope* scope); // Analyze the code and get the module node
