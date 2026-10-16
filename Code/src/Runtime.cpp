@@ -64,6 +64,8 @@ Runtime::RunTime::execute_code() {
         return re;
     }
 
+    std::cout << analyze_result.value->get_str(0) << std::endl; 
+
     auto exec_result = analyze_result.value->exec({run_scope.get(),Debugger});
 
     if (!exec_result.success){

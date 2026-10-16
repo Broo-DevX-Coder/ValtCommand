@@ -1,0 +1,33 @@
+// ============================================================
+// ValtCommand - Complex Expression Tests
+// ============================================================
+
+CALL print value<str>:"========== COMPLEX EXPRESSION 1 ==========" END
+CALL print value<int>:(10 + 5) * (8 - 3) END
+// Expected: 75
+
+CALL print value<str>:"========== COMPLEX EXPRESSION 2 ==========" END
+CALL print value<int>:((2 ** 3) + (4 * 5) - 6) / 2 END
+// Expected: 11
+
+CALL print value<str>:"========== COMPLEX EXPRESSION 3 ==========" END
+CALL print value<int>:(((((12 + 8) * 3 ** 2) - (144 %% 4)) + ((7 ** 3) % 10) - (-5 * 6)) * 2 + (100 %% (2 ** 3))) END
+// Expected: 366
+
+CALL print value<str>:"========== COMPLEX EXPRESSION 4 ==========" END
+CALL print value<int>:2 + 3 * 2 ** 3 %% 5 END
+// Expected: 6
+
+CALL print value<str>:"========== COMPLEX EXPRESSION 5 ==========" END
+CALL print value<int>:((10 - 4) * 3) + (2 ** 4) END
+// Expected: 34
+
+CALL print value<str>:"========== COMPLEX EXPRESSION 6 ==========" END
+CALL print value<bool>:((10 > 5) && (3 < 8)) || (2 == 7) END
+// Expected: True
+
+CALL print value<str>:"========== COMPLEX EXPRESSION 7 ==========" END
+CALL print value<int>:((20 %% 6) + (17 % 5)) * 2 END
+// Expected: 12
+
+CALL print value<str>:"========== COMPLEX EXPRESSION TESTS COMPLETED ==========" END

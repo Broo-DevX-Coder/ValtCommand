@@ -1,0 +1,42 @@
+// ============================================================
+// ValtCommand - Error Handling Tests
+// File: errors.vlt
+//
+// Uncomment ONE invalid test at a time.
+// Invalid cases may stop execution.
+// ============================================================
+
+CALL print value<str>:"========== ERROR TESTS ==========" END
+
+// Test 1: Undefined variable
+// CALL print value<int>:GET undefined_variable END
+
+// Test 2: Division by zero
+// CALL print value<int>:10 / 0 END
+
+// Test 3: Integer division by zero
+// CALL print value<int>:10 %% 0 END
+
+// Test 4: Modulo by zero
+// CALL print value<int>:10 % 0 END
+
+// Test 5: Wrong argument type
+//
+// FUNCTION expects_int (
+//     number<int>
+// )->int
+//     RETURN GET number
+// END
+//
+// CALL print value<int>:CALL expects_int number<str>:"hello" END END
+
+// Test 6: Undefined function
+// CALL print value<int>:CALL missing_function value<int>:10 END END
+
+// Test 7: Invalid expression
+// CALL print value<int>:10 + * 5 END
+
+// Test 8: Missing closing parenthesis
+// CALL print value<int>:(10 + 5 END
+
+CALL print value<str>:"========== ERROR TEST CASES DOCUMENTED ==========" END

@@ -1,0 +1,38 @@
+// ============================================================
+// ValtCommand - Loop Tests
+// ============================================================
+
+CALL print value<str>:"========== BASIC WHILE ==========" END
+
+SET counter<int> = 0
+
+WHILE (GET counter) < 5 THEN
+    CALL print value<int>:GET counter END
+    SET counter = (GET counter) + 1
+END
+
+CALL print value<str>:"========== WHILE ACCUMULATION ==========" END
+
+SET counter<int> = 0
+SET total<int> = 0
+
+WHILE (GET counter) < 5 THEN
+    SET total = (GET total) + (GET counter)
+    SET counter = (GET counter) + 1
+END
+
+CALL print value<int>:GET total END
+
+CALL print value<str>:"========== MULTIPLICATION LOOP ==========" END
+
+SET counter<int> = 1
+SET result<int> = 1
+
+WHILE (GET counter) < 6 THEN
+    SET result = (GET result) * (GET counter)
+    SET counter = (GET counter) + 1
+END
+
+CALL print value<int>:GET result END
+
+CALL print value<str>:"========== LOOP TESTS COMPLETED ==========" END

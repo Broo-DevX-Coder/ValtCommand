@@ -123,6 +123,9 @@ enum class TokenType {
     GREATER_EQUAL,
     LOGICAL_AND,
     LOGICAL_OR,
+    POWER,
+    DIV,
+    MOD,
     UNKNOWN
 };
 

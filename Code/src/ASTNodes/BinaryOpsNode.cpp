@@ -88,6 +88,12 @@ static std::string binary_to_string(TokenType op) {
         case TokenType::SLASH:
             return "/";
 
+        case TokenType::DIV:
+            return "DIV";
+        
+        case TokenType::MOD:
+            return "MOD";
+
         default:
             return "Unknown";
     }
@@ -113,12 +119,18 @@ BinOpsNode::get_str(int level) {
 
     ss << "Binary operation:\n";
 
+    size_t part_i = 0;
     for (auto& part : Parts) {
         for (int i = 0; i < level + 1; i++)
             ss << "|  ";
+        
+        if (part_i == 0)
+            ss << "First" << ":\n";
+        else
+            ss << binary_to_string(part.op) << ":\n";
 
-        ss << binary_to_string(part.op) << ":\n";
         ss << part.node->get_str(level + 2);
+        part_i++;
     }
 
     return ss.str();
@@ -234,6 +246,13 @@ BinOpsNode::push_to_result(
         result *= input;
     } else if (op == TokenType::SLASH) {
         result /= input;
+    } else if (op == TokenType::DIV) {
+        int64_t r = result / input;
+        result = r;
+    } else if (op == TokenType::MOD) {
+        int64_t i1 = result;
+        int64_t i2 = input;
+        result = i1 % i2;
     }
 }
 
@@ -292,7 +311,7 @@ BinOpsNode::exec(NodesContext Context) {
         auto val = turn_value_to_float(exec_result.value);
 
         // Division by zero
-        if (part.op == TokenType::SLASH && val.value == 0) {
+        if ((part.op == TokenType::SLASH || part.op == TokenType::DIV || part.op == TokenType::MOD) && val.value == 0) {
             Errors::RuntimeError error(
                 part.token.line,
                 part.token.column,
@@ -947,4 +966,187 @@ LogicOpsNode::exec(NodesContext Context) {
     );
 
     return {"", true, result};
+}
+
+// ==================================================================
+// Constructor
+// ==================================================================
+
+
+// Constructor
+PowerNode::PowerNode(
+    const Token& token,
+    OperationPart& left,
+    OperationPart& right
+)
+    : token(token),
+      left(std::move(left)),
+      right(std::move(right)) {}
+
+// Get string representation
+std::string
+PowerNode::get_str(int level) {
+    std::stringstream ss;
+
+    for (int i = 0; i < level; i++)
+        ss << "|  ";
+
+    ss << "Power operation:\n";
+
+    for (int i = 0; i < level + 1; i++)
+        ss << "|  ";
+
+    ss << "Operator **:\n";
+
+    for (int i = 0; i < level + 1; i++)
+        ss << "|  ";
+
+    ss << "Base:\n";
+    ss << left.node->get_str(level + 2);
+
+    for (int i = 0; i < level + 1; i++)
+        ss << "|  ";
+
+    ss << "Exponent:\n";
+    ss << right.node->get_str(level + 2);
+
+    return ss.str();
+}
+
+// Get node type
+ASTNodesTypes PowerNode::NType() {
+    return NT__PowerNode;
+}
+
+// Semantic analysis
+ReturnResult<bool> 
+PowerNode::accept(
+    NodesContext Context
+) {
+    // Analyze the base
+    auto left_result = left.node->accept(Context);
+    if (!left_result.success) return left_result;
+
+    // Analyze the exponent
+    auto right_result = right.node->accept(Context);
+    if (!right_result.success) return right_result;
+
+    // Validate the base type
+    if (left.node->return_type != "int" &&
+        left.node->return_type != "float") {
+
+        auto error = Errors::TypeError(
+            "int | float",
+            left.node->return_type,
+            left.token.line,
+            left.token.column,
+            left.token.value.size(),
+            "The base of a power operation must be numeric"
+        );
+
+        ReturnResult<bool> re = {error.msg, false, false};
+        re.error_info = error.info;
+
+        return re;
+    }
+
+    // Validate the exponent type
+    if (right.node->return_type != "int" &&
+        right.node->return_type != "float") {
+
+        auto error = Errors::TypeError(
+            "int | float",
+            right.node->return_type,
+            right.token.line,
+            right.token.column,
+            right.token.value.size(),
+            "The exponent of a power operation must be numeric"
+        );
+
+        ReturnResult<bool> re = {error.msg, false, false};
+        re.error_info = error.info;
+
+        return re;
+    }
+
+    // Power operations return float
+    return_type = "float";
+
+    return {"", true, true};
+}
+
+// Execution
+ReturnResult<Value> 
+PowerNode::exec
+(
+    NodesContext Context
+) {
+    // Execute the base
+    auto left_result = left.node->exec(Context);
+    if (!left_result.success) return left_result;
+
+    // Execute the exponent
+    auto right_result = right.node->exec(Context);
+    if (!right_result.success) return right_result;
+
+    // Convert the base to float
+    auto base_result = turn_value_to_float(left_result.value);
+
+    // Convert the exponent to float
+    auto exponent_result = turn_value_to_float(right_result.value);
+
+    // Calculate the power
+    const long double result = std::pow(
+        base_result.value,
+        exponent_result.value
+    );
+
+    // Reject invalid mathematical results
+    if (std::isnan(result)) {
+        Errors::ErrorInfo err_info = {
+            "ValueError",
+            "invalid result in power operation",
+            "", 
+            left.token.line,
+            left.token.column,
+            left.token.value.size()
+        };
+        ReturnResult<Value> re = {"", false, std::monostate{}};
+        re.error_info = err_info;
+        return re;
+    }
+
+    // Reject overflow to infinity
+    if (std::isinf(result)) {
+        Errors::ErrorInfo err_info = {
+            "OverflowError",
+            "power operation result is out of range",
+            "", 
+            left.token.line,
+            left.token.column,
+            left.token.value.size()
+        };
+        ReturnResult<Value> re = {"", false, std::monostate{}};
+        re.error_info = err_info;
+        return re;
+    }
+
+    return {"", true, Value{result}};
+}
+
+// Clone
+ASTNode* PowerNode::clone() {
+    OperationPart left_copy{
+        left.op,
+        left.token,
+        std::unique_ptr<ASTNode>(left.node->clone())
+    };
+
+    OperationPart right_copy{
+        right.op,
+        right.token,
+        std::unique_ptr<ASTNode>(right.node->clone())
+    };
+
+    return new PowerNode(token, left_copy, right_copy);
 }

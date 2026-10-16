@@ -1,0 +1,31 @@
+// ============================================================
+// ValtCommand - Comparison Tests
+// ============================================================
+
+CALL print value<str>:"========== GREATER THAN ==========" END
+CALL print value<bool>:5 > 3 END
+CALL print value<bool>:3 > 5 END
+CALL print value<bool>:5 > 5 END
+
+CALL print value<str>:"========== LESS THAN ==========" END
+CALL print value<bool>:3 < 5 END
+CALL print value<bool>:5 < 3 END
+CALL print value<bool>:5 < 5 END
+
+CALL print value<str>:"========== GREATER OR EQUAL ==========" END
+CALL print value<bool>:5 >= 5 END
+CALL print value<bool>:6 >= 5 END
+CALL print value<bool>:4 >= 5 END
+
+CALL print value<str>:"========== LESS OR EQUAL ==========" END
+CALL print value<bool>:5 <= 5 END
+CALL print value<bool>:4 <= 5 END
+CALL print value<bool>:6 <= 5 END
+
+CALL print value<str>:"========== EQUALITY ==========" END
+CALL print value<bool>:5 == 5 END
+CALL print value<bool>:5 == 3 END
+CALL print value<bool>:5 != 3 END
+CALL print value<bool>:5 != 5 END
+
+CALL print value<str>:"========== COMPARISON TESTS COMPLETED ==========" END

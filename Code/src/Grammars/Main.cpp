@@ -1,18 +1,37 @@
 // ==================================================================
-// Include neccessary headers
+// Include necessary headers
 // ==================================================================
-
-// == Locals ==
 #include "Parser.hpp"
 #include "Errors.hpp"
 
-// Nodes
+// ==================================================================
+// AST Nodes
+// ==================================================================
 #include "ASTNodes/BinaryOpsNode.hpp"
-
+#include "ASTNodes/OneSideOpsNodes.hpp"
 
 // ==================================================================
-// Global function of primary nodes
+// Libraries
 // ==================================================================
+#include <utility>
+
+// ==================================================================
+// Helper: create a parser error result from another result
+// ==================================================================
+
+template <typename T>
+static ReturnResult<Parser::Node> propagate_error(
+    const ReturnResult<T>& result
+) {
+    ReturnResult<Parser::Node> error = {
+        result.Message,
+        false,
+        nullptr
+    };
+
+    error.error_info = result.error_info;
+    return error;
+}
 
 ReturnResult<Parser::Node>
 Parser::get_primary() {
@@ -93,16 +112,6 @@ Parser::get_primary() {
         // Consume `(`
         auto left_paren_r = consume(TokenType::LEFT_PAREN);
 
-        if (!left_paren_r.success) {
-            ReturnResult<Node> re = {
-                left_paren_r.Message,
-                false,
-                nullptr
-            };
-            re.error_info = left_paren_r.error_info;
-            return re;
-        }
-
         // Get expression inside parens
         auto node_r = get_expretion();
 
@@ -131,34 +140,6 @@ Parser::get_primary() {
 
         result = std::move(node_r);
 
-    // Get negative or positive number
-    } else if (
-        (check(TokenType::MINUS) || check(TokenType::PLUS)) &&
-        (peek(1).Type == TokenType::INTEGER || peek(1).Type == TokenType::FLOAT)
-    ) {
-
-        // Consume the sign
-        auto op = curent().Type == TokenType::MINUS
-            ? consume(TokenType::MINUS)
-            : consume(TokenType::PLUS);
-
-        if (!op.success) {
-            ReturnResult<Node> re = {
-                op.Message,
-                false,
-                nullptr
-            };
-            re.error_info = op.error_info;
-            return re;
-        }
-
-        // Add the sign to the number
-        curent_token_.value = op.value.value + curent().value;
-
-        result = get_value_node();
-
-    } else {
-        return result;
     }
 
     // Stop if parsing the primary node failed
@@ -166,309 +147,517 @@ Parser::get_primary() {
         return result;
     }
 
-    // Comparison operation expressions (==, !=, ...) =============================
-
-    if (
-        check(TokenType::EQUAL_EQUAL) ||
-        check(TokenType::NOT_EQUAL) ||
-        check(TokenType::LESS_THAN) ||
-        check(TokenType::GREATER_THAN) ||
-        check(TokenType::LESS_EQUAL) ||
-        check(TokenType::GREATER_EQUAL)
-    ) {
-
-        // Move result to node_r
-        auto node_r = std::move(result);
-
-        // Get operation token
-        auto op = curent();
-
-        auto consume_op_r = consume(op.Type);
-
-        if (!consume_op_r.success) {
-            ReturnResult<Node> re = {
-                consume_op_r.Message,
-                false,
-                nullptr
-            };
-            re.error_info = consume_op_r.error_info;
-            return re;
-        }
-
-        // Get operation type
-        ComparitonOpsTypes opT;
-        opT = ComparitonSymbols_ToOps[op.Type];
-
-        // Get the second value
-        auto second_part_T = curent();
-        auto scond_part_r = get_primary();
-
-        if (!scond_part_r.success) {
-            ReturnResult<Node> re = {
-                scond_part_r.Message,
-                false,
-                nullptr
-            };
-            re.error_info = scond_part_r.error_info;
-            return re;
-        }
-
-        // First part
-        OperationPart fpart = {
-            TokenType::UNKNOWN,
-            cu,
-            std::move(node_r.value)
-        };
-
-        // Second part
-        OperationPart spart = {
-            TokenType::UNKNOWN,
-            second_part_T,
-            std::move(scond_part_r.value)
-        };
-
-        auto ptr = std::make_unique<CompOpsNode>(
-            fpart,
-            spart,
-            opT
-        );
-
-        result = {"", true, std::move(ptr)};
-    }
-
     return result;
 }
 
 // ==================================================================
-// The main function of getting nodes, starts with + and -
+// Expression entry point: OR
 // ==================================================================
 
 ReturnResult<Parser::Node>
 Parser::get_expretion() {
-
-    OperationPartsList parts; // Define parts list
-
-    auto cu = curent(); // Get token of first part
-    auto node_r = get_term(); // Get the first part
-
-    if (!node_r.success) {
-        ReturnResult<Node> re = {
-            node_r.Message,
-            false,
-            nullptr
-        };
-        re.error_info = node_r.error_info;
-        return re;
-    }
-
-    // Binary operation expressions (+, -) =============================
-
-    // If token after first part is plus (+) or minus (-)
-    if (check(TokenType::PLUS) || check(TokenType::MINUS)) {
-
-        // Push the first node in parts list
-        parts.push_back({
-            TokenType::UNKNOWN,
-            cu,
-            std::move(node_r.value)
-        });
-    }
-
-    // While the curent token is + or -
-    while (check(TokenType::PLUS) || check(TokenType::MINUS)) {
-
-        // Consume operation symbol
-        auto op = check(TokenType::PLUS)
-            ? consume(TokenType::PLUS)
-            : consume(TokenType::MINUS);
-
-        if (!op.success) {
-            ReturnResult<Node> re = {
-                op.Message,
-                false,
-                nullptr
-            };
-            re.error_info = op.error_info;
-            return re;
-        }
-
-        auto pcu = curent(); // Get the first token of this part
-        auto pnode_r = get_term(); // Get this part
-
-        if (!pnode_r.success) {
-            ReturnResult<Node> re = {
-                pnode_r.Message,
-                false,
-                nullptr
-            };
-            re.error_info = pnode_r.error_info;
-            return re;
-        }
-
-        // Push this part in parts list
-        parts.push_back({
-            op.value.Type,
-            pcu,
-            std::move(pnode_r.value)
-        });
-    }
-
-    if (!parts.empty()) {
-        return {
-            "",
-            true,
-            std::make_unique<BinOpsNode>(
-                parts
-            )
-        };
-    }
-
-    // Logical operation expressions (&&, ||) =============================
-
-    // If token after first part is AND (&&) or OR (||)
-    if (check(TokenType::LOGICAL_AND) || check(TokenType::LOGICAL_OR)) {
-
-        // Push the first node in parts list
-        parts.push_back({
-            TokenType::UNKNOWN,
-            cu,
-            std::move(node_r.value)
-        });
-    }
-
-    // While the curent token is && or ||
-    while (check(TokenType::LOGICAL_AND) || check(TokenType::LOGICAL_OR)) {
-
-        // Consume operation symbol
-        auto op = check(TokenType::LOGICAL_AND)
-            ? consume(TokenType::LOGICAL_AND)
-            : consume(TokenType::LOGICAL_OR);
-
-        if (!op.success) {
-            ReturnResult<Node> re = {
-                op.Message,
-                false,
-                nullptr
-            };
-            re.error_info = op.error_info;
-            return re;
-        }
-
-        auto pcu = curent(); // Get the first token of this part
-        auto pnode_r = get_term(); // Get this part
-
-        if (!pnode_r.success) {
-            ReturnResult<Node> re = {
-                pnode_r.Message,
-                false,
-                nullptr
-            };
-            re.error_info = pnode_r.error_info;
-            return re;
-        }
-
-        // Push this part in parts list
-        parts.push_back({
-            op.value.Type,
-            pcu,
-            std::move(pnode_r.value)
-        });
-    }
-
-    if (!parts.empty()) {
-        return {
-            "",
-            true,
-            std::make_unique<LogicOpsNode>(
-                parts
-            )
-        };
-    }
-
-    return node_r;
+    return get_logical_or();
 }
 
 // ==================================================================
-// The function that gets * and / if they are
+// Logical OR
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_term() {
+Parser::get_logical_or() {
+    OperationPartsList parts;
 
-    OperationPartsList parts; // Define parts list
+    auto first_token = curent();
+    auto first = get_logical_and();
 
-    auto cu = curent(); // Get token of first part
-    auto node_r = get_primary(); // Get the first part
+    if (!first.success)
+        return first;
 
-    if (!node_r.success) {
-        ReturnResult<Node> re = {
-            node_r.Message,
+    if (!check(TokenType::LOGICAL_OR))
+        return first;
+
+    parts.push_back({
+        TokenType::UNKNOWN,
+        first_token,
+        std::move(first.value)
+    });
+
+    while (check(TokenType::LOGICAL_OR)) {
+        auto op = consume(TokenType::LOGICAL_OR);
+
+        if (!op.success)
+            return propagate_error(op);
+
+        auto operand_token = curent();
+        auto operand = get_logical_and();
+
+        if (!operand.success)
+            return operand;
+
+        parts.push_back({
+            TokenType::LOGICAL_OR,
+            operand_token,
+            std::move(operand.value)
+        });
+    }
+
+    return {
+        "",
+        true,
+        std::make_unique<LogicOpsNode>(parts)
+    };
+}
+
+// ==================================================================
+// Logical AND
+// ==================================================================
+
+ReturnResult<Parser::Node>
+Parser::get_logical_and() {
+    OperationPartsList parts;
+
+    auto first_token = curent();
+    auto first = get_equality();
+
+    if (!first.success)
+        return first;
+
+    if (!check(TokenType::LOGICAL_AND))
+        return first;
+
+    parts.push_back({
+        TokenType::UNKNOWN,
+        first_token,
+        std::move(first.value)
+    });
+
+    while (check(TokenType::LOGICAL_AND)) {
+        auto op = consume(TokenType::LOGICAL_AND);
+
+        if (!op.success)
+            return propagate_error(op);
+
+        auto operand_token = curent();
+        auto operand = get_equality();
+
+        if (!operand.success)
+            return operand;
+
+        parts.push_back({
+            TokenType::LOGICAL_AND,
+            operand_token,
+            std::move(operand.value)
+        });
+    }
+
+    return {
+        "",
+        true,
+        std::make_unique<LogicOpsNode>(parts)
+    };
+}
+
+// ==================================================================
+// Equality: ==, !=
+// Non-associative
+// ==================================================================
+
+ReturnResult<Parser::Node>
+Parser::get_equality() {
+    auto first_token = curent();
+    auto first = get_comparison();
+
+    if (!first.success)
+        return first;
+
+    if (
+        !check(TokenType::EQUAL_EQUAL) &&
+        !check(TokenType::NOT_EQUAL)
+    ) {
+        return first;
+    }
+
+    auto op = curent();
+
+    auto consumed = consume(op.Type);
+
+    if (!consumed.success)
+        return propagate_error(consumed);
+
+    auto second_token = curent();
+    auto second = get_comparison();
+
+    if (!second.success)
+        return second;
+
+    // Reject chained equality comparisons: a == b == c
+    if (
+        check(TokenType::EQUAL_EQUAL) ||
+        check(TokenType::NOT_EQUAL)
+    ) {
+        auto error = Errors::SyntaxError(
+            curent().value,
+            curent().line,
+            curent().column,
+            curent().value.size()
+        );
+
+        ReturnResult<Parser::Node> result = {
+            error.msg,
             false,
             nullptr
         };
-        re.error_info = node_r.error_info;
-        return re;
+
+        result.error_info = error.info;
+        return result;
     }
 
-    // If token after first part is multiplication or division
-    if (check(TokenType::STAR) || check(TokenType::SLASH)) {
+    OperationPart left = {
+        TokenType::UNKNOWN,
+        first_token,
+        std::move(first.value)
+    };
 
-        // Push the first node in parts list
+    OperationPart right = {
+        TokenType::UNKNOWN,
+        second_token,
+        std::move(second.value)
+    };
+
+    auto comparison_type = ComparitonSymbols_ToOps.at(op.Type);
+
+    return {
+        "",
+        true,
+        std::make_unique<CompOpsNode>(
+            left,
+            right,
+            comparison_type
+        )
+    };
+}
+
+// ==================================================================
+// Relational comparisons: <, >, <=, >=
+// Non-associative
+// ==================================================================
+
+ReturnResult<Parser::Node>
+Parser::get_comparison() {
+    auto first_token = curent();
+    auto first = get_additive();
+
+    if (!first.success)
+        return first;
+
+    const auto is_relational = [this]() {
+        return
+            check(TokenType::LESS_THAN) ||
+            check(TokenType::GREATER_THAN) ||
+            check(TokenType::LESS_EQUAL) ||
+            check(TokenType::GREATER_EQUAL);
+    };
+
+    if (!is_relational())
+        return first;
+
+    auto op = curent();
+
+    auto consumed = consume(op.Type);
+
+    if (!consumed.success)
+        return propagate_error(consumed);
+
+    auto second_token = curent();
+    auto second = get_additive();
+
+    if (!second.success)
+        return second;
+
+    // Reject chained relational comparisons: a < b < c
+    if (is_relational()) {
+        auto error = Errors::SyntaxError(
+            curent().value,
+            curent().line,
+            curent().column,
+            curent().value.size()
+        );
+
+        ReturnResult<Parser::Node> result = {
+            error.msg,
+            false,
+            nullptr
+        };
+
+        result.error_info = error.info;
+        return result;
+    }
+
+    OperationPart left = {
+        TokenType::UNKNOWN,
+        first_token,
+        std::move(first.value)
+    };
+
+    OperationPart right = {
+        TokenType::UNKNOWN,
+        second_token,
+        std::move(second.value)
+    };
+
+    auto comparison_type = ComparitonSymbols_ToOps.at(op.Type);
+
+    return {
+        "",
+        true,
+        std::make_unique<CompOpsNode>(
+            left,
+            right,
+            comparison_type
+        )
+    };
+}
+
+// ==================================================================
+// Addition and subtraction: +, -
+// Left-associative
+// ==================================================================
+
+ReturnResult<Parser::Node>
+Parser::get_additive() {
+    OperationPartsList parts;
+
+    auto first_token = curent();
+    auto first = get_multiplicative();
+
+    if (!first.success)
+        return first;
+
+    if (
+        !check(TokenType::PLUS) &&
+        !check(TokenType::MINUS)
+    ) {
+        return first;
+    }
+
+    parts.push_back({
+        TokenType::UNKNOWN,
+        first_token,
+        std::move(first.value)
+    });
+
+    while (
+        check(TokenType::PLUS) ||
+        check(TokenType::MINUS)
+    ) {
+        auto op = curent();
+
+        auto consumed = consume(op.Type);
+
+        if (!consumed.success)
+            return propagate_error(consumed);
+
+        auto operand_token = curent();
+        auto operand = get_multiplicative();
+
+        if (!operand.success)
+            return operand;
+
         parts.push_back({
-            TokenType::UNKNOWN,
-            cu,
-            std::move(node_r.value)
+            op.Type,
+            operand_token,
+            std::move(operand.value)
         });
     }
 
-    // While the curent token is * or /
-    while (check(TokenType::STAR) || check(TokenType::SLASH)) {
+    return {
+        "",
+        true,
+        std::make_unique<BinOpsNode>(parts)
+    };
+}
 
-        // Consume operation symbol
-        auto op = check(TokenType::STAR)
-            ? consume(TokenType::STAR)
-            : consume(TokenType::SLASH);
+// ==================================================================
+// Multiplication, division, integer division, modulo
+// Left-associative
+// ==================================================================
 
-        if (!op.success) {
-            ReturnResult<Node> re = {
-                op.Message,
-                false,
-                nullptr
-            };
-            re.error_info = op.error_info;
-            return re;
-        }
+ReturnResult<Parser::Node>
+Parser::get_multiplicative() {
+    OperationPartsList parts;
 
-        auto pcu = curent(); // Get the first token of this part
-        auto pnode_r = get_primary(); // Get this part
+    auto first_token = curent();
+    auto first = get_unary();
 
-        if (!pnode_r.success) {
-            ReturnResult<Node> re = {
-                pnode_r.Message,
-                false,
-                nullptr
-            };
-            re.error_info = pnode_r.error_info;
-            return re;
-        }
+    if (!first.success)
+        return first;
 
-        // Push this part in parts list
+    const auto is_multiplicative = [this]() {
+        return
+            check(TokenType::STAR) ||
+            check(TokenType::SLASH) ||
+            check(TokenType::DIV) ||
+            check(TokenType::MOD);
+    };
+
+    if (!is_multiplicative())
+        return first;
+
+    parts.push_back({
+        TokenType::UNKNOWN,
+        first_token,
+        std::move(first.value)
+    });
+
+    while (is_multiplicative()) {
+        auto op = curent();
+
+        auto consumed = consume(op.Type);
+
+        if (!consumed.success)
+            return propagate_error(consumed);
+
+        auto operand_token = curent();
+        auto operand = get_unary();
+
+        if (!operand.success)
+            return operand;
+
         parts.push_back({
-            op.value.Type,
-            pcu,
-            std::move(pnode_r.value)
+            op.Type,
+            operand_token,
+            std::move(operand.value)
         });
     }
 
-    if (!parts.empty()) {
+    return {
+        "",
+        true,
+        std::make_unique<BinOpsNode>(parts)
+    };
+}
+
+// ==================================================================
+// Unary operations: +x, -x, !x, NOT x
+// Right-associative
+// ==================================================================
+
+ReturnResult<Parser::Node>
+Parser::get_unary() {
+    const bool is_plus = check(TokenType::PLUS);
+    const bool is_minus = check(TokenType::MINUS);
+    const bool is_not_symbol = check(TokenType::EXCLAMATION);
+
+    const bool is_not_keyword =
+        curent().Type == TokenType::KEY_WORD &&
+        curent().value == "NOT";
+
+    // No unary operator: parse exponentiation
+    if (
+        !is_plus &&
+        !is_minus &&
+        !is_not_symbol &&
+        !is_not_keyword
+    ) {
+        return get_power();
+    }
+
+    // Save the operator before consuming it
+    auto op_token = curent();
+
+    auto consumed = consume(op_token.Type);
+
+    if (!consumed.success)
+        return propagate_error(consumed);
+
+    // Save the beginning of the operand for error locations
+    auto operand_token = curent();
+
+    // Recursion makes unary operators right-associative
+    auto operand = get_unary();
+
+    if (!operand.success)
+        return operand;
+
+    if (is_not_symbol || is_not_keyword) {
         return {
             "",
             true,
-            std::make_unique<BinOpsNode>(
-                parts
+            std::make_unique<LogicalNotNode>(
+                op_token,
+                operand_token,
+                operand.value
             )
         };
     }
 
-    return node_r;
+    const auto sign_type = is_minus
+        ? SignOpsTypes::NEGATIVE
+        : SignOpsTypes::POSITIVE;
+
+    return {
+        "",
+        true,
+        std::make_unique<SignOpNode>(
+            sign_type,
+            op_token,
+            operand_token,
+            operand.value
+        )
+    };
+}
+
+// ==================================================================
+// Exponentiation: **
+// Right-associative
+// ==================================================================
+
+ReturnResult<Parser::Node>
+Parser::get_power() {
+    auto first_token = curent();
+    auto first = get_primary();
+
+    if (!first.success)
+        return first;
+
+    if (!check(TokenType::POWER))
+        return first;
+
+    auto op_token = curent();
+
+    auto consumed = consume(TokenType::POWER);
+
+    if (!consumed.success)
+        return propagate_error(consumed);
+
+    // Parse the exponent as unary:
+    // 2 ** 3 ** 2 => 2 ** (3 ** 2)
+    // 2 ** -2     => 2 ** (-2)
+    auto second_token = curent();
+    auto second = get_unary();
+
+    if (!second.success)
+        return second;
+
+    OperationPart left = {
+        TokenType::UNKNOWN,
+        first_token,
+        std::move(first.value)
+    };
+
+    OperationPart right = {
+        TokenType::UNKNOWN,
+        second_token,
+        std::move(second.value)
+    };
+
+    return {
+        "",
+        true,
+        std::make_unique<PowerNode>(
+            op_token,
+            left,
+            right
+        )
+    };
 }

@@ -1,0 +1,54 @@
+// ============================================================
+// ValtCommand - Arithmetic Tests
+// ============================================================
+
+CALL print value<str>:"========== ADDITION ==========" END
+CALL print value<int>:10 + 5 END
+CALL print value<int>:10 + (-5) END
+CALL print value<int>:(-10) + (-5) END
+CALL print value<float>:2.5 + 3.5 END
+
+CALL print value<str>:"========== SUBTRACTION ==========" END
+CALL print value<int>:10 - 5 END
+CALL print value<int>:5 - 10 END
+CALL print value<int>:(-5) - 3 END
+CALL print value<float>:10.5 - 2.5 END
+
+CALL print value<str>:"========== MULTIPLICATION ==========" END
+CALL print value<int>:5 * 4 END
+CALL print value<int>:(-5) * 4 END
+CALL print value<int>:(-5) * (-4) END
+CALL print value<float>:2.5 * 4 END
+
+CALL print value<str>:"========== DIVISION ==========" END
+CALL print value<int>:20 / 5 END
+CALL print value<float>:7.0 / 2 END
+CALL print value<int>:(-10) / 2 END
+CALL print value<float>:10.0 / 4 END
+
+CALL print value<str>:"========== INTEGER DIVISION ==========" END
+CALL print value<int>:24 %% 5 END
+CALL print value<int>:20 %% 4 END
+CALL print value<int>:10 %% 3 END
+CALL print value<int>:20 %% 3 * 2 END
+
+CALL print value<str>:"========== MODULO ==========" END
+CALL print value<int>:10 % 3 END
+CALL print value<int>:20 % 5 END
+CALL print value<int>:17 % 4 END
+CALL print value<int>:2 + 10 % 4 END
+
+CALL print value<str>:"========== POWER ==========" END
+CALL print value<int>:2 ** 3 END
+CALL print value<int>:3 ** 4 END
+CALL print value<int>:2 ** 3 ** 2 END
+CALL print value<int>:(-2) ** 2 END
+CALL print value<int>:-2 ** 2 END
+
+CALL print value<str>:"========== UNARY SIGNS ==========" END
+CALL print value<int>:-5 END
+CALL print value<int>:+5 END
+CALL print value<int>:-(-5) END
+CALL print value<float>:-2.5 END
+
+CALL print value<str>:"========== ARITHMETIC TESTS COMPLETED ==========" END

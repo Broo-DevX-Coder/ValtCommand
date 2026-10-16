@@ -99,7 +99,8 @@ std::unordered_map<char,Token> __symbols__ = {
     {'+',{TokenType::PLUS,"+",0,0}},
     {'=',{TokenType::EQUAL,"=",0,0}},
     {'^',{TokenType::CARET,"^",0,0}},
-    {'!',{TokenType::EXCLAMATION,"!",0,0}}
+    {'!',{TokenType::EXCLAMATION,"!",0,0}},
+    {'%',{TokenType::MOD,"%",0,0}}
 };
 
 // Comparitions operations
@@ -109,7 +110,9 @@ std::unordered_map<std::string, Token> __complex_2_symbols__ = {
     {"<=", {TokenType::LESS_EQUAL, "<=", 0, 0}},
     {">=", {TokenType::GREATER_EQUAL, ">=", 0, 0}},
     {"&&", {TokenType::LOGICAL_AND, "&&", 0, 0}},
-    {"||", {TokenType::LOGICAL_OR, "||", 0, 0}}
+    {"||", {TokenType::LOGICAL_OR, "||", 0, 0}},
+    {"%%", {TokenType::DIV, "%%", 0, 0}},
+    {"**", {TokenType::POWER, "**", 0, 0}}
 };
 
 // All TokenTypes like string

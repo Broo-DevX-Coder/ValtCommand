@@ -1,0 +1,55 @@
+// ============================================================
+// ValtCommand - Conditional Tests
+// ============================================================
+
+CALL print value<str>:"========== BASIC IF ==========" END
+
+IF 5 > 3 THEN
+    CALL print value<str>:"IF passed" END
+END
+
+CALL print value<str>:"========== IF / ELSE ==========" END
+
+IF 5 < 3 THEN
+    CALL print value<str>:"Unexpected branch" END
+ELSE THEN
+    CALL print value<str>:"ELSE passed" END
+END
+
+CALL print value<str>:"========== AND CONDITION ==========" END
+
+IF (5 > 3) && (10 > 2) THEN
+    CALL print value<str>:"AND passed" END
+ELSE THEN
+    CALL print value<str>:"AND failed" END
+END
+
+CALL print value<str>:"========== OR CONDITION ==========" END
+
+IF (5 < 3) || (10 > 2) THEN
+    CALL print value<str>:"OR passed" END
+ELSE THEN
+    CALL print value<str>:"OR failed" END
+END
+
+CALL print value<str>:"========== NOT CONDITION ==========" END
+
+IF !(5 > 10) THEN
+    CALL print value<str>:"NOT passed" END
+ELSE THEN
+    CALL print value<str>:"NOT failed" END
+END
+
+CALL print value<str>:"========== NESTED CONDITIONS ==========" END
+
+IF 10 > 5 THEN
+    IF 8 > 3 THEN
+        CALL print value<str>:"Nested IF passed" END
+    ELSE THEN
+        CALL print value<str>:"Inner ELSE executed" END
+    END
+ELSE THEN
+    CALL print value<str>:"Outer ELSE executed" END
+END
+
+CALL print value<str>:"========== CONDITIONAL TESTS COMPLETED ==========" END

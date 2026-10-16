@@ -100,3 +100,24 @@ class LogicOpsNode: public ASTNode {
         ReturnResult<Value> exec(NodesContext Context) override; // execute and get the result of compariton
         ASTNode* clone() override; // Clone the class or get a new copy from them
 };
+
+// ==================================================================
+// Power Operation Node
+// ==================================================================
+class API PowerNode : public ASTNode {
+private:
+    // Token representing the power operator (**)
+    Token token;
+
+    // AST nodes representing the base and exponent
+    OperationPart left;
+    OperationPart right;
+
+public:
+    PowerNode(const Token& token,OperationPart& left,OperationPart& right);  // Constructor: Initialize the power operation node
+    std::string get_str(int level) override; // Get the string representation of the node for debugging    
+    ASTNodesTypes NType() override; // Get the AST node type    
+    ReturnResult<bool> accept(NodesContext Context) override; // Perform semantic analysis and validate both operands    
+    ReturnResult<Value> exec(NodesContext Context) override; // Execute the power operation and return the result
+    ASTNode* clone() override; // Create a deep copy of the node
+};

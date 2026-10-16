@@ -1,0 +1,27 @@
+// ============================================================
+// ValtCommand - Operator Precedence Tests
+// ============================================================
+
+CALL print value<str>:"========== BASIC PRECEDENCE ==========" END
+CALL print value<int>:2 + 3 * 4 END
+CALL print value<int>:(2 + 3) * 4 END
+CALL print value<int>:2 * 3 ** 2 END
+CALL print value<int>:(2 + 3) ** 2 END
+
+CALL print value<str>:"========== POWER ASSOCIATIVITY ==========" END
+CALL print value<int>:2 ** 3 ** 2 END
+CALL print value<int>:2 ** (3 ** 2) END
+CALL print value<int>:(2 ** 3) ** 2 END
+
+CALL print value<str>:"========== UNARY PRECEDENCE ==========" END
+CALL print value<int>:-2 ** 2 END
+CALL print value<int>:(-2) ** 2 END
+CALL print value<float>:-2.5 ** 2 END
+CALL print value<float>:(-2.5) ** 2 END
+
+CALL print value<str>:"========== MIXED OPERATORS ==========" END
+CALL print value<int>:2 + 3 * 2 ** 3 %% 5 END
+CALL print value<int>:20 %% 3 * 2 END
+CALL print value<int>:2 + 10 % 4 * 3 END
+
+CALL print value<str>:"========== PRECEDENCE TESTS COMPLETED ==========" END

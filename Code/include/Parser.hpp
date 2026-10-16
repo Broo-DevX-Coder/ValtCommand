@@ -46,7 +46,7 @@ class API Parser {
 
         Parser(TList& tokens_list); // Constructure
         ReturnResult<PNode> get_module_node(); // Get the clear program node that contain all parsed code
-        ReturnResult<Node> get_expretion(); // Get The linear operations node
+        ReturnResult<Node> get_expretion(); // Get node
 
     private:
 
@@ -58,9 +58,49 @@ class API Parser {
         ReturnResult<Token> consume(TokenType type); // Return curent token, check its type, and advence
         bool isAsEnd(); // is the code ended
 
-        // Grammars
-        ReturnResult<Node> get_term(); // Get the complex operation node
-        ReturnResult<Node> get_primary(); // Get primary nodes like Values and functions ...
+        // ==================================================================
+        // Expression Grammars
+        // ==================================================================
+        
+        // Get primary expressions:
+        // Literals, variables, parenthesized expressions,
+        // function calls, and the existing language statements.
+        ReturnResult<Node> get_primary();
+        
+        // Get exponentiation expressions:
+        // Power operator (**).
+        ReturnResult<Node> get_power();
+        
+        // Get unary expressions:
+        // Unary plus (+x) and unary minus (-x).
+        ReturnResult<Node> get_unary();
+        
+        // Get multiplicative expressions:
+        // Multiplication (*), division (/), integer division (//),
+        // and modulo operations (%, div, mod).
+        ReturnResult<Node> get_multiplicative();
+        
+        // Get additive expressions:
+        // Addition (+) and subtraction (-).
+        ReturnResult<Node> get_additive();
+        
+        // Get relational comparison expressions:
+        // Less than (<), greater than (>),
+        // less than or equal (<=), greater than or equal (>=).
+        ReturnResult<Node> get_comparison();
+        
+        // Get equality comparison expressions:
+        // Equal to (==) and not equal to (!=).
+        ReturnResult<Node> get_equality();
+        
+        // Get logical AND expressions:
+        // Logical AND (AND, &&).
+        ReturnResult<Node> get_logical_and();
+        
+        // Get logical OR expressions:
+        // Logical OR (OR, ||).
+        ReturnResult<Node> get_logical_or();
+        
 
         ReturnResult<Node> get_functioncall_node(); // Get the function call node when found CALL keyword
         ReturnResult<Node> get_value_node(); // Get the pure value node
