@@ -19,7 +19,7 @@ Runtime::RunTime::RunTime(
     run_scope = std::make_unique<Scopes::Scope>();
     semantic_scope = std::make_unique<Scopes::Scope>();
     run_semantic_scope = std::make_unique<Scopes::Scope>();
-    Debugger = new DevTools::Debugger();
+    Debugger = std::make_unique<DevTools::Debugger>();
 }
 
 ReturnResult<Parser::PNode> 
@@ -32,7 +32,7 @@ Runtime::RunTime::analyze(Scopes::Scope* Scope) {
     auto pars_result = p.get_module_node();
     if (!pars_result.success) return pars_result;
 
-    auto accept_result = pars_result.value->accept({Scope,Debugger});
+    auto accept_result = pars_result.value->accept({Scope,Debugger.get()});
     if (!accept_result.success){
         ReturnResult<Parser::PNode> re = {accept_result.Message,false,nullptr};
         re.error_info = accept_result.error_info;
@@ -66,7 +66,7 @@ Runtime::RunTime::execute_code() {
 
     std::cout << analyze_result.value->get_str(0) << std::endl; 
 
-    auto exec_result = analyze_result.value->exec({run_scope.get(),Debugger});
+    auto exec_result = analyze_result.value->exec({run_scope.get(),Debugger.get()});
 
     if (!exec_result.success){
         ReturnResult<bool> re = {exec_result.Message,false,false};
