@@ -87,6 +87,22 @@ SignOpNode::get_str(int level) {
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+SignOpNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "SignOperation";
+    result["operator"] = sign_to_string(type);
+
+    if (node)
+        result["operand"] = node->get_json();
+    else
+        result["operand"] = nullptr;
+
+    return result;
+}
+
 // ==================================================================
 // Get node type
 // ==================================================================
@@ -355,6 +371,19 @@ LogicalNotNode::get_str(int level) {
     ss << "Operand:\n" << node->get_str(level + 2);
 
     return ss.str();
+}
+
+// Get the json file of ASTNode
+nlohmann::json
+LogicalNotNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "LogicalNot";
+    result["operator"] = "!";
+
+    result["operand"] = node->get_json();
+
+    return result;
 }
 
 // Get node type

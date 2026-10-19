@@ -61,6 +61,22 @@ ModuleNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+ModuleNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "Program";
+    result["statements"] = nlohmann::json::array();
+
+    for (const auto& statement : statements) {
+        if (statement.node)
+            result["statements"].push_back(statement.node->get_json());
+    }
+
+    return result;
+}
+
 // Get the node type
 ASTNodesTypes
 ModuleNode::NType() {

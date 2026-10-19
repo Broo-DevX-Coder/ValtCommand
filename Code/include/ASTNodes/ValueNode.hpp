@@ -38,6 +38,7 @@ class ValueNode: public ASTNode
 
         ValueNode(Token token, std::string type); // Constructure
         std::string get_str(int level) override; // Get str of node to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
 };
 

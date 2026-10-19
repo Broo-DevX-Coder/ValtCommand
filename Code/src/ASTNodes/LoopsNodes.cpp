@@ -58,6 +58,16 @@ BreakLoopNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+BreakLoopNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "Break";
+
+    return result;
+}
+
 // Get the string to print
 std::string
 ContinueLoopNode::get_str(
@@ -71,6 +81,16 @@ ContinueLoopNode::get_str(
     ss << "Continue \n";
 
     return ss.str();
+}
+
+// Get the json file of ASTNode
+nlohmann::json
+ContinueLoopNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "Continue";
+
+    return result;
 }
 
 // Get the type of node
@@ -239,6 +259,22 @@ WhileLoopsNode::get_str(
         ss << stm->get_str(level + 2);
 
     return ss.str();
+}
+
+// Get the json file of ASTNode
+nlohmann::json
+WhileLoopsNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "WhileLoop";
+    result["condition"] = condition_node->get_json();
+
+    result["statements"] = nlohmann::json::array();
+
+    for (const auto& stm : Statments)
+        result["statements"].push_back(stm->get_json());
+
+    return result;
 }
 
 // Get the type of node
@@ -679,6 +715,25 @@ ForLoopsNode::get_str(
         ss << stm->get_str(level + 2);
 
     return ss.str();
+}
+
+// Get the json file of ASTNode
+nlohmann::json
+ForLoopsNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "ForLoop";
+
+    result["initialization"] = Initialization.node->get_json();
+    result["condition"] = Condition.node->get_json();
+    result["update"] = Update.node->get_json();
+
+    result["statements"] = nlohmann::json::array();
+
+    for (const auto& stm : Statments)
+        result["statements"].push_back(stm->get_json());
+
+    return result;
 }
 
 // Get the type of node

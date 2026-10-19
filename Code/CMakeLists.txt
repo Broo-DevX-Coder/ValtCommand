@@ -23,6 +23,7 @@ add_link_options(-fsanitize=address)
 
 # Get Libraries
 find_package(fmt REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 # Add Directories for files
 add_subdirectory(src)

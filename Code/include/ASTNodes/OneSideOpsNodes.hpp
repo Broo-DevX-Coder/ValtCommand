@@ -47,6 +47,9 @@ public:
     // Get the string representation of the node for debugging
     std::string get_str(int level) override;
 
+    // Get the json file of ASTNode
+    nlohmann::json get_json() override; 
+
     // Get the AST node type
     ASTNodesTypes NType() override;
 
@@ -85,6 +88,9 @@ public:
 
     // Get the string representation of the node for debugging
     std::string get_str(int level) override;
+
+    // Get the json file of ASTNode
+    nlohmann::json get_json() override;
 
     // Get the AST node type
     ASTNodesTypes NType() override;

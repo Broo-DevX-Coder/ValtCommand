@@ -66,6 +66,18 @@ FunctionCallArgumentNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json 
+FunctionCallArgumentNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "FunctionCallArgument";
+    result["name"] = name;
+    result["value"] = VNode->get_json();
+
+    return result;
+}
+
 // Get node type
 ASTNodesTypes
 FunctionCallArgumentNode::NType() {
@@ -314,6 +326,21 @@ FunctionCallNode::get_str(
         ss << arg->get_str(level + 1);
 
     return ss.str();
+}
+
+// Get the json file of ASTNode
+nlohmann::json 
+FunctionCallNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "FunctionCall";
+    result["name"] = name;
+    result["arguments"] = nlohmann::json::array();
+
+    for (const auto& arg : arguments)
+        result["arguments"].push_back(arg->get_json());
+
+    return result;
 }
 
 // Get node type

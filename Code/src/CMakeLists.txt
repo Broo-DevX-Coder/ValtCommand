@@ -33,3 +33,7 @@ target_link_libraries(
     fmt
 )
 
+target_link_libraries(engine
+    PRIVATE
+        nlohmann_json::nlohmann_json
+)

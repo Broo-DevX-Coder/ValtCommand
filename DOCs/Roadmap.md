@@ -68,6 +68,7 @@
 
 - ✅ Better error handling
 - ✅ Runtime Tracer
+- Create a get_json in ASTNodes
 - Scope Inspector
 - Variable Inspector
 - Function Inspector

@@ -90,6 +90,27 @@ IfStatmentsNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+IfStatmentsNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "IfStatement";
+    result["condition"] = condition_node->get_json();
+
+    result["statements"] = nlohmann::json::array();
+
+    for (const auto& stm : Statments)
+        result["statements"].push_back(stm->get_json());
+
+    result["else_statements"] = nlohmann::json::array();
+
+    for (const auto& stm : Else_statments)
+        result["else_statements"].push_back(stm->get_json());
+
+    return result;
+}
+
 // ==================================================================
 // Get Node Type
 // ==================================================================

@@ -26,6 +26,7 @@
 #include <vector>
 #include <memory>
 #include <fmt/format.h>
+#include <nlohmann/json.hpp>
 
 // == Locals ==
 #include "globals.hpp"
@@ -79,6 +80,7 @@ class ASTNode {
         std::string return_type; // The type of return value
         virtual ~ASTNode() = default;
         virtual std::string get_str(int level) = 0; // Get the string of node to print AST
+        virtual nlohmann::json get_json() = 0; // Get the json file of ASTNode
         virtual ASTNodesTypes NType() = 0; // get the type of node
         virtual ReturnResult<bool> accept(NodesContext Context) = 0; // The node verifi it self befor runnig
         virtual ReturnResult<Value> exec(NodesContext Context) = 0; // Run the node
@@ -104,6 +106,7 @@ class ModuleNode : public ASTNode
     public:
         ModuleNode(StatmentsT& s_,Token& First_token); // Constructure
         std::string get_str(int level=0) override; // get the str of node to print
+        nlohmann::json get_json(); // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(NodesContext Context) override; // Execute node

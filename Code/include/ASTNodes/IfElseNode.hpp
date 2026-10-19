@@ -44,6 +44,7 @@ class IfStatmentsNode: public ASTNode{
     public:
         IfStatmentsNode(Token& CFtoken ,Node& condition, Nodes_list& statments, Nodes_list& else_statments); // Constructure
         std::string get_str(int level) override; // Get the str to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // types and value checking
         ReturnResult<Value> exec(NodesContext Context) override; // execute condition and execute rest if condition is true

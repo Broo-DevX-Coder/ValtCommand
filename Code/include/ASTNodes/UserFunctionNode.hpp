@@ -40,6 +40,7 @@ class UserFunctionMethodNode: public ASTNode {
     
         UserFunctionMethodNode(Token& nameT, Token& typeT, Token& default_value_ftoekn, std::unique_ptr<ASTNode> default_value_node = nullptr, bool is_method_any=false); // Constructure
         std::string get_str(int level) override; // Get str of node to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // The node verify it self befor runnig
         ReturnResult<Value> exec(NodesContext Context) override; // Execute node
@@ -59,6 +60,7 @@ class UserFunctionReturnNode: public ASTNode {
     public:
         UserFunctionReturnNode(Token& t_, std::unique_ptr<ASTNode> value_node); // Constructure
         std::string get_str(int level) override; // Get str of node to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // The node verify it self befor runnig
         ReturnResult<Value> exec(NodesContext Context) override; // Execute node
@@ -78,6 +80,7 @@ class UserProxyFunctionNode: public ASTNode {
     public:
         UserProxyFunctionNode(NodesListT statements, const std::string& type); // Constructure
         std::string get_str(int level) override; // Get str of node to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // The node verify it self befor runnig
         ReturnResult<Value> exec(NodesContext Context) override; // Execute node
@@ -106,6 +109,7 @@ class UserFunctionNode: public ASTNode {
     public:
         UserFunctionNode(Token& nameT, Token& typeT, MethodsList methods_list, NodesListT statements, bool is_any=false); // Constructure
         std::string get_str(int level) override; // Get str of node to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // The node verify it self befor runnig
         ReturnResult<Value> exec(NodesContext Context) override; // Execute node

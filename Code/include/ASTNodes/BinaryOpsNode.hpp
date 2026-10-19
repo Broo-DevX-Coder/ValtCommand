@@ -64,6 +64,7 @@ class BinOpsNode: public ASTNode {
     public: 
         BinOpsNode(OperationPartsList& parts); // Constructure
         std::string get_str(int level) override; // Get the str to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // types and value checking
         ReturnResult<Value> exec(NodesContext Context) override; // execute and get the result of calculation
@@ -81,6 +82,7 @@ class CompOpsNode: public ASTNode {
     public:
         CompOpsNode(OperationPart& first_token, OperationPart& secound_token, ComparitonOpsTypes type); // Constructure
         std::string get_str(int level) override; // Get the str to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // types and value checking
         ReturnResult<Value> exec(NodesContext Context) override; // execute and get the result of compariton
@@ -95,6 +97,7 @@ class LogicOpsNode: public ASTNode {
     public:
         LogicOpsNode(OperationPartsList& parts); // Constructure
         std::string get_str(int level) override; // Get the str to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // types and value checking
         ReturnResult<Value> exec(NodesContext Context) override; // execute and get the result of compariton
@@ -116,6 +119,7 @@ private:
 public:
     PowerNode(const Token& token,OperationPart& left,OperationPart& right);  // Constructor: Initialize the power operation node
     std::string get_str(int level) override; // Get the string representation of the node for debugging    
+    nlohmann::json get_json() override; // Get the json file of ASTNode
     ASTNodesTypes NType() override; // Get the AST node type    
     ReturnResult<bool> accept(NodesContext Context) override; // Perform semantic analysis and validate both operands    
     ReturnResult<Value> exec(NodesContext Context) override; // Execute the power operation and return the result

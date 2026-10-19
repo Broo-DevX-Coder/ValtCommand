@@ -70,6 +70,18 @@ ValueNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+ValueNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "Value";
+    result["value_type"] = type;
+    result["value"] = vToken.value;
+
+    return result;
+}
+
 // Get node type
 ASTNodesTypes
 ValueNode::NType() {

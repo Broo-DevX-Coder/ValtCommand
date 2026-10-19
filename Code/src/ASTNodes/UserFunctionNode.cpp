@@ -79,6 +79,23 @@ UserFunctionMethodNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+UserFunctionMethodNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "UserFunctionMethod";
+    result["name"] = name_token.value;
+    result["return_type"] = type_token.value;
+
+    if (default_value_node != nullptr)
+        result["default_value"] = default_value_node->get_json();
+    else
+        result["default_value"] = nullptr;
+
+    return result;
+}
+
 
 // Get type of node
 ASTNodesTypes
@@ -274,6 +291,21 @@ UserFunctionReturnNode::get_str(
         ss << VNode->get_str(level + 1);
 
     return ss.str();
+}
+
+// Get the json file of ASTNode
+nlohmann::json
+UserFunctionReturnNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "Return";
+
+    if (VNode != nullptr)
+        result["value"] = VNode->get_json();
+    else
+        result["value"] = nullptr;
+
+    return result;
 }
 
 
@@ -483,6 +515,22 @@ UserProxyFunctionNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+UserProxyFunctionNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "UserFunctionProxy";
+    result["statements"] = nlohmann::json::array();
+
+    for (const auto& statement : statements) {
+        if (statement != nullptr)
+            result["statements"].push_back(statement->get_json());
+    }
+
+    return result;
+}
+
 
 // Get type
 ASTNodesTypes
@@ -674,6 +722,31 @@ UserFunctionNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+UserFunctionNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "UserFunction";
+    result["name"] = name_token.value;
+    result["return_type"] = return_type_token.value;
+
+    result["methods"] = nlohmann::json::array();
+
+    for (const auto& method : methods_list) {
+        if (method != nullptr)
+            result["methods"].push_back(method->get_json());
+    }
+
+    result["statements"] = nlohmann::json::array();
+
+    for (const auto& statement : statements) {
+        if (statement != nullptr)
+            result["statements"].push_back(statement->get_json());
+    }
+
+    return result;
+}
 
 // Get node type
 ASTNodesTypes

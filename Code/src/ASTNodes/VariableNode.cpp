@@ -50,7 +50,8 @@ SetVariableNode::SetVariableNode(
 
 
 // Get the string representation
-std::string SetVariableNode::get_str(
+std::string 
+SetVariableNode::get_str(
     int level
 ) {
     std::stringstream ss;
@@ -78,6 +79,20 @@ std::string SetVariableNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+SetVariableNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = is_const ? "ConstantDeclaration"
+                              : "VariableDeclaration";
+
+    result["name"] = name;
+    result["value_type"] = type;
+    result["value"] = VNode->get_json();
+
+    return result;
+}
 
 // Get the node type
 ASTNodesTypes
@@ -321,6 +336,17 @@ ResetVariableNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+ResetVariableNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "VariableAssignment";
+    result["name"] = name;
+    result["value"] = VNode->get_json();
+
+    return result;
+}
 
 // Get the node type
 ASTNodesTypes
@@ -576,6 +602,16 @@ GetVariableNode::get_str(
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json
+GetVariableNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "VariableAccess";
+    result["name"] = name;
+
+    return result;
+}
 
 // Get the node type
 ASTNodesTypes

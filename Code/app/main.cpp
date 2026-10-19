@@ -61,8 +61,17 @@ int main () {
 
 
     std::string code = R"CODE(
-    SET var<int> = 10
-    CALL print value<int>:(GET var) %% 4 END
+    CALL print value<str>:"Hellow in your happy end !!" END
+    SET var<int> = 5
+    IF GET var < 10 THEN
+        CALL print value<str>:"u are so locky :D" END
+    ELSE THEN
+        SET ni<int> = 5
+        CALL print value<str>:"The END ..................." END
+    END
+
+    //GET ni
+        
     )CODE";
     
     {

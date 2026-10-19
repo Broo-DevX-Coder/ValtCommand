@@ -41,6 +41,7 @@ class SetVariableNode: public ASTNode {
     public: 
         SetVariableNode(Token name_token, Token type_token, std::unique_ptr<ASTNode> value_node, bool is_const = false); // Constructure
         std::string get_str(int level) override; // Get the str to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // type and value checking
         ReturnResult<Value> exec(NodesContext Context) override; // execute and set the var in symbols table
@@ -58,6 +59,7 @@ class ResetVariableNode: public ASTNode {
     public: 
         ResetVariableNode(Token name_token, std::unique_ptr<ASTNode> value_node); // Constructure
         std::string get_str(int level) override; // Get the str to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // type and value checking
         ReturnResult<Value> exec(NodesContext Context) override; // execute and set the var's value in symbols table
@@ -75,6 +77,7 @@ class GetVariableNode: public ASTNode {
     public: 
         GetVariableNode(Token name_token); // Constructure
         std::string get_str(int level) override; // Get the str to print
+        nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; // type and value checking
         ReturnResult<Value> exec(NodesContext Context) override; // execute and get the value from symbols table

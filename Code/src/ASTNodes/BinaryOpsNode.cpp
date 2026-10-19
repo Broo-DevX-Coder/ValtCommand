@@ -136,6 +136,33 @@ BinOpsNode::get_str(int level) {
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json 
+BinOpsNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "BinaryOperation";
+    result["parts"] = nlohmann::json::array();
+
+    size_t part_i = 0;
+
+    for (const auto& part : Parts) {
+        nlohmann::json part_json;
+
+        if (part_i == 0)
+            part_json["role"] = "First";
+        else
+            part_json["operator"] = binary_to_string(part.op);
+
+        part_json["node"] = part.node->get_json();
+
+        result["parts"].push_back(part_json);
+        ++part_i;
+    }
+
+    return result;
+}
+
 // Get node type
 ASTNodesTypes
 BinOpsNode::NType() {
@@ -423,6 +450,20 @@ CompOpsNode::get_str(int level) {
        << second_part.node->get_str(level + 2);
 
     return ss.str();
+}
+
+// Get the json file of ASTNode
+nlohmann::json 
+CompOpsNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "ComparisonOperation";
+    result["operator"] = comparison_to_string(type);
+
+    result["first_part"] = first_part.node->get_json();
+    result["second_part"] = second_part.node->get_json();
+
+    return result;
 }
 
 // Get node type
@@ -744,6 +785,32 @@ LogicOpsNode::get_str(int level) {
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json 
+LogicOpsNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "LogicalOperation";
+    result["parts"] = nlohmann::json::array();
+
+    for (const auto& part : Parts) {
+        nlohmann::json part_json;
+
+        if (part.op == TokenType::LOGICAL_AND)
+            part_json["operator"] = "AND &&";
+        else if (part.op == TokenType::LOGICAL_OR)
+            part_json["operator"] = "OR ||";
+        else
+            part_json["role"] = "First";
+
+        part_json["node"] = part.node->get_json();
+
+        result["parts"].push_back(part_json);
+    }
+
+    return result;
+}
+
 // Get node type
 ASTNodesTypes
 LogicOpsNode::NType() {
@@ -1013,8 +1080,23 @@ PowerNode::get_str(int level) {
     return ss.str();
 }
 
+// Get the json file of ASTNode
+nlohmann::json 
+PowerNode::get_json() {
+    nlohmann::json result;
+
+    result["type"] = "PowerOperation";
+    result["operator"] = "**";
+
+    result["base"] = left.node->get_json();
+    result["exponent"] = right.node->get_json();
+
+    return result;
+}
+
 // Get node type
-ASTNodesTypes PowerNode::NType() {
+ASTNodesTypes 
+PowerNode::NType() {
     return NT__PowerNode;
 }
 
