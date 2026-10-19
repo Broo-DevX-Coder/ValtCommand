@@ -16,6 +16,8 @@ Scopes::Scope::Scope(
     Scope* parent_
 ): Parent(parent_) {
     ID = Utils::random_num();
+    Depth = 0;
+    if (parent_) Depth = parent_->get_depth() + 1;
 };
 
 // get ID of scope
@@ -23,6 +25,58 @@ size_t
 Scopes::Scope::get_id() {
     return ID;
 }
+
+
+// Get parent ID
+Scopes::Scope* 
+Scopes::Scope::get_parent() {
+    return Parent;
+}
+
+// Get the depth of scope
+size_t
+Scopes::Scope::get_depth() {
+    return Depth;
+}
+
+// Get a table of all visible functions ptrs in this scope
+Scopes::Scope::funcs_table 
+Scopes::Scope::get_functions_table() {
+    // Initialyze result object
+    funcs_table result;
+
+    // Add parent's functions table if exists
+    if (Parent) {
+        auto parent_func_table = Parent->get_functions_table();
+        result.insert(result.end(),parent_func_table.begin(),parent_func_table.end());
+    }
+
+    // Add this scope's functions
+    for (auto& [name,obj]: functions) 
+        result.push_back({name,obj.get()});
+
+    return result;
+}
+
+// Get a table of all visible vars ptrs in this scope
+Scopes::Scope::vars_table 
+Scopes::Scope::get_variables_table() {
+    // Initialyze result object
+    vars_table result;
+
+    // Add parent's variablles table if exists
+    if (Parent) {
+        auto parent_func_table = Parent->get_variables_table();
+        result.insert(result.end(),parent_func_table.begin(),parent_func_table.end());
+    }
+
+    // Add this scope's variablles
+    for (auto& [name,obj]: variables)
+        result.push_back({name,obj.get()});
+
+    return result;
+}
+
 
 // Add a function to functions list
 Scopes::SymbolTableTypes::Function* 

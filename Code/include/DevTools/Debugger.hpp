@@ -64,7 +64,7 @@ namespace DevTools {
             std::vector<event> events_list; // The list of all events that saved in str
             size_t print_pos = 0; // The print position that shows the print function what it is
     
-            static void print_event(event event); // Print a string
+            static void print_event(event event); // Print a event's string
             emitSlotType emit_slot = print_event;
 
         public:

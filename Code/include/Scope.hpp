@@ -74,15 +74,28 @@ namespace Scopes {
 
     // Scope
     class Scope {
+        public: 
+            struct VarsTableLine { std::string name; SymbolTableTypes::RVar* var_ptr; }; // A line of the variables table (used in inspectures)
+            struct FuncsTableLine { std::string name; SymbolTableTypes::Function* func_ptr; }; // A line of the functions table (used in inspectures)
+            using vars_table = std::vector<VarsTableLine>;
+            using funcs_table = std::vector<FuncsTableLine>;
+
         protected:
             Scope* Parent; // The parent scope of this scope
             size_t ID; // The id of scope
+            size_t Depth; // the depth of scope inside parents
             std::unordered_map<std::string, std::unique_ptr<SymbolTableTypes::Function>> functions; // All functions in scope
             std::unordered_map<std::string, std::unique_ptr<SymbolTableTypes::RVar>> variables; // All variables in scope
 
         public:
             Scope(Scope* parent = nullptr); // constructure
             size_t get_id(); // Get the ID of scope
+            Scope* get_parent(); // Get parent ID
+            size_t get_depth(); // Get the depth of scope
+            
+            funcs_table get_functions_table(); // Get a table of all visible functions ptrs in this scope
+            vars_table get_variables_table(); // Get a table of all visible vars ptrs in this scope
+
             SymbolTableTypes::Function* add_function(const std::string& name, const std::string& return_type, std::unordered_map<std::string, SymbolTableTypes::Method> methods, bool is_any=false); // add function to scope table
             SymbolTableTypes::RVar* add_var(const std::string& name, const std::string& type, const Value& value, bool is_const=false); // add variable to scope table
             ReturnResult<SymbolTableTypes::Function*> search_function(Token& NameToken); // Get a function struct pointer from scope by name

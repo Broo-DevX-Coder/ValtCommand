@@ -68,10 +68,11 @@
 
 - ✅ Better error handling
 - ✅ Runtime Tracer
-- Create a get_json in ASTNodes
-- Scope Inspector
-- Variable Inspector
-- Function Inspector
+- ✅ Create a get_json in ASTNodes
+- ✅ Scope Inspector
+- ✅ Variable Inspector
+- ✅ Function Inspector
+- Crete nodes of `INSPECT__SCOPE__` + `INSPECT__VARS__` + `INSPECT__FUNCS__` to use inspectors diractelly in code
 
 ### Developer Tools
 

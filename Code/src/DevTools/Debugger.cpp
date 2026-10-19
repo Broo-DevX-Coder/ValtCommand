@@ -8,7 +8,9 @@
 // == Libs ==
 #include <sstream>
 
-
+// ==================================================================
+// Helper: Turn event type to string
+// ==================================================================
 
 std::string 
 DevTools::event_type_to_string(
