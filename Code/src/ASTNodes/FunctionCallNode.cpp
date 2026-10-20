@@ -836,7 +836,7 @@ FunctionCallNode::exec(
         NameToken.line
     );
 
-    ExternalFunInType args_list;
+    ExternalFunInType::ArgsType args_list;
 
     // --------------------------------------------------------------
     // Search for the function
@@ -970,7 +970,7 @@ FunctionCallNode::exec(
             NameToken.line
         );
 
-        auto result = func->external_func(args_list);
+        auto result = func->external_func({args_list,Context.ParentScope});
 
         if (!result.success) {
             emit_event(

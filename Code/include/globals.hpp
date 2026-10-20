@@ -35,6 +35,7 @@
 // ==================================================================
 class ASTNode;
 namespace Errors {struct ErrorInfo;}
+namespace Scopes { class Scope;}
 
 // ==================================================================
 // Types 
@@ -80,7 +81,13 @@ struct ReturnResult {
     Errors::ErrorInfo error_info; // The error info struct that encluded line column type and auther info
 };
 
-using ExternalFunInType = std::unordered_map<std::string, Value>; // External functin input type
+// External functin input type
+struct ExternalFunInType {
+    using ArgsType = std::unordered_map<std::string, Value>; // Type of args list
+    ArgsType arguments; // Arguments list
+    Scopes::Scope* ParentScope; // The parent scope of function
+}; 
+
 using ExternalFuncType = std::function<ReturnResult<Value>(ExternalFunInType)>; // External function type
 
 // ==================================================================

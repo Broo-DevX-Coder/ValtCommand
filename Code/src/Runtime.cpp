@@ -66,11 +66,9 @@ Runtime::RunTime::execute_code() {
         return re;
     }
 
-    std::cout << analyze_result.value->get_str() << std::endl; 
+    // std::cout << analyze_result.value->get_str() << std::endl; 
 
     auto exec_result = analyze_result.value->exec({run_scope.get(),Debugger.get()});
-
-    std::cout << std::endl << std::endl << DevTools::FunctionsInspect(run_scope.get()).printable << std::endl << std::endl;
 
     if (!exec_result.success){
         ReturnResult<bool> re = {exec_result.Message,false,false};

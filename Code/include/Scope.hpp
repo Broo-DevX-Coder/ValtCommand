@@ -29,10 +29,6 @@
 // ==================================================================
 namespace Scopes {
 
-    namespace registries {
-        API extern std::unordered_map<std::string,ExternalFuncType> functions;
-    }
-
     namespace SymbolTableTypes {
         enum class FunctionsTypes {
             Extenal, // An external function comes from pure c++
