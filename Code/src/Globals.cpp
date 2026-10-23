@@ -49,7 +49,10 @@ std::unordered_map<TokenType,std::string> TokenTypesStr = {
     {TokenType::GREATER_EQUAL,"GREATER_EQUAL"},
     {TokenType::LOGICAL_AND,"LOGICAL_AND"},
     {TokenType::LOGICAL_OR,"LOGICAL_OR"},
-    {TokenType::UNKNOWN,"UNKNOWN"} 
+    {TokenType::DIV,"DIV"},
+    {TokenType::MOD,"MOD"},
+    {TokenType::POWER,"POWER"},
+    {TokenType::UNKNOWN,"UNKNOWN"}
 };
 
 

@@ -4,15 +4,11 @@
 
 // == Libs ==
 #include <iostream>
-#include <cctype>
 #include <variant>
 #include <string>
-#include <vector>
-#include <unordered_map>
 
 // == Locals ==
-#include "Runtime.hpp"
-#include "Lexar.hpp"
+#include "API/Runtime.hpp"
 #include "Errors.hpp"
 #include "Libs/DevTools.hpp"
 
@@ -47,7 +43,7 @@ ReturnResult<Value> print(ExternalFunInType input) {
 }
 
 ReturnResult<Value> Pi(ExternalFunInType input) {
-    return {"",true,-3.14159265359};
+    return {"",true,-3.14159265359L};
 }
 
 // ==================================================================
@@ -62,58 +58,21 @@ int main () {
 
 
     std::string code = R"CODE(
-    
-    FUNCTION multiple (
-        num1<float>
-        num2<float> =5
-    )->float
 
-        CALL print
-            value<str>:CALL __INSPECT_SCOPE__ END
-            title<str>:"Scope inspecture result"
-        END
+    SET var<int> = 5
+    CALL print value<int>:(GET var) END
 
-        CALL print
-            value<str>:CALL __INSPECT_VARS__ END
-            title<str>:"variables inspecture result"
-        END
-
-        CALL print
-            value<str>:CALL __INSPECT_FUNCS__ END
-            title<str>:"Scope functions result"
-        END
-
-        RETURN (GET num1 * GET num2)
-    END
-
-    CALL print
-        value<str>:CALL __INSPECT_SCOPE__ END
-        title<str>:"Scope inspecture result"
-    END
-
-    CALL print
-        value<str>:CALL __INSPECT_VARS__ END
-        title<str>:"variables inspecture result"
-    END
-
-    CALL print
-        au<str>:"\n\n================================================================================================================ \n"
-        value<str>:CALL __INSPECT_FUNCS__ END
-        title<str>:"Scope functions result"
-    END
-    
-    CALL multiple num1<float>:5 num2<float>:10 END
     )CODE";
     
     {
-        auto r = Runtime::RunTime(code);
+        auto r = Runtime::RunTime();
         r.add_external_function(print,"print","void",{},true);
-        r.add_external_function(Pi,"Pi","float",{});
+        r.add_external_function(Pi,"Pi","float",{},true);
         Lib::DevFunctions::__init__(r);
     
-        auto execute = r.execute_code();
-        if (!execute.success){
-            std::cout << Errors::formatter(execute.error_info,code) << "\n\n" << std::flush;
+        auto execute = r.run(code,Runtime::ScopeMode::Persistent);
+        if (!execute){
+            std::cout << Errors::formatter(execute.error.info,code) << "\n\n" << std::flush;
             return 1;
         }
     }

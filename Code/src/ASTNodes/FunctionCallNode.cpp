@@ -431,7 +431,7 @@ FunctionCallNode::accept(
     // Validate arguments for functions without arbitrary arguments
     // --------------------------------------------------------------
 
-    if (!func->is_sepport_any_methods_) {
+    if (!func->is_sepport_any_arguments_) {
         emit_event(
             Context,
             DevTools::EventsT::Analysis,
@@ -440,7 +440,7 @@ FunctionCallNode::accept(
         );
 
         // Check the number of arguments
-        if (arguments.size() > func->methods.size()) {
+        if (arguments.size() > func->arguments.size()) {
             emit_event(
                 Context,
                 DevTools::EventsT::Analysis,
@@ -451,7 +451,7 @@ FunctionCallNode::accept(
 
             ReturnResult<bool> re = {
                 error_obj.too_many_arguments(
-                    func->methods.size(),
+                    func->arguments.size(),
                     arguments.size()
                 ),
                 false,
@@ -483,7 +483,7 @@ FunctionCallNode::accept(
                 ar->TypeToken.line
             );
 
-            if (!func->methods.contains(ar->name)) {
+            if (!func->arguments.contains(ar->name)) {
                 emit_event(
                     Context,
                     DevTools::EventsT::Analysis,
@@ -516,7 +516,7 @@ FunctionCallNode::accept(
         // Check required arguments
         // ----------------------------------------------------------
 
-        for (auto& [mt_n, mt] : func->methods) {
+        for (auto& [mt_n, mt] : func->arguments) {
             if (mt.is_required) {
                 emit_event(
                     Context,
@@ -571,20 +571,20 @@ FunctionCallNode::accept(
         // ----------------------------------------------------------
 
         for (auto& ar : arguments) {
-            auto method = func->methods[ar->name];
+            auto argument = func->arguments[ar->name];
 
             emit_event(
                 Context,
                 DevTools::EventsT::Analysis,
                 "Checking type of argument '" + ar->name +
                     "' for function '" + name +
-                    "': expected '" + method.type +
+                    "': expected '" + argument.type +
                     "', received '" + ar->type + "'",
                 ar->TypeToken.line
             );
 
-            if (!method.is_any &&
-                !are_types_compatible(method.type, ar->type)) {
+            if (!argument.is_any &&
+                !are_types_compatible(argument.type, ar->type)) {
 
                 emit_event(
                     Context,
@@ -597,7 +597,7 @@ FunctionCallNode::accept(
                 ReturnResult<bool> re = {
                     error_obj.unexpected_argument_type(
                         ar->name,
-                        method.type,
+                        argument.type,
                         ar->type
                     ),
                     false,
@@ -744,21 +744,21 @@ FunctionCallNode::accept(
         // Register default arguments
         // ----------------------------------------------------------
 
-        for (auto& [method_name, method] : func->methods) {
-            if (!args_list.contains(method_name)) {
+        for (auto& [argument_name, argument] : func->arguments) {
+            if (!args_list.contains(argument_name)) {
                 emit_event(
                     Context,
                     DevTools::EventsT::Analysis,
-                    "Registering default argument '" + method_name +
-                        "' with type '" + method.type +
+                    "Registering default argument '" + argument_name +
+                        "' with type '" + argument.type +
                         "' in the semantic scope of function '" + name + "'",
                     NameToken.line
                 );
 
                 func_scoupe->add_var(
-                    method_name,
-                    method.type,
-                    method.default_value,
+                    argument_name,
+                    argument.type,
+                    argument.default_value,
                     true
                 );
             }
@@ -1047,20 +1047,20 @@ FunctionCallNode::exec(
     // Register default arguments
     // --------------------------------------------------------------
 
-    for (auto& [method_name, method] : func->methods) {
-        if (!args_list.contains(method_name)) {
+    for (auto& [argument_name, argument] : func->arguments) {
+        if (!args_list.contains(argument_name)) {
             emit_event(
                 Context,
                 DevTools::EventsT::Runtime,
-                "Registering default value for argument '" + method_name +
+                "Registering default value for argument '" + argument_name +
                     "' in function '" + name + "'",
                 NameToken.line
             );
 
             func_scoupe->add_var(
-                method_name,
-                method.type,
-                method.default_value,
+                argument_name,
+                argument.type,
+                argument.default_value,
                 true
             );
         }

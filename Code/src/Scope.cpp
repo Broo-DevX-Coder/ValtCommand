@@ -83,13 +83,13 @@ Scopes::SymbolTableTypes::Function*
 Scopes::Scope::add_function(
     const std::string& name, 
     const std::string& return_type,
-    std::unordered_map<std::string, SymbolTableTypes::Method> methods,
+    std::unordered_map<std::string, SymbolTableTypes::Argument> args,
     bool is_any
 ) {
     auto func_type = std::make_unique<SymbolTableTypes::Function>(
         SymbolTableTypes::Function{
             return_type,
-            methods,
+            args,
             is_any,
             ID
         }

@@ -31,7 +31,7 @@
 // == Locals ==
 #include "globals.hpp"
 #include "Scope.hpp"
-#include "DevTools/Debugger.hpp"
+#include "API/DevTools/Debugger.hpp"
 
 // ==================================================================
 // ASTNodes Types
@@ -47,7 +47,7 @@ enum ASTNodesTypes {
     NT__StringValueNode,
     NT__NumberValueNode,
     NT__BooleanValueNode,
-    NT__UserFunctionMethodNode,
+    NT__UserFunctionArgumentNode,
     NT__UserFunctionNode,
     NT__UserFunctionReturnNode,
     NT__UserProxyFunctionNode,

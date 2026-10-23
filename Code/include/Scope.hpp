@@ -47,10 +47,10 @@ namespace Scopes {
             size_t scope_id; // The scope id where the var created
         };
 
-        // Function's method in scope
-        struct Method: public SVar {
-            bool is_required; // Is the method required 
-            bool is_any;  // Is the type of method any (means the method can be any type)
+        // Function's argument in scope
+        struct Argument: public SVar {
+            bool is_required; // Is the argument required 
+            bool is_any;  // Is the type of argument any (means the argument can be any type)
             Value default_value; // The default alue of argument in set function (arg<str> = "hh")
         };
         
@@ -58,8 +58,8 @@ namespace Scopes {
         struct Function {
             ~Function(); // Destructure
             std::string return_type; // The type of value returned
-            std::unordered_map<std::string, Method> methods; // All methods of function
-            bool is_sepport_any_methods_=false; // Is function can get any methods by any types (like print)
+            std::unordered_map<std::string, Argument> arguments; // All arguments of function
+            bool is_sepport_any_arguments_=false; // Is function can get any arguments by any types (like print)
             size_t scope_id; // The id of scope in which this function was defined
             FunctionsTypes type; // The type of function (inside or external)
             ExternalFuncType external_func; // The pure c++ function if type is exernal
@@ -92,7 +92,7 @@ namespace Scopes {
             funcs_table get_functions_table(); // Get a table of all visible functions ptrs in this scope
             vars_table get_variables_table(); // Get a table of all visible vars ptrs in this scope
 
-            SymbolTableTypes::Function* add_function(const std::string& name, const std::string& return_type, std::unordered_map<std::string, SymbolTableTypes::Method> methods, bool is_any=false); // add function to scope table
+            SymbolTableTypes::Function* add_function(const std::string& name, const std::string& return_type, std::unordered_map<std::string, SymbolTableTypes::Argument> arguments, bool is_any=false); // add function to scope table
             SymbolTableTypes::RVar* add_var(const std::string& name, const std::string& type, const Value& value, bool is_const=false); // add variable to scope table
             ReturnResult<SymbolTableTypes::Function*> search_function(Token& NameToken); // Get a function struct pointer from scope by name
             ReturnResult<SymbolTableTypes::RVar*> search_var(Token& NameToken); // Get a variable struct pointer from scope by name

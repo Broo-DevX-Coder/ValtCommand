@@ -17,7 +17,7 @@ ReturnResult<Parser::Node>
 Parser::get_user_function_node() {
     ReturnResult<Token> consume_result; // The global cunsum return result object
 
-    std::vector<std::unique_ptr<UserFunctionMethodNode>> methods_list; // Methods list of function
+    std::vector<std::unique_ptr<UserFunctionArgumentNode>> arguments_list; // arguments list of function
     UserFunctionNode::NodesListT statements; // All nodes of code that is in function node
 
     // Jump on 'FUNCTION'
@@ -56,18 +56,18 @@ Parser::get_user_function_node() {
         return re;
     }
 
-    // Get methods
+    // Get arguments
     while (!check(TokenType::RIGHT_PAREN) && !isAsEnd()) {
 
-        // Get method name
-        auto method_name_TR = consume(TokenType::IDENTIFIER);
-        if (!method_name_TR.success) {
+        // Get argument name
+        auto argument_name_TR = consume(TokenType::IDENTIFIER);
+        if (!argument_name_TR.success) {
             ReturnResult<Node> re = {
-                method_name_TR.Message,
+                argument_name_TR.Message,
                 false,
                 nullptr
             };
-            re.error_info = method_name_TR.error_info;
+            re.error_info = argument_name_TR.error_info;
             return re;
         }
 
@@ -83,15 +83,15 @@ Parser::get_user_function_node() {
             return re;
         }
 
-        // Get expected type of method
-        auto method_type_TR = consume(TokenType::TYPE);
-        if (!method_type_TR.success) {
+        // Get expected type of argument
+        auto argument_type_TR = consume(TokenType::TYPE);
+        if (!argument_type_TR.success) {
             ReturnResult<Node> re = {
-                method_type_TR.Message,
+                argument_type_TR.Message,
                 false,
                 nullptr
             };
-            re.error_info = method_type_TR.error_info;
+            re.error_info = argument_type_TR.error_info;
             return re;
         }
 
@@ -144,11 +144,11 @@ Parser::get_user_function_node() {
             default_value_node = std::move(defualt_value_r.value);
         }
 
-        // Put the method in methods list
-        methods_list.push_back(
-            std::make_unique<UserFunctionMethodNode>(
-                method_name_TR.value,
-                method_type_TR.value,
+        // Put the argument in arguments list
+        arguments_list.push_back(
+            std::make_unique<UserFunctionArgumentNode>(
+                argument_name_TR.value,
+                argument_type_TR.value,
                 default_value_ftoken,
                 std::move(default_value_node)
             )
@@ -241,7 +241,7 @@ Parser::get_user_function_node() {
         std::make_unique<UserFunctionNode>(
             func_name_TR.value,
             func_return_type_TR.value,
-            std::move(methods_list),
+            std::move(arguments_list),
             std::move(statements),
             false
         )

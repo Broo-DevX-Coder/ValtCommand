@@ -3,7 +3,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "DevTools/Inspectures.hpp"
+#include "API/DevTools/Inspectures.hpp"
 
 // == Libs ==
 #include <sstream>
@@ -345,11 +345,11 @@ DevTools::FunctionsInspect(
     int scope_id_field      = 8;
     int return_type_field   = 11;
     int function_type_field = 13;
-    int any_methods_field   = 11;
-    int methods_field       = 7;
+    int any_arguments_field   = 11;
+    int arguments_field       = 7;
 
-    // Store formatted methods for table output
-    std::unordered_map<std::string, std::string> methods_strings;
+    // Store formatted arguments for table output
+    std::unordered_map<std::string, std::string> arguments_strings;
 
     // Add all functions to JSON and calculate field sizes
     for (auto& func : funcs_table) {
@@ -367,63 +367,63 @@ DevTools::FunctionsInspect(
                 ? "External"
                 : "Inside";
 
-        // Get whether function accepts any methods
-        const std::string any_methods =
-            func_ptr->is_sepport_any_methods_ ? "True" : "False";
+        // Get whether function accepts any arguments
+        const std::string any_arguments =
+            func_ptr->is_sepport_any_arguments_ ? "True" : "False";
 
         // Add function to JSON
         JSON[func.name]["scope_id"] = func_ptr->scope_id;
         JSON[func.name]["return_type"] = func_ptr->return_type;
         JSON[func.name]["function_type"] = function_type;
-        JSON[func.name]["any_methods"] =
-            func_ptr->is_sepport_any_methods_;
+        JSON[func.name]["any_arguments"] =
+            func_ptr->is_sepport_any_arguments_;
 
-        JSON[func.name]["methods"] = nlohmann::json::object();
+        JSON[func.name]["arguments"] = nlohmann::json::object();
 
-        // Build methods string
-        std::stringstream methods_ss;
+        // Build arguments string
+        std::stringstream arguments_ss;
 
-        bool first_method = true;
+        bool first_argument = true;
 
-        for (auto& method_entry : func_ptr->methods) {
+        for (auto& argument_entry : func_ptr->arguments) {
 
-            const std::string& method_name = method_entry.first;
-            const auto& method = method_entry.second;
+            const std::string& argument_name = argument_entry.first;
+            const auto& argument = argument_entry.second;
 
-            // Add method information to JSON
-            JSON[func.name]["methods"][method_name]["type"] =
-                method.is_any ? "any" : method.type;
+            // Add argument information to JSON
+            JSON[func.name]["arguments"][argument_name]["type"] =
+                argument.is_any ? "any" : argument.type;
 
-            JSON[func.name]["methods"][method_name]["required"] =
-                method.is_required;
+            JSON[func.name]["arguments"][argument_name]["required"] =
+                argument.is_required;
 
-            JSON[func.name]["methods"][method_name]["is_any"] =
-                method.is_any;
+            JSON[func.name]["arguments"][argument_name]["is_any"] =
+                argument.is_any;
 
-            JSON[func.name]["methods"][method_name]["default_value"] =
-                value_to_json(method.default_value);
+            JSON[func.name]["arguments"][argument_name]["default_value"] =
+                value_to_json(argument.default_value);
 
-            // Format method for the ASCII table
-            if (!first_method) {
-                methods_ss << ", ";
+            // Format argument for the ASCII table
+            if (!first_argument) {
+                arguments_ss << ", ";
             }
 
-            first_method = false;
+            first_argument = false;
 
-            methods_ss << method_name
+            arguments_ss << argument_name
                        << '<'
-                       << (method.is_any ? "any" : method.type)
+                       << (argument.is_any ? "any" : argument.type)
                        << '>';
 
-            if (!method.is_required) {
-                methods_ss << " = "
-                           << value_to_str(method.default_value);
+            if (!argument.is_required) {
+                arguments_ss << " = "
+                           << value_to_str(argument.default_value);
             }
         }
 
-        const std::string methods_str = methods_ss.str();
+        const std::string arguments_str = arguments_ss.str();
 
-        methods_strings[func.name] = methods_str;
+        arguments_strings[func.name] = arguments_str;
 
         // Calculate Name width
         if (func.name.size() > static_cast<size_t>(name_field)) {
@@ -454,18 +454,18 @@ DevTools::FunctionsInspect(
                 static_cast<int>(function_type.size());
         }
 
-        // Calculate Any Methods width
-        if (any_methods.size() >
-            static_cast<size_t>(any_methods_field)) {
-            any_methods_field =
-                static_cast<int>(any_methods.size());
+        // Calculate Any arguments width
+        if (any_arguments.size() >
+            static_cast<size_t>(any_arguments_field)) {
+            any_arguments_field =
+                static_cast<int>(any_arguments.size());
         }
 
-        // Calculate Methods width
-        if (methods_str.size() >
-            static_cast<size_t>(methods_field)) {
-            methods_field =
-                static_cast<int>(methods_str.size());
+        // Calculate arguments width
+        if (arguments_str.size() >
+            static_cast<size_t>(arguments_field)) {
+            arguments_field =
+                static_cast<int>(arguments_str.size());
         }
     }
 
@@ -486,13 +486,13 @@ DevTools::FunctionsInspect(
             ? field_max
             : function_type_field;
 
-    any_methods_field =
-        (any_methods_field > field_max)
+    any_arguments_field =
+        (any_arguments_field > field_max)
             ? field_max
-            : any_methods_field;
+            : any_arguments_field;
 
-    methods_field =
-        (methods_field > field_max) ? field_max : methods_field;
+    arguments_field =
+        (arguments_field > field_max) ? field_max : arguments_field;
 
     // Table column widths
     const int widths[] = {
@@ -500,8 +500,8 @@ DevTools::FunctionsInspect(
         scope_id_field,
         return_type_field,
         function_type_field,
-        any_methods_field,
-        methods_field
+        any_arguments_field,
+        arguments_field
     };
 
     // Format a cell: truncate if necessary, then pad with spaces
@@ -571,8 +571,8 @@ DevTools::FunctionsInspect(
         "Scope ID",
         "Return Type",
         "Function Type",
-        "Any Methods",
-        "Methods"
+        "Any arguments",
+        "arguments"
     };
 
     draw_row(headers);
@@ -600,13 +600,13 @@ DevTools::FunctionsInspect(
                 ? "External"
                 : "Inside";
 
-        // Any methods
-        const std::string any_methods =
-            func_ptr->is_sepport_any_methods_ ? "True" : "False";
+        // Any arguments
+        const std::string any_arguments =
+            func_ptr->is_sepport_any_arguments_ ? "True" : "False";
 
-        // Methods
-        const std::string methods_str =
-            methods_strings[func.name];
+        // arguments
+        const std::string arguments_str =
+            arguments_strings[func.name];
 
         // Prepare row
         const std::string fields[] = {
@@ -614,8 +614,8 @@ DevTools::FunctionsInspect(
             scope_id_ss.str(),
             func_ptr->return_type,
             function_type,
-            any_methods,
-            methods_str
+            any_arguments,
+            arguments_str
         };
 
         draw_row(fields);

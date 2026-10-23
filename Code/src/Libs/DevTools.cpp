@@ -4,7 +4,7 @@
 
 // == Locals ==
 #include "Libs/DevTools.hpp" 
-#include "DevTools/Inspectures.hpp"
+#include "API/DevTools/Inspectures.hpp"
 
 
 // ==================================================================

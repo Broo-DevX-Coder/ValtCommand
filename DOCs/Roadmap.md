@@ -68,23 +68,52 @@
 
 - ✅ Better error handling
 - ✅ Runtime Tracer
-- ✅ Create a get_json in ASTNodes
+- ✅ Create `get_json` in AST nodes
 - ✅ Scope Inspector
 - ✅ Variable Inspector
 - ✅ Function Inspector
-- ✅ Crete nodes of `INSPECT__SCOPE__` + `INSPECT__VARS__` + `INSPECT__FUNCS__` to use inspectors diractelly in code
+- ✅ Create `INSPECT__SCOPE__`, `INSPECT__VARS__` and `INSPECT__FUNCS__` nodes to use inspectors directly in code
 
-### Developer Tools
+---
 
-- Debug Tools
-- Performance Metrics
-- Better Diagnostics
+### Runtime / Embedding API
+
+- ✅ Add `runtime.run(code)` to execute code from a string
+- ✅ Add `runtime.run_file(path)` to execute a script file
+- ✅ Return a result object (value, error, error line/column) instead of crashing the host
+- ✅ Keep state between calls (variables and functions persist), with an option for a fresh scope
+- ✅ Add `runtime.reset()` to clear the state
+- ✅ Allow the host (C++) to register native functions into the Function Registry
+- ✅ Allow the host to read and set variables in the global scop
+
+---
 
 ### Embedded Standard Library
 
+#### Function Infrastructure
+- Define consistent argument and return types for built-in functions
+- Validate argument counts and types
+- Integrate built-in functions with the Function Registry
+- Define consistent behavior for domain errors, overflow, and invalid arguments
+- Add unit tests for built-in functions
+
+#### Input / Output Functions
+- Add output functions (`print`, `println`)
+- Add input function (`input`)
+- Define behavior for multiple arguments, separators, and line endings
+
+#### Type Conversion Functions
+- Add conversion functions (`int`, `float`, `str`, `bool`)
+- Add type inspection function (`type`)
+- Define behavior for invalid conversions (e.g. `int("abc")`)
+
+#### Format Function
+- Add `format` function (e.g. `format("Hello {}", name)`)
+- Support positional placeholders and number formatting (precision, padding)
+- Define behavior for missing or extra arguments
+
 #### Mathematical Constants
 - Add mathematical constants (`PI`, `E`, `TAU`, `INF`, `NAN`)
-- Add mathematical constants documentation
 
 #### Basic Math Functions
 - Add basic math functions (`abs`, `sqrt`, `cbrt`, `pow`, `root`)
@@ -106,25 +135,26 @@
 #### Numeric Utilities
 - Add floating-point classification functions (`isnan`, `isinf`, `isfinite`)
 - Add numeric limits and type information
-- Define consistent behavior for domain errors, overflow, and invalid arguments
 
 #### Random Number Functions
 - Add random number functions (`random`, `randint`)
 - Add random seed configuration (`seed_random`)
 
 ---
-#### __Note__: Embedded Function Infrastructure
-- Define consistent argument and return types for built-in functions
-- Validate argument counts and types
-- Integrate built-in functions with the Function Registry
-- Add unit tests for built-in functions
-- Document all built-in functions and mathematical constants
+
+### Developer Tools
+
+- Debugger with breakpoints
+- Step-by-step execution
+- Performance Metrics
+- Better Diagnostics
+
 ---
 
 ### Documentation
 
 - Language Reference
-- Standard Library Documentation
+- Standard Library Documentation (all built-in functions and mathematical constants)
 - Embedding Guide
 - Examples & Tutorials
 

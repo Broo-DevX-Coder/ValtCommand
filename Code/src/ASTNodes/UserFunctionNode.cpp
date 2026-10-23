@@ -32,27 +32,27 @@ static void emit_event(
 }
 
 // ==================================================================
-// User Function method node functions
+// User Function argument node functions
 // ==================================================================
 
 // Constructor
-UserFunctionMethodNode::UserFunctionMethodNode(
+UserFunctionArgumentNode::UserFunctionArgumentNode(
     Token& nameT,
     Token& typeT,
     Token& default_value_FT,
     std::unique_ptr<ASTNode> default_value_N,
-    bool is_method_any
+    bool is_argument_any
 ):
     name_token(nameT),
     type_token(typeT),
     default_value_node(std::move(default_value_N)),
     default_value_ftoekn(default_value_FT),
-    is_method_any(is_method_any) {}
+    is_argument_any(is_argument_any) {}
 
 
 // Get string for print
 std::string
-UserFunctionMethodNode::get_str(
+UserFunctionArgumentNode::get_str(
     int level
 ) {
     std::stringstream ss;
@@ -60,7 +60,7 @@ UserFunctionMethodNode::get_str(
     for (int i = 0; i < level; i++)
         ss << "|  ";
 
-    ss << "Method " << name_token.value << ":\n";
+    ss << "argument " << name_token.value << ":\n";
 
     for (int i = 0; i < level; i++)
         ss << "|  ";
@@ -81,10 +81,10 @@ UserFunctionMethodNode::get_str(
 
 // Get the json file of ASTNode
 nlohmann::json
-UserFunctionMethodNode::get_json() {
+UserFunctionArgumentNode::get_json() {
     nlohmann::json result;
 
-    result["type"] = "UserFunctionMethod";
+    result["type"] = "UserFunctionargument";
     result["name"] = name_token.value;
     result["return_type"] = type_token.value;
 
@@ -99,14 +99,14 @@ UserFunctionMethodNode::get_json() {
 
 // Get type of node
 ASTNodesTypes
-UserFunctionMethodNode::NType() {
-    return NT__UserFunctionMethodNode;
+UserFunctionArgumentNode::NType() {
+    return NT__UserFunctionArgumentNode;
 }
 
 
-// Verify method
+// Verify argument
 ReturnResult<bool>
-UserFunctionMethodNode::accept(
+UserFunctionArgumentNode::accept(
     NodesContext Context
 ) {
     return_type = type_token.value;
@@ -188,7 +188,7 @@ UserFunctionMethodNode::accept(
 
 // Execute node
 ReturnResult<Value>
-UserFunctionMethodNode::exec(
+UserFunctionArgumentNode::exec(
     NodesContext Context
 ) {
     return_type = type_token.value;
@@ -245,19 +245,19 @@ UserFunctionMethodNode::exec(
 
 // Copy class
 ASTNode*
-UserFunctionMethodNode::clone() {
+UserFunctionArgumentNode::clone() {
     std::unique_ptr<ASTNode> new_defualt_value_node(
         default_value_node == nullptr
             ? nullptr
             : default_value_node->clone()
     );
 
-    return new UserFunctionMethodNode(
+    return new UserFunctionArgumentNode(
         name_token,
         type_token,
         default_value_ftoekn,
         std::move(new_defualt_value_node),
-        is_method_any
+        is_argument_any
     );
 }
 
@@ -671,13 +671,13 @@ UserProxyFunctionNode::clone() {
 UserFunctionNode::UserFunctionNode(
     Token& nameT,
     Token& typeT,
-    MethodsList methods_list,
+    argumentsList arguments_list,
     NodesListT statements,
     bool is_any
 ):
     name_token(nameT),
     return_type_token(typeT),
-    methods_list(std::move(methods_list)),
+    arguments_list(std::move(arguments_list)),
     statements(std::move(statements)),
     is_function_any(is_any) {}
 
@@ -702,11 +702,11 @@ UserFunctionNode::get_str(
     for (int i = 0; i < level + 1; i++)
         ss << "|  ";
 
-    ss << "Methods:\n";
+    ss << "arguments:\n";
 
-    for (auto& method : methods_list) {
-        if (method != nullptr)
-            ss << method->get_str(level + 2);
+    for (auto& argument : arguments_list) {
+        if (argument != nullptr)
+            ss << argument->get_str(level + 2);
     }
 
     for (int i = 0; i < level + 1; i++)
@@ -731,11 +731,11 @@ UserFunctionNode::get_json() {
     result["name"] = name_token.value;
     result["return_type"] = return_type_token.value;
 
-    result["methods"] = nlohmann::json::array();
+    result["arguments"] = nlohmann::json::array();
 
-    for (const auto& method : methods_list) {
-        if (method != nullptr)
-            result["methods"].push_back(method->get_json());
+    for (const auto& argument : arguments_list) {
+        if (argument != nullptr)
+            result["arguments"].push_back(argument->get_json());
     }
 
     result["statements"] = nlohmann::json::array();
@@ -819,18 +819,18 @@ UserFunctionNode::accept(
     auto func_scoupe =
         std::make_unique<Scopes::Scope>(Context.ParentScope);
 
-    // Create methods list to add function in Scope
+    // Create arguments list to add function in Scope
     std::unordered_map<
         std::string,
-        Scopes::SymbolTableTypes::Method
+        Scopes::SymbolTableTypes::Argument
     > MList;
 
     // Verify all arguments
-    for (auto& method : methods_list) {
-        if (method == nullptr)
+    for (auto& argument : arguments_list) {
+        if (argument == nullptr)
             continue;
 
-        auto r = method->accept(Context);
+        auto r = argument->accept(Context);
 
         if (!r.success) {
             emit_event(
@@ -838,37 +838,37 @@ UserFunctionNode::accept(
                 DevTools::EventsT::Analysis,
                 "Function parameter verification failed in '" +
                     name_token.value + "'",
-                method->name_token.line
+                argument->name_token.line
             );
 
             return r;
         }
 
-        // Put the method in scope
+        // Put the argument in scope
         Value arg_v = std::monostate();
 
         func_scoupe->add_var(
-            method->name_token.value,
-            method->type_token.value,
+            argument->name_token.value,
+            argument->type_token.value,
             arg_v,
             true
         );
 
-        // Put the method in methods list
-        MList[method->name_token.value] = {
-            method->type_token.value,
+        // Put the argument in arguments list
+        MList[argument->name_token.value] = {
+            argument->type_token.value,
             true,
-            method->default_value_node == nullptr,
-            method->is_method_any,
+            argument->default_value_node == nullptr,
+            argument->is_argument_any,
             std::monostate{}
         };
 
         emit_event(
             Context,
             DevTools::EventsT::Analysis,
-            "Registered parameter '" + method->name_token.value +
+            "Registered parameter '" + argument->name_token.value +
                 "' in function scope",
-            method->name_token.line
+            argument->name_token.line
         );
     }
 
@@ -1034,18 +1034,18 @@ UserFunctionNode::exec(
         return_type_token.value
     );
 
-    // Create methods list
+    // Create arguments list
     std::unordered_map<
         std::string,
-        Scopes::SymbolTableTypes::Method
+        Scopes::SymbolTableTypes::Argument
     > MList;
 
-    for (auto& method : methods_list) {
-        if (method == nullptr)
+    for (auto& argument : arguments_list) {
+        if (argument == nullptr)
             continue;
 
-        // Execute method
-        auto r = method->exec(Context);
+        // Execute argument
+        auto r = argument->exec(Context);
 
         if (!r.success) {
             emit_event(
@@ -1053,20 +1053,20 @@ UserFunctionNode::exec(
                 DevTools::EventsT::Runtime,
                 "Failed to evaluate parameters for function '" +
                     name_token.value + "'",
-                method->name_token.line
+                argument->name_token.line
             );
 
             delete proxy_node;
             return r;
         }
 
-        // Add method to methods list
-        MList[method->name_token.value] = {
-            method->type_token.value,
+        // Add argument to arguments list
+        MList[argument->name_token.value] = {
+            argument->type_token.value,
             true,
-            method->default_value_node == nullptr,
-            method->is_method_any,
-            method->default_value
+            argument->default_value_node == nullptr,
+            argument->is_argument_any,
+            argument->default_value
         };
     }
 
@@ -1098,20 +1098,20 @@ UserFunctionNode::exec(
 // Copy class
 ASTNode*
 UserFunctionNode::clone() {
-    MethodsList new_methods_list;
+    argumentsList new_arguments_list;
     NodesListT new_statements;
 
-    for (auto& m : methods_list) {
+    for (auto& m : arguments_list) {
         if (m == nullptr) {
-            new_methods_list.push_back(nullptr);
+            new_arguments_list.push_back(nullptr);
             continue;
         }
 
-        std::unique_ptr<UserFunctionMethodNode> new_method(
-            dynamic_cast<UserFunctionMethodNode*>(m->clone())
+        std::unique_ptr<UserFunctionArgumentNode> new_argument(
+            dynamic_cast<UserFunctionArgumentNode*>(m->clone())
         );
 
-        new_methods_list.push_back(std::move(new_method));
+        new_arguments_list.push_back(std::move(new_argument));
     }
 
     for (auto& s : statements) {
@@ -1127,7 +1127,7 @@ UserFunctionNode::clone() {
     return new UserFunctionNode(
         name_token,
         return_type_token,
-        std::move(new_methods_list),
+        std::move(new_arguments_list),
         std::move(new_statements),
         is_function_any
     );
