@@ -23,14 +23,14 @@ FUNCTION subtract (
     RETURN (GET a) - (GET b)
 END
 
-CALL print value<str>:"========== BASIC FUNCTION CALLS ==========" END
+CALL println value<str>:"========== BASIC FUNCTION CALLS ==========" END
 
-CALL print value<int>:CALL add a<int>:10 b<int>:20 END END
-CALL print value<int>:CALL multiply a<int>:6 b<int>:7 END END
-CALL print value<int>:CALL subtract a<int>:10 b<int>:3 END END
+CALL println value<int>:CALL add a<int>:10 b<int>:20 END END
+CALL println value<int>:CALL multiply a<int>:6 b<int>:7 END END
+CALL println value<int>:CALL subtract a<int>:10 b<int>:3 END END
 
-CALL print value<str>:"========== NESTED FUNCTION CALLS ==========" END
+CALL println value<str>:"========== NESTED FUNCTION CALLS ==========" END
 
-CALL print value<int>:CALL add a<int>:CALL multiply a<int>:2 b<int>:3 END b<int>:4 END END
+CALL println value<int>:CALL add a<int>:CALL multiply a<int>:2 b<int>:3 END b<int>:4 END END
 
-CALL print value<str>:"========== FUNCTION TESTS COMPLETED ==========" END
+CALL println value<str>:"========== FUNCTION TESTS COMPLETED ==========" END

@@ -23,7 +23,7 @@
 
 // == Locals ==
 #include "ASTNodes/ASTNode.hpp"
-#include "globals.hpp"
+#include "API/globals.hpp"
 
 // ==================================================================
 // Parser

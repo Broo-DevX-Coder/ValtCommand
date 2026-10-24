@@ -1,82 +1,40 @@
-// ==================================================================
-// Include neccessary headers
-// ==================================================================
-
-// == Libs ==
-#include <iostream>
-#include <variant>
-#include <string>
-
-// == Locals ==
 #include "API/Runtime.hpp"
 #include "Errors.hpp"
-#include "Libs/DevTools.hpp"
 
-std::ostream& operator<<(std::ostream& os, const std::monostate&) {
-    os << "null";
-    return os;
-}
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
-ReturnResult<Value> print(ExternalFunInType input) {
-    for (auto& [n,i]: input.arguments) {
+int main1() {
+    Runtime::RunTime rt;
 
-        if (std::holds_alternative<bool>(i)) {
-            bool vv = false;
-            bool* v = std::get_if<bool>(&i);
+    std::string path = "/home/broodev/Desktop/PG/ValtCommand/Tests/arithmetic.vlt";
 
-            if (v != nullptr) {
-                vv = *v;
-            }
+    std::ifstream in(path, std::ios::binary);
+    std::ostringstream buffer;
+    buffer << in.rdbuf();
+    std::string code = buffer.str();
 
-            if (vv) std::cout << "True" << std::endl << std::flush;
-            else std::cout << "False" << std::endl << std::flush;
-
-            continue;
-        }
-            
-        std::visit([](auto&& v){
-            std::cout << v << std::endl << std::flush;
-        }, i);
+    // ---- 1) Run the whole script ----
+    auto r = rt.run_file(path);
+    if (!r) {
+        std::cerr << Errors::formatter(r.error.info,code);
     }
 
-    return {"",true,std::monostate{}};
+
+    return 0;
 }
 
-ReturnResult<Value> Pi(ExternalFunInType input) {
-    return {"",true,-3.14159265359L};
-}
+int main() {
+    std::string code = R"RT(  
+        SET name<str> = CALL input prompt<str>:"Name: " END
+        CALL println value<str>:GET name END
+    )RT";
 
-// ==================================================================
-// Entry point function
-// ==================================================================
-int main () {
-
-    // ====== initialyze standards ==========
-    //Standardes::__init__();
-
-    std::cout << "======== Start exec =========" << "\n" << std::flush;
-
-
-    std::string code = R"CODE(
-
-    SET var<int> = 5
-    CALL print value<int>:(GET var) END
-
-    )CODE";
-    
-    {
-        auto r = Runtime::RunTime();
-        r.add_external_function(print,"print","void",{},true);
-        r.add_external_function(Pi,"Pi","float",{},true);
-        Lib::DevFunctions::__init__(r);
-    
-        auto execute = r.run(code,Runtime::ScopeMode::Persistent);
-        if (!execute){
-            std::cout << Errors::formatter(execute.error.info,code) << "\n\n" << std::flush;
-            return 1;
-        }
-    }
-    std::cout << std::endl << "======== exec end =========" << std::endl << std::flush;
-
+    Runtime::RunTime r;
+    r.run(code,Runtime::ScopeMode::Persistent);
     return 0;
 }

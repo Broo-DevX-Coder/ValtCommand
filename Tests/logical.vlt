@@ -2,26 +2,26 @@
 // ValtCommand - Logical Tests
 // ============================================================
 
-CALL print value<str>:"========== LOGICAL NOT ==========" END
-CALL print value<bool>:!True END
-CALL print value<bool>:!False END
+CALL println value<str>:"========== LOGICAL NOT ==========" END
+CALL println value<bool>:!True END
+CALL println value<bool>:!False END
 
-CALL print value<str>:"========== LOGICAL AND ==========" END
-CALL print value<bool>:True && True END
-CALL print value<bool>:True && False END
-CALL print value<bool>:False && True END
-CALL print value<bool>:False && False END
+CALL println value<str>:"========== LOGICAL AND ==========" END
+CALL println value<bool>:True && True END
+CALL println value<bool>:True && False END
+CALL println value<bool>:False && True END
+CALL println value<bool>:False && False END
 
-CALL print value<str>:"========== LOGICAL OR ==========" END
-CALL print value<bool>:True || True END
-CALL print value<bool>:True || False END
-CALL print value<bool>:False || True END
-CALL print value<bool>:False || False END
+CALL println value<str>:"========== LOGICAL OR ==========" END
+CALL println value<bool>:True || True END
+CALL println value<bool>:True || False END
+CALL println value<bool>:False || True END
+CALL println value<bool>:False || False END
 
-CALL print value<str>:"========== COMBINED LOGICAL EXPRESSIONS ==========" END
-CALL print value<bool>:(5 > 3) && (10 > 2) END
-CALL print value<bool>:(5 < 3) || (10 > 2) END
-CALL print value<bool>:!(5 > 10) END
-CALL print value<bool>:(5 > 3) && !(2 > 10) END
+CALL println value<str>:"========== COMBINED LOGICAL EXPRESSIONS ==========" END
+CALL println value<bool>:(5 > 3) && (10 > 2) END
+CALL println value<bool>:(5 < 3) || (10 > 2) END
+CALL println value<bool>:!(5 > 10) END
+CALL println value<bool>:(5 > 3) && !(2 > 10) END
 
-CALL print value<str>:"========== LOGICAL TESTS COMPLETED ==========" END
+CALL println value<str>:"========== LOGICAL TESTS COMPLETED ==========" END

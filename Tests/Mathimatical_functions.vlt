@@ -1,0 +1,405 @@
+// Title: Test of mathimatical functions and constants
+
+// ==================================================================
+// Test helpers
+// ==================================================================
+
+// Compare two numbers, print PASS or FAIL
+FUNCTION check_num (
+    name<str>       // Name of the test
+    got<float>      // Value that the library returned
+    expected<float> // Value that we expect
+)->int
+
+    SET diff<float> = CALL abs x<float>:(GET got) - (GET expected) END
+
+    IF (GET diff) < 0.000001 THEN
+        CALL print value<str>:"[PASS] " END
+        CALL println value<str>:GET name END
+    ELSE THEN
+        CALL print value<str>:"[FAIL] " END
+        CALL print value<str>:GET name END
+        CALL print value<str>:"  got: " END
+        CALL print value<float>:GET got END
+        CALL print value<str>:"  expected: " END
+        CALL println value<float>:GET expected END
+    END
+
+    RETURN 0
+END
+
+// The value must be true
+FUNCTION check_true (
+    name<str>
+    value<bool>
+)->int
+    IF GET value THEN
+        CALL print value<str>:"[PASS] " END
+        CALL println value<str>:GET name END
+    ELSE THEN
+        CALL print value<str>:"[FAIL] " END
+        CALL print value<str>:GET name END
+        CALL println value<str>:"  expected true" END
+    END
+    RETURN 0
+END
+
+// The value must be false
+FUNCTION check_false (
+    name<str>
+    value<bool>
+)->int
+    IF GET value THEN
+        CALL print value<str>:"[FAIL] " END
+        CALL print value<str>:GET name END
+        CALL println value<str>:"  expected false" END
+    ELSE THEN
+        CALL print value<str>:"[PASS] " END
+        CALL println value<str>:GET name END
+    END
+    RETURN 0
+END
+
+// ==================================================================
+// Constants
+// ==================================================================
+CALL println value<str>:"== Constants ==" END
+
+CALL check_num name<str>:"PI" got<float>:GET PI expected<float>:3.14159265358979 END
+CALL check_num name<str>:"E" got<float>:GET E expected<float>:2.71828182845904 END
+CALL check_num name<str>:"TAU" got<float>:GET TAU expected<float>:6.28318530717958 END
+CALL check_num name<str>:"PI*2 - TAU" got<float>:(GET PI)*2 - (GET TAU) expected<float>:0 END
+CALL check_true name<str>:"isinf(INF)" value<bool>:CALL isinf x<float>:GET INF END END
+CALL check_true name<str>:"isnan(NAN)" value<bool>:CALL isnan x<float>:GET NAN END END
+CALL check_num name<str>:"INT_MAX > 0" got<float>:CALL sign x<int>:GET INT_MAX END expected<float>:1 END
+CALL check_num name<str>:"INT_MIN < 0" got<float>:CALL sign x<int>:GET INT_MIN END expected<float>:-1 END
+
+// ==================================================================
+// Basic functions
+// ==================================================================
+CALL println value<str>:"== Basic ==" END
+
+CALL check_num name<str>:"abs(-5)" got<float>:CALL abs x<int>:-5 END expected<float>:5 END
+CALL check_num name<str>:"abs(-2.5)" got<float>:CALL abs x<float>:-2.5 END expected<float>:2.5 END
+CALL check_num name<str>:"sqrt(16)" got<float>:CALL sqrt x<float>:16 END expected<float>:4 END
+CALL check_num name<str>:"sqrt(2)" got<float>:CALL sqrt x<float>:2 END expected<float>:1.41421356237309 END
+CALL check_num name<str>:"cbrt(27)" got<float>:CALL cbrt x<float>:27 END expected<float>:3 END
+CALL check_num name<str>:"cbrt(-8)" got<float>:CALL cbrt x<float>:-8 END expected<float>:-2 END
+CALL check_num name<str>:"pow(2,10)" got<float>:CALL pow base<int>:2 exp<int>:10 END expected<float>:1024 END
+CALL check_num name<str>:"pow(2,0)" got<float>:CALL pow base<int>:2 exp<int>:0 END expected<float>:1 END
+CALL check_num name<str>:"pow(-3,3)" got<float>:CALL pow base<int>:-3 exp<int>:3 END expected<float>:-27 END
+CALL check_num name<str>:"pow(2,-1)" got<float>:CALL pow base<int>:2 exp<int>:-1 END expected<float>:0.5 END
+CALL check_num name<str>:"pow(2.0,0.5)" got<float>:CALL pow base<float>:2.0 exp<float>:0.5 END expected<float>:1.41421356237309 END
+CALL check_num name<str>:"root(27,3)" got<float>:CALL root x<float>:27 n<int>:3 END expected<float>:3 END
+CALL check_num name<str>:"root(-8,3)" got<float>:CALL root x<float>:-8 n<int>:3 END expected<float>:-2 END
+CALL check_num name<str>:"root(16,4)" got<float>:CALL root x<float>:16 n<int>:4 END expected<float>:2 END
+CALL check_num name<str>:"sign(-9)" got<float>:CALL sign x<int>:-9 END expected<float>:-1 END
+CALL check_num name<str>:"sign(0)" got<float>:CALL sign x<int>:0 END expected<float>:0 END
+CALL check_num name<str>:"sign(3.5)" got<float>:CALL sign x<float>:3.5 END expected<float>:1 END
+
+// ==================================================================
+// Rounding
+// ==================================================================
+CALL println value<str>:"== Rounding ==" END
+
+CALL check_num name<str>:"floor(2.7)" got<float>:CALL floor x<float>:2.7 END expected<float>:2 END
+CALL check_num name<str>:"floor(-2.1)" got<float>:CALL floor x<float>:-2.1 END expected<float>:-3 END
+CALL check_num name<str>:"floor(7)" got<float>:CALL floor x<int>:7 END expected<float>:7 END
+CALL check_num name<str>:"ceil(2.1)" got<float>:CALL ceil x<float>:2.1 END expected<float>:3 END
+CALL check_num name<str>:"ceil(-2.9)" got<float>:CALL ceil x<float>:-2.9 END expected<float>:-2 END
+CALL check_num name<str>:"round(2.5)" got<float>:CALL round x<float>:2.5 END expected<float>:3 END
+CALL check_num name<str>:"round(-2.5)" got<float>:CALL round x<float>:-2.5 END expected<float>:-3 END
+CALL check_num name<str>:"round(2.4)" got<float>:CALL round x<float>:2.4 END expected<float>:2 END
+CALL check_num name<str>:"trunc(-2.9)" got<float>:CALL trunc x<float>:-2.9 END expected<float>:-2 END
+CALL check_num name<str>:"trunc(2.9)" got<float>:CALL trunc x<float>:2.9 END expected<float>:2 END
+
+// ==================================================================
+// Remainder, min, max, clamp
+// ==================================================================
+CALL println value<str>:"== Remainder / Min / Max / Clamp ==" END
+
+CALL check_num name<str>:"fmod(7.5,2)" got<float>:CALL fmod a<float>:7.5 b<float>:2 END expected<float>:1.5 END
+CALL check_num name<str>:"fmod(-7.5,2)" got<float>:CALL fmod a<float>:-7.5 b<float>:2 END expected<float>:-1.5 END
+CALL check_num name<str>:"min(3,8)" got<float>:CALL min a<int>:3 b<int>:8 END expected<float>:3 END
+CALL check_num name<str>:"max(3,8)" got<float>:CALL max a<int>:3 b<int>:8 END expected<float>:8 END
+CALL check_num name<str>:"min(2.5,1)" got<float>:CALL min a<float>:2.5 b<int>:1 END expected<float>:1 END
+CALL check_num name<str>:"max(2.5,1)" got<float>:CALL max a<float>:2.5 b<int>:1 END expected<float>:2.5 END
+CALL check_num name<str>:"clamp(15,0,10)" got<float>:CALL clamp x<int>:15 lo<int>:0 hi<int>:10 END expected<float>:10 END
+CALL check_num name<str>:"clamp(-5,0,10)" got<float>:CALL clamp x<int>:-5 lo<int>:0 hi<int>:10 END expected<float>:0 END
+CALL check_num name<str>:"clamp(5,0,10)" got<float>:CALL clamp x<int>:5 lo<int>:0 hi<int>:10 END expected<float>:5 END
+
+// ==================================================================
+// Exponential and logarithmic
+// ==================================================================
+CALL println value<str>:"== Exp / Log ==" END
+
+CALL check_num name<str>:"exp(0)" got<float>:CALL exp x<float>:0 END expected<float>:1 END
+CALL check_num name<str>:"exp(1)" got<float>:CALL exp x<float>:1 END expected<float>:2.71828182845904 END
+CALL check_num name<str>:"exp2(10)" got<float>:CALL exp2 x<float>:10 END expected<float>:1024 END
+CALL check_num name<str>:"log(E)" got<float>:CALL log x<float>:GET E END expected<float>:1 END
+CALL check_num name<str>:"log2(8)" got<float>:CALL log2 x<float>:8 END expected<float>:3 END
+CALL check_num name<str>:"log10(1000)" got<float>:CALL log10 x<float>:1000 END expected<float>:3 END
+CALL check_num name<str>:"log1p(0)" got<float>:CALL log1p x<float>:0 END expected<float>:0 END
+
+// ==================================================================
+// Trigonometric and hyperbolic
+// ==================================================================
+CALL println value<str>:"== Trigonometry ==" END
+
+CALL check_num name<str>:"sin(0)" got<float>:CALL sin x<float>:0 END expected<float>:0 END
+CALL check_num name<str>:"sin(PI/2)" got<float>:CALL sin x<float>:(GET PI)/2 END expected<float>:1 END
+CALL check_num name<str>:"cos(0)" got<float>:CALL cos x<float>:0 END expected<float>:1 END
+CALL check_num name<str>:"cos(PI)" got<float>:CALL cos x<float>:GET PI END expected<float>:-1 END
+CALL check_num name<str>:"tan(PI/4)" got<float>:CALL tan x<float>:(GET PI)/4 END expected<float>:1 END
+CALL check_num name<str>:"asin(1)" got<float>:CALL asin x<float>:1 END expected<float>:1.5707963267949 END
+CALL check_num name<str>:"acos(1)" got<float>:CALL acos x<float>:1 END expected<float>:0 END
+CALL check_num name<str>:"atan(1)" got<float>:CALL atan x<float>:1 END expected<float>:0.785398163397448 END
+CALL check_num name<str>:"atan2(1,1)" got<float>:CALL atan2 y<float>:1 x<float>:1 END expected<float>:0.785398163397448 END
+CALL check_num name<str>:"atan2(1,-1)" got<float>:CALL atan2 y<float>:1 x<float>:-1 END expected<float>:2.35619449019234 END
+CALL check_num name<str>:"sinh(0)" got<float>:CALL sinh x<float>:0 END expected<float>:0 END
+CALL check_num name<str>:"cosh(0)" got<float>:CALL cosh x<float>:0 END expected<float>:1 END
+CALL check_num name<str>:"tanh(0)" got<float>:CALL tanh x<float>:0 END expected<float>:0 END
+CALL check_num name<str>:"degrees(PI)" got<float>:CALL degrees x<float>:GET PI END expected<float>:180 END
+CALL check_num name<str>:"radians(180)" got<float>:CALL radians x<float>:180 END expected<float>:3.14159265358979 END
+CALL check_num name<str>:"sin(radians(30))" got<float>:CALL sin x<float>:CALL radians x<float>:30 END END expected<float>:0.5 END
+
+// ==================================================================
+// Numeric utilities
+// ==================================================================
+CALL println value<str>:"== Numeric utilities ==" END
+
+CALL check_false name<str>:"isnan(1.5)" value<bool>:CALL isnan x<float>:1.5 END END
+CALL check_false name<str>:"isnan(5)" value<bool>:CALL isnan x<int>:5 END END
+CALL check_true name<str>:"isinf(-INF)" value<bool>:CALL isinf x<float>:-(GET INF) END END
+CALL check_false name<str>:"isinf(10)" value<bool>:CALL isinf x<int>:10 END END
+CALL check_true name<str>:"isfinite(10)" value<bool>:CALL isfinite x<int>:10 END END
+CALL check_false name<str>:"isfinite(INF)" value<bool>:CALL isfinite x<float>:GET INF END END
+CALL check_false name<str>:"isfinite(NAN)" value<bool>:CALL isfinite x<float>:GET NAN END END
+
+// ==================================================================
+// Random
+// ==================================================================
+CALL println value<str>:"== Random ==" END
+
+// randint(5, 10) must stay between 5 and 10 for 200 tries
+SET r<int> = 0
+SET bad<int> = 0
+
+FOR
+    SET i<int> = 0;
+    GET i < 200;
+    SET i = GET i +1
+THEN
+    SET r = CALL randint lo<int>:5 hi<int>:10 END
+    IF (GET r) < 5 THEN
+        SET bad = 1
+    END
+    IF (GET r) > 10 THEN
+        SET bad = 1
+    END
+END
+
+IF (GET bad) == 0 THEN
+    CALL println value<str>:"[PASS] randint(5,10) x200 stays in range" END
+ELSE THEN
+    CALL println value<str>:"[FAIL] randint(5,10) went out of range" END
+END
+
+// random() must be in [0, 1) for 200 tries
+SET f<float> = 0.0
+SET bad2<int> = 0
+
+FOR
+    SET j<int> = 0;
+    GET j < 200;
+    SET j = GET j +1
+THEN
+    SET f = CALL random END
+    IF (GET f) < 0 THEN
+        SET bad2 = 1
+    END
+    IF (GET f) >= 1 THEN
+        SET bad2 = 1
+    END
+END
+
+IF (GET bad2) == 0 THEN
+    CALL println value<str>:"[PASS] random() x200 stays in [0,1)" END
+ELSE THEN
+    CALL println value<str>:"[FAIL] random() went out of range" END
+END
+
+// Same seed must give the same first number
+CALL seed_random seed<int>:42 END
+SET a<float> = CALL random END
+CALL seed_random seed<int>:42 END
+SET b<float> = CALL random END
+CALL check_num name<str>:"seed_random(42) is repeatable" got<float>:GET a expected<float>:GET b END
+
+// randint with lo == hi
+CALL check_num name<str>:"randint(7,7)" got<float>:CALL randint lo<int>:7 hi<int>:7 END expected<float>:7 END
+
+// ==================================================================
+// Combined: hypotenuse of a 3-4-5 triangle
+// ==================================================================
+CALL println value<str>:"== Combined ==" END
+
+SET side1<int> = CALL pow base<int>:3 exp<int>:2 END
+SET side2<int> = CALL pow base<int>:4 exp<int>:2 END
+SET total<float> = (GET side1) + (GET side2)
+CALL check_num name<str>:"sqrt(3^2 + 4^2)" got<float>:CALL sqrt x<float>:GET total END expected<float>:5 END
+
+SET low<int> = CALL min a<int>:-3 b<int>:2 END
+CALL check_num name<str>:"abs(min(-3,2))*2" got<float>:(CALL abs x<int>:GET low END)*2 expected<float>:6 END
+
+CALL check_num name<str>:"floor(sqrt(50)) + ceil(0.2)" got<float>:(CALL floor x<float>:CALL sqrt x<float>:50 END END) + (CALL ceil x<float>:0.2 END) expected<float>:8 END
+
+// ==================================================================
+// Your own function against the native pow
+// ==================================================================
+CALL println value<str>:"== power() vs pow() ==" END
+
+FUNCTION power (
+    num<float> // Number that we want
+    power<int> // Power that we want to raise the numer
+)->float
+
+    SET var<float> = 1
+    SET pointer<int> = 0
+
+    IF (GET power) == 0 THEN
+        RETURN 1
+    ELSE THEN IF (GET num) == 0 THEN
+        RETURN 0
+    END END
+
+    WHILE (GET pointer) < (GET power) THEN
+        SET var = (GET var)*(GET num)
+        SET pointer = (GET pointer)+1
+    END
+
+    RETURN GET var
+
+END
+
+SET mine<float> = 0.0
+SET native<float> = 0.0
+
+FOR
+    SET n<int> = 0;
+    GET n < 11;
+    SET n = GET n +1
+THEN
+    SET mine = CALL power num<float>:3 power<int>:GET n END
+    SET native = CALL pow base<int>:3 exp<int>:GET n END
+    CALL check_num name<str>:"power(3,n) == pow(3,n)" got<float>:GET mine expected<float>:GET native END
+END
+
+CALL println value<str>:"== Done ==" END
+
+// Result of test
+/*
+== Constants ==
+[PASS] PI
+[PASS] E
+[PASS] TAU
+[PASS] PI*2 - TAU
+[PASS] isinf(INF)
+[PASS] isnan(NAN)
+[PASS] INT_MAX > 0
+[PASS] INT_MIN < 0
+== Basic ==
+[PASS] abs(-5)
+[PASS] abs(-2.5)
+[PASS] sqrt(16)
+[PASS] sqrt(2)
+[PASS] cbrt(27)
+[PASS] cbrt(-8)
+[PASS] pow(2,10)
+[PASS] pow(2,0)
+[PASS] pow(-3,3)
+[PASS] pow(2,-1)
+[PASS] pow(2.0,0.5)
+[PASS] root(27,3)
+[PASS] root(-8,3)
+[PASS] root(16,4)
+[PASS] sign(-9)
+[PASS] sign(0)
+[PASS] sign(3.5)
+== Rounding ==
+[PASS] floor(2.7)
+[PASS] floor(-2.1)
+[PASS] floor(7)
+[PASS] ceil(2.1)
+[PASS] ceil(-2.9)
+[PASS] round(2.5)
+[PASS] round(-2.5)
+[PASS] round(2.4)
+[PASS] trunc(-2.9)
+[PASS] trunc(2.9)
+== Remainder / Min / Max / Clamp ==
+[PASS] fmod(7.5,2)
+[PASS] fmod(-7.5,2)
+[PASS] min(3,8)
+[PASS] max(3,8)
+[PASS] min(2.5,1)
+[PASS] max(2.5,1)
+[PASS] clamp(15,0,10)
+[PASS] clamp(-5,0,10)
+[PASS] clamp(5,0,10)
+== Exp / Log ==
+[PASS] exp(0)
+[PASS] exp(1)
+[PASS] exp2(10)
+[PASS] log(E)
+[PASS] log2(8)
+[PASS] log10(1000)
+[PASS] log1p(0)
+== Trigonometry ==
+[PASS] sin(0)
+[PASS] sin(PI/2)
+[PASS] cos(0)
+[PASS] cos(PI)
+[PASS] tan(PI/4)
+[PASS] asin(1)
+[PASS] acos(1)
+[PASS] atan(1)
+[PASS] atan2(1,1)
+[PASS] atan2(1,-1)
+[PASS] sinh(0)
+[PASS] cosh(0)
+[PASS] tanh(0)
+[PASS] degrees(PI)
+[PASS] radians(180)
+[PASS] sin(radians(30))
+== Numeric utilities ==
+[PASS] isnan(1.5)
+[PASS] isnan(5)
+[PASS] isinf(-INF)
+[PASS] isinf(10)
+[PASS] isfinite(10)
+[PASS] isfinite(INF)
+[PASS] isfinite(NAN)
+== Random ==
+[PASS] randint(5,10) x200 stays in range
+[PASS] random() x200 stays in [0,1)
+[PASS] seed_random(42) is repeatable
+[PASS] randint(7,7)
+== Combined ==
+[PASS] sqrt(3^2 + 4^2)
+[PASS] abs(min(-3,2))*2
+[PASS] floor(sqrt(50)) + ceil(0.2)
+== power() vs pow() ==
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+[PASS] power(3,n) == pow(3,n)
+== Done ==
+*/

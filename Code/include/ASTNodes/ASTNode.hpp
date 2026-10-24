@@ -29,7 +29,7 @@
 #include <nlohmann/json.hpp>
 
 // == Locals ==
-#include "globals.hpp"
+#include "API/globals.hpp"
 #include "Scope.hpp"
 #include "API/DevTools/Debugger.hpp"
 

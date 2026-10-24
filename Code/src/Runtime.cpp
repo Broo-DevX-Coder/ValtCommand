@@ -18,6 +18,11 @@
 #include "Parser.hpp"
 #include "Scope.hpp"
 
+// == Embeded Libs ==
+#include "Libs/DevTools.hpp"
+#include "Libs/Math.hpp"
+#include "Libs/STDIO.hpp"
+
 // ==================================================================
 // Private helpers (this file only)
 // ==================================================================
@@ -132,7 +137,17 @@ namespace {
 
 // Constructor
 Runtime::RunTime::RunTime() {
+
+    // Initialyze all scopes
     create_scopes();
+
+    // Initialyze all native methods
+    for (auto& func: {
+        Lib::DevFunctions::__init__,
+        Lib::Math::__init__,
+        Lib::STDIO::__init__
+    })
+        func(*this);
 }
 
 // Constructor with code

@@ -2,54 +2,54 @@
 // ValtCommand - Conditional Tests
 // ============================================================
 
-CALL print value<str>:"========== BASIC IF ==========" END
+CALL println value<str>:"========== BASIC IF ==========" END
 
 IF 5 > 3 THEN
-    CALL print value<str>:"IF passed" END
+    CALL println value<str>:"IF passed" END
 END
 
-CALL print value<str>:"========== IF / ELSE ==========" END
+CALL println value<str>:"========== IF / ELSE ==========" END
 
 IF 5 < 3 THEN
-    CALL print value<str>:"Unexpected branch" END
+    CALL println value<str>:"Unexpected branch" END
 ELSE THEN
-    CALL print value<str>:"ELSE passed" END
+    CALL println value<str>:"ELSE passed" END
 END
 
-CALL print value<str>:"========== AND CONDITION ==========" END
+CALL println value<str>:"========== AND CONDITION ==========" END
 
 IF (5 > 3) && (10 > 2) THEN
-    CALL print value<str>:"AND passed" END
+    CALL println value<str>:"AND passed" END
 ELSE THEN
-    CALL print value<str>:"AND failed" END
+    CALL println value<str>:"AND failed" END
 END
 
-CALL print value<str>:"========== OR CONDITION ==========" END
+CALL println value<str>:"========== OR CONDITION ==========" END
 
 IF (5 < 3) || (10 > 2) THEN
-    CALL print value<str>:"OR passed" END
+    CALL println value<str>:"OR passed" END
 ELSE THEN
-    CALL print value<str>:"OR failed" END
+    CALL println value<str>:"OR failed" END
 END
 
-CALL print value<str>:"========== NOT CONDITION ==========" END
+CALL println value<str>:"========== NOT CONDITION ==========" END
 
 IF !(5 > 10) THEN
-    CALL print value<str>:"NOT passed" END
+    CALL println value<str>:"NOT passed" END
 ELSE THEN
-    CALL print value<str>:"NOT failed" END
+    CALL println value<str>:"NOT failed" END
 END
 
-CALL print value<str>:"========== NESTED CONDITIONS ==========" END
+CALL println value<str>:"========== NESTED CONDITIONS ==========" END
 
 IF 10 > 5 THEN
     IF 8 > 3 THEN
-        CALL print value<str>:"Nested IF passed" END
+        CALL println value<str>:"Nested IF passed" END
     ELSE THEN
-        CALL print value<str>:"Inner ELSE executed" END
+        CALL println value<str>:"Inner ELSE executed" END
     END
 ELSE THEN
-    CALL print value<str>:"Outer ELSE executed" END
+    CALL println value<str>:"Outer ELSE executed" END
 END
 
-CALL print value<str>:"========== CONDITIONAL TESTS COMPLETED ==========" END
+CALL println value<str>:"========== CONDITIONAL TESTS COMPLETED ==========" END

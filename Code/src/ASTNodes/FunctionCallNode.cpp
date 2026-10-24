@@ -1124,13 +1124,18 @@ FunctionCallNode::clone() {
         std::unique_ptr<FunctionCallArgumentNode> arg(
             dynamic_cast<FunctionCallArgumentNode*>(a->clone())
         );
-
         new_args_list.push_back(std::move(arg));
     }
 
-    return new FunctionCallNode(
-        name,
-        new_args_list,
-        NameToken
-    );
+    auto* node = new FunctionCallNode(name, new_args_list, NameToken);
+
+    // Keep the analyzed copy of the user function (null for external functions)
+    node->return_type = return_type;
+    if (user_func_copy) {
+        node->user_func_copy.reset(
+            dynamic_cast<UserProxyFunctionNode*>(user_func_copy->clone())
+        );
+    }
+
+    return node;
 }

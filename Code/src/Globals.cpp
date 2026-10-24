@@ -3,7 +3,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "globals.hpp"
+#include "API/globals.hpp"
 
 // == Libs ==
 #include <algorithm>
@@ -62,7 +62,8 @@ std::vector<std::string> __types__ = {
     "int", // integer
     "float", // double or float
     "bool", // boolean
-    "void" // means null or void in c++
+    "void", // means null or void in c++
+    "any" // Any type of data
 };
 
 // All sepported keywords
@@ -199,7 +200,8 @@ are_types_compatible(
 ) {
     if (
         (first == "int" && secound == "float") ||
-        (first == "float" && secound == "int")
+        (first == "float" && secound == "int") ||
+        (first == "any" || secound == "any")
     ) return true;
     return first == secound;
 }

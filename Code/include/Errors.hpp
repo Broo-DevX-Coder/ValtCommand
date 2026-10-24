@@ -23,7 +23,9 @@
 
 // == Libs ==
 #include <fmt/format.h>
-#include <globals.hpp>
+
+// == Locals ==
+#include "API/globals.hpp"
 
 // ==================================================================
 // Namespace

@@ -2,7 +2,7 @@
 // ValtCommand - Variable Tests
 // ============================================================
 
-CALL print value<str>:"========== VARIABLE DECLARATION ==========" END
+CALL println value<str>:"========== VARIABLE DECLARATION ==========" END
 
 SET a<int> = 10
 SET b<int> = 5
@@ -10,28 +10,28 @@ SET price<float> = 12.5
 SET enabled<bool> = True
 SET message<str> = "Hello ValtCommand"
 
-CALL print value<int>:GET a END
-CALL print value<int>:GET b END
-CALL print value<float>:GET price END
-CALL print value<bool>:GET enabled END
-CALL print value<str>:GET message END
+CALL println value<int>:GET a END
+CALL println value<int>:GET b END
+CALL println value<float>:GET price END
+CALL println value<bool>:GET enabled END
+CALL println value<str>:GET message END
 
-CALL print value<str>:"========== VARIABLE ASSIGNMENT ==========" END
+CALL println value<str>:"========== VARIABLE ASSIGNMENT ==========" END
 
 SET a = 20
-CALL print value<int>:GET a END
+CALL println value<int>:GET a END
 
 SET a = (GET a) + 5
-CALL print value<int>:GET a END
+CALL println value<int>:GET a END
 
 SET b = (GET b) * 2
-CALL print value<int>:GET b END
+CALL println value<int>:GET b END
 
-CALL print value<str>:"========== VARIABLES IN EXPRESSIONS ==========" END
+CALL println value<str>:"========== VARIABLES IN EXPRESSIONS ==========" END
 
-CALL print value<int>:(GET a) + (GET b) END
-CALL print value<int>:(GET a) - (GET b) END
-CALL print value<int>:(GET a) * (GET b) END
-CALL print value<bool>:(GET a) > (GET b) END
+CALL println value<int>:(GET a) + (GET b) END
+CALL println value<int>:(GET a) - (GET b) END
+CALL println value<int>:(GET a) * (GET b) END
+CALL println value<bool>:(GET a) > (GET b) END
 
-CALL print value<str>:"========== VARIABLE TESTS COMPLETED ==========" END
+CALL println value<str>:"========== VARIABLE TESTS COMPLETED ==========" END
