@@ -22,6 +22,7 @@
 #include "Libs/DevTools.hpp"
 #include "Libs/Math.hpp"
 #include "Libs/STDIO.hpp"
+#include "Libs/Format.hpp"
 
 // ==================================================================
 // Private helpers (this file only)
@@ -145,7 +146,8 @@ Runtime::RunTime::RunTime() {
     for (auto& func: {
         Lib::DevFunctions::__init__,
         Lib::Math::__init__,
-        Lib::STDIO::__init__
+        Lib::STDIO::__init__,
+        Lib::Format::__init__
     })
         func(*this);
 }

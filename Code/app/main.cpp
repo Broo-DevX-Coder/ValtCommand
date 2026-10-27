@@ -30,11 +30,20 @@ int main1() {
 
 int main() {
     std::string code = R"RT(  
-        SET name<str> = CALL input prompt<str>:"Name: " END
-        CALL println value<str>:GET name END
+        CALL println
+            value<str>: CALL format
+                text<str>:"Hello {name}, age: {age}"
+                name<str>:"World"
+                age<int>:18
+            END
+        END
     )RT";
 
     Runtime::RunTime r;
-    r.run(code,Runtime::ScopeMode::Persistent);
+    auto result = r.run(code,Runtime::ScopeMode::Persistent);
+    if (!result) {
+        std::cout << Errors::formatter(result.error.info,code) << std::endl;
+        return 1;
+    }
     return 0;
 }
