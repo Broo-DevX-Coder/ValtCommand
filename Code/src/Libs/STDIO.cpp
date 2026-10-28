@@ -108,7 +108,9 @@ ReturnResult<Value>
 Lib::STDIO::println_fn(
     ExternalFunInType input
 ) {
-    std::cout << text_arg(input, "value", "") << '\n' << std::flush;
+    std::cout << text_arg(input, "value", "") 
+              << '\n' 
+              << std::flush;
     return ok(Value{});
 }
 
@@ -120,7 +122,8 @@ ReturnResult<Value>
 Lib::STDIO::input_fn(
     ExternalFunInType input
 ) {
-    std::cout << text_arg(input, "prompt", "") << std::flush;
+    std::cout << text_arg(input, "prompt", "") 
+              << std::flush;
 
     std::string line;
     if (!std::getline(std::cin, line))

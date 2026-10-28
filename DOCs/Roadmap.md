@@ -136,9 +136,9 @@
 - ✅ Add random seed configuration (`seed_random`)
 
 #### Format Function
-- Add `format` function (e.g. `format("Hello {}", name)`)
-- Support positional placeholders and number formatting (precision, padding)
-- Define behavior for missing or extra arguments
+- ✅ Add `format` function (e.g. `format("Hello {}", name)`)
+- ✅ Support positional placeholders and number formatting (precision, padding)
+- ✅ Define behavior for missing or extra arguments
 
 ---
 
@@ -148,6 +148,8 @@
 - Step-by-step execution
 - Performance Metrics
 - Better Diagnostics
+
+### Final fixes
 
 ---
 

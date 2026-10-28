@@ -239,14 +239,28 @@ namespace Runtime {
 
             // Lifetime ======
 
-            /// @brief Creates an empty runtime. Use run() or run_file() to give it code.
-            RunTime();
+            /**
+             * @brief Creates an empty runtime. Use run() or run_file() to give it code.
+             * @param DebugMode The debug mode, is the debug allowed or no, default is `flase`
+             */
+            RunTime(bool DebugMode = false);
 
             /**
              * @brief Creates a runtime that already holds some code.
              * @param code The programming code (kept for compatibility with the old usage).
+             * @param DebugMode The debug mode, is the debug allowed or no, default is `flase`
              */
-            explicit RunTime(const std::string& code);
+            explicit RunTime(const std::string& code, bool DebugMode = false);
+
+            /**
+             * @brief Initialyze all native methods, debuger and all what the Runtime needs
+             * @param DebugMode The debug mode, is the debug allowed or no, default is `flase`
+             */
+            void Initialyze(bool DebugMode = false);
+
+            /// @brief Get the debugger pointer 
+            /// @return Debugger pointer
+            DevTools::Debugger* GetDebugger();
 
             RunTime(const RunTime&) = delete;            ///< Not copyable.
             RunTime& operator=(const RunTime&) = delete; ///< Not copyable.

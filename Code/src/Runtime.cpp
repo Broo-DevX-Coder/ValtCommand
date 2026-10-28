@@ -137,10 +137,31 @@ namespace {
 // ==================================================================
 
 // Constructor
-Runtime::RunTime::RunTime() {
+Runtime::RunTime::RunTime(
+    bool DebugMode
+) {
+    Initialyze(DebugMode);
+}
 
+// Constructor with code
+Runtime::RunTime::RunTime(
+    const std::string& code,
+    bool DebugMode
+): Code(code) {
+    Initialyze(DebugMode);
+}
+
+// Initialyze every important thing
+void 
+Runtime::RunTime::Initialyze(
+    bool DebugMode
+) {
     // Initialyze all scopes
     create_scopes();
+
+    // Create debugger
+    if (DebugMode)
+        Debugger = std::make_unique<DevTools::Debugger>();
 
     // Initialyze all native methods
     for (auto& func: {
@@ -152,12 +173,11 @@ Runtime::RunTime::RunTime() {
         func(*this);
 }
 
-// Constructor with code
-Runtime::RunTime::RunTime(
-    const std::string& code
-): Code(code) {
-    create_scopes();
-    //Debugger = std::make_unique<DevTools::Debugger>();
+// Get the debugger pointer
+DevTools::Debugger* 
+Runtime::RunTime::GetDebugger() {
+    if (Debugger) return Debugger.get();
+    return nullptr;
 }
 
 // (Re)create the three global scopes and put the native functions back in them

@@ -39,7 +39,11 @@ int main() {
         END
     )RT";
 
-    Runtime::RunTime r;
+    Runtime::RunTime r(true);
+
+    if (r.GetDebugger())
+        r.GetDebugger()->add_break_points({{1}});
+
     auto result = r.run(code,Runtime::ScopeMode::Persistent);
     if (!result) {
         std::cout << Errors::formatter(result.error.info,code) << std::endl;

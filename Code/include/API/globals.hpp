@@ -267,6 +267,8 @@ struct ExternalFunInType {
      * Provides access to the scope from which the function was called.
      */
     Scopes::Scope* ParentScope;
+
+    
 };
 
 /**
