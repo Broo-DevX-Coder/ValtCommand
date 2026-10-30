@@ -46,6 +46,8 @@ int main() {
     if (r.GetDebugger())
         r.GetDebugger()->add_break_points({{7}},"");
 
+    r.set_ostream(std::clog);
+
     auto result = r.run(code,Runtime::ScopeMode::Persistent);
     if (!result) {
         std::cout << Errors::formatter(result.error.info,code) << std::endl;

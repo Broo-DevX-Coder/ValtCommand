@@ -252,7 +252,8 @@ DevTools::Debugger::continue_exec() {}
 // Exit the program
 void 
 DevTools::Debugger::exit() {
-    steal_running = false;
+    std::cout << "Code exited successfuly\n";
+    std::exit(0);
 }
 
 // Set the function that activated when the breakpoint activated or any other event thaat stops the code execution

@@ -98,8 +98,7 @@ namespace DevTools {
         private:
 
             // Geniral ============
-
-            bool steal_running = true; // Is the code steal running
+            
             bool debug_mode = false; // Is the debugger allowed
             std::ostream* output_stream = &std::cout; // The general output stream of all lang code, it can be std::cout or any thing else
 
