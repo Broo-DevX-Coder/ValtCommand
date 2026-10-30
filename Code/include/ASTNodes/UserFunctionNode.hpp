@@ -13,7 +13,7 @@
     #if defined(_WIN32)
         #define API __declspec(dllimport)
     #else
-        #define API 
+        #define API
     #endif
 #endif
 
@@ -30,15 +30,15 @@
 
 // User Function argument node
 class UserFunctionArgumentNode: public ASTNode {
-    public: 
+    public:
         Token name_token; // argument's name token
         Token type_token; // argument's data type token
         Token default_value_ftoekn; // The first token of defualt value
         std::unique_ptr<ASTNode> default_value_node; // argument's defualt value node
         Value default_value; // The defualt value of argument that returns from default value noe
         bool is_argument_any; // Is the argument can sepport any type of data
-    
-        UserFunctionArgumentNode(Token& nameT, Token& typeT, Token& default_value_ftoekn, std::unique_ptr<ASTNode> default_value_node = nullptr, bool is_argument_any=false); // Constructure
+
+        UserFunctionArgumentNode(const std::string& FilePath, const Token& END_token, Token& nameT, Token& typeT, Token& default_value_ftoekn, std::unique_ptr<ASTNode> default_value_node = nullptr, bool is_argument_any=false); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
@@ -58,7 +58,7 @@ class UserFunctionReturnNode: public ASTNode {
         std::unique_ptr<ASTNode> VNode; // Node of value of return
 
     public:
-        UserFunctionReturnNode(Token& t_, std::unique_ptr<ASTNode> value_node); // Constructure
+        UserFunctionReturnNode(const std::string& FilePath, const Token& END_token, Token& t_, std::unique_ptr<ASTNode> value_node); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
@@ -78,7 +78,7 @@ class UserProxyFunctionNode: public ASTNode {
         NodesListT statements; // All nodes that function contains them
 
     public:
-        UserProxyFunctionNode(NodesListT statements, const std::string& type); // Constructure
+        UserProxyFunctionNode(const std::string& FilePath, const Token& END_token, NodesListT statements, const std::string& type); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
@@ -94,7 +94,7 @@ class UserProxyFunctionNode: public ASTNode {
 // User Function node
 class UserFunctionNode: public ASTNode {
 
-    public: 
+    public:
         using NodesListT = std::vector<std::unique_ptr<ASTNode>>;
         using argumentsList = std::vector<std::unique_ptr<UserFunctionArgumentNode>>;
     private:
@@ -107,7 +107,7 @@ class UserFunctionNode: public ASTNode {
         NodesListT statements; // Nodes of function
 
     public:
-        UserFunctionNode(Token& nameT, Token& typeT, argumentsList arguments_list, NodesListT statements, bool is_any=false); // Constructure
+        UserFunctionNode(const std::string& FilePath, const Token& END_token, Token& nameT, Token& typeT, argumentsList arguments_list, NodesListT statements, bool is_any=false); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node

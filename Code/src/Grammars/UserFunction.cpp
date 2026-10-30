@@ -14,7 +14,7 @@
 
 // Get the node of user's function that put the function in symbol table
 ReturnResult<Parser::Node>
-Parser::get_user_function_node() {
+Parser::get_user_function_node(const std::string& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return result object
 
     std::vector<std::unique_ptr<UserFunctionArgumentNode>> arguments_list; // arguments list of function
@@ -129,7 +129,7 @@ Parser::get_user_function_node() {
             default_value_ftoken = curent();
 
             // Get the default value node
-            auto defualt_value_r = get_expretion();
+            auto defualt_value_r = get_expretion(FilePath);
             if (!defualt_value_r.success) {
                 ReturnResult<Node> re = {
                     defualt_value_r.Message,
@@ -145,9 +145,9 @@ Parser::get_user_function_node() {
         }
 
         // Put the argument in arguments list
+        const Token END_token = tokens_list_[pos - 1];
         arguments_list.push_back(
-            std::make_unique<UserFunctionArgumentNode>(
-                argument_name_TR.value,
+            std::make_unique<UserFunctionArgumentNode>(FilePath, END_token, argument_name_TR.value,
                 argument_type_TR.value,
                 default_value_ftoken,
                 std::move(default_value_node)
@@ -207,7 +207,7 @@ Parser::get_user_function_node() {
     while (!check(TokenType::END_BLOCK) && !isAsEnd()) {
 
         // Get statement node
-        auto stm_r = get_expretion();
+        auto stm_r = get_expretion(FilePath);
         if (!stm_r.success) {
             ReturnResult<Node> re = {
                 stm_r.Message,
@@ -233,13 +233,13 @@ Parser::get_user_function_node() {
         re.error_info = consume_result.error_info;
         return re;
     }
+    const Token END_token = consume_result.value;
 
     // Create the user function node and return it
     return {
         "",
         true,
-        std::make_unique<UserFunctionNode>(
-            func_name_TR.value,
+        std::make_unique<UserFunctionNode>(FilePath, END_token, func_name_TR.value,
             func_return_type_TR.value,
             std::move(arguments_list),
             std::move(statements),
@@ -254,7 +254,7 @@ Parser::get_user_function_node() {
 
 // Get the node of returning value in function
 ReturnResult<Parser::Node>
-Parser::get_return_noode() {
+Parser::get_return_noode(const std::string& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return result object
 
     // Get 'RETURN'
@@ -277,7 +277,7 @@ Parser::get_return_noode() {
 
     // Get the value node if it is not void
     } else {
-        auto r = get_expretion();
+        auto r = get_expretion(FilePath);
 
         if (!r.success) {
             ReturnResult<Node> re = {
@@ -292,11 +292,14 @@ Parser::get_return_noode() {
         value_node = std::move(r.value);
     }
 
+    const Token END_token = value_node
+        ? tokens_list_[pos - 1]
+        : curent();
+
     return {
         "",
         true,
-        std::make_unique<UserFunctionReturnNode>(
-            return_token.value,
+        std::make_unique<UserFunctionReturnNode>(FilePath, END_token, return_token.value,
             std::move(value_node)
         )
     };

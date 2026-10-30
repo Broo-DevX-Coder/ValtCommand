@@ -144,8 +144,12 @@
 
 ### Developer Tools
 
-- Debugger with breakpoints
-- Step-by-step execution
+- ✅ Debugger with breakpoints
+- ✅ Step-by-step execution
+- ✅ Inspect the active scope and display its variables and functions at a breakpoint
+- ✅ Expose tracker callbacks, event retrieval, breakpoint management, stop callbacks, output streams, and stepping controls through the Runtime API
+- ✅ Include source file, line, and active scope in AST runtime events
+- ✅ Support file-specific breakpoints and temporary next-line breakpoints
 - Performance Metrics
 - Better Diagnostics
 
@@ -155,6 +159,7 @@
 
 ### Documentation
 
+- ✅ Runtime debugger, event tracker, breakpoint, and inspector guide (`DOCs/DevTools/Runtime_Debugger_and_Inspectors.md`)
 - Language Reference
 - Standard Library Documentation (all built-in functions and mathematical constants)
 - Embedding Guide

@@ -26,7 +26,9 @@ static void emit_event(
         Context.Debugger->emit({
             type,
             message,
-            line
+            line,
+            Context.ParentScope,
+            Context.FilePath
         });
     }
 }
@@ -36,7 +38,8 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-IfStatmentsNode::IfStatmentsNode(
+IfStatmentsNode::IfStatmentsNode(const std::string& FilePath,
+    const Token& END_token,
     Token& CFtoken,
     Node& condition,
     Nodes_list& statments,
@@ -45,8 +48,8 @@ IfStatmentsNode::IfStatmentsNode(
     condition_FT(CFtoken),
     condition_node(std::move(condition)),
     Statments(std::move(statments)),
-    Else_statments(std::move(else_statments))
-{}
+    Else_statments(std::move(else_statments)),
+    ASTNode(FilePath, END_token) {}
 
 // ==================================================================
 // Get String Representation
@@ -149,8 +152,7 @@ IfStatmentsNode::clone() {
         new_else_stms_list.push_back(std::move(new_stm));
     }
 
-    return new IfStatmentsNode(
-        condition_FT,
+    return new IfStatmentsNode(file, END_token, condition_FT,
         new_condition,
         new_stms_list,
         new_else_stms_list
@@ -313,7 +315,8 @@ IfStatmentsNode::accept(
 
         auto statement_result = smt->accept({
             if_scoupe.get(),
-            Context.Debugger
+            Context.Debugger,
+            Context.FilePath
         });
 
         if (!statement_result.success) {
@@ -376,7 +379,8 @@ IfStatmentsNode::accept(
 
         auto statement_result = smt->accept({
             if_scoupe.get(),
-            Context.Debugger
+            Context.Debugger,
+            Context.FilePath
         });
 
         if (!statement_result.success) {
@@ -456,6 +460,7 @@ ReturnResult<Value>
 IfStatmentsNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -546,7 +551,8 @@ IfStatmentsNode::exec(
 
             auto r = stm->exec({
                 if_scoupe.get(),
-                Context.Debugger
+                Context.Debugger,
+            Context.FilePath
             });
 
             if (!r.success) {
@@ -618,7 +624,8 @@ IfStatmentsNode::exec(
 
             auto r = stm->exec({
                 if_scoupe.get(),
-                Context.Debugger
+                Context.Debugger,
+            Context.FilePath
             });
 
             if (!r.success) {

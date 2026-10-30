@@ -37,7 +37,7 @@ private:
 
 public:
     // Constructor: Initialize the sign operation node
-    SignOpNode(
+    SignOpNode(const std::string& FilePath, const Token& END_token,
         SignOpsTypes type,
         const Token& token,
         const Token& operand_ft,
@@ -48,7 +48,7 @@ public:
     std::string get_str(int level) override;
 
     // Get the json file of ASTNode
-    nlohmann::json get_json() override; 
+    nlohmann::json get_json() override;
 
     // Get the AST node type
     ASTNodesTypes NType() override;
@@ -80,7 +80,7 @@ private:
 
 public:
     // Constructor: Initialize the logical NOT node
-    LogicalNotNode(
+    LogicalNotNode(const std::string& FilePath, const Token& END_token,
         const Token& token,
         const Token& operand_ft,
         std::unique_ptr<ASTNode>& node

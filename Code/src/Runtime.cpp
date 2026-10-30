@@ -176,8 +176,62 @@ Runtime::RunTime::Initialyze(
 // Get the debugger pointer
 DevTools::Debugger* 
 Runtime::RunTime::GetDebugger() {
-    if (Debugger) return Debugger.get();
-    return nullptr;
+    return Debugger? Debugger.get() : nullptr;
+}
+
+void Runtime::RunTime::emit_event(DevTools::event event) {
+    if (Debugger) Debugger->emit(std::move(event));
+}
+
+void Runtime::RunTime::set_emit_event_slot(DevTools::Debugger::EmitSlotType slot) {
+    if (Debugger) Debugger->set_emit_event_slot(std::move(slot));
+}
+
+std::string Runtime::RunTime::get_next_event_str() {
+    return Debugger ? Debugger->get_next_event_str() : std::string{};
+}
+
+std::string Runtime::RunTime::get_all_events_strs() {
+    return Debugger ? Debugger->get_all_events_strs() : std::string{};
+}
+
+void Runtime::RunTime::set_ostream(std::ostream& output) {
+    if (Debugger) Debugger->set_ostream(output);
+}
+
+const std::ostream* Runtime::RunTime::get_ostream() const {
+    return Debugger ? Debugger->get_ostream() : nullptr;
+}
+
+void Runtime::RunTime::add_break_points(
+    const std::vector<size_t>& points,
+    const std::string& FilePath
+) {
+    if (Debugger) Debugger->add_break_points(points, FilePath);
+}
+
+void Runtime::RunTime::check_break_point(
+    size_t line,
+    Scopes::Scope* scope,
+    const std::string& FilePath
+) {
+    if (Debugger) Debugger->check_break_point(line, scope, FilePath);
+}
+
+void Runtime::RunTime::set_stop_slot(DevTools::Debugger::StopSlotType slot) {
+    if (Debugger) Debugger->set_stop_slot(std::move(slot));
+}
+
+void Runtime::RunTime::continue_exec() {
+    if (Debugger) Debugger->continue_exec();
+}
+
+void Runtime::RunTime::next_line() {
+    if (Debugger) Debugger->next_line();
+}
+
+void Runtime::RunTime::exit_debugging() {
+    if (Debugger) Debugger->exit();
 }
 
 // (Re)create the three global scopes and put the native functions back in them
@@ -225,20 +279,20 @@ Runtime::RunTime::make_error(ErrorStage stage, const std::string& message, int l
 }
 
 ReturnResult<Parser::PNode> 
-Runtime::RunTime::analyze(Scopes::Scope* Scope) {
+Runtime::RunTime::analyze(Scopes::Scope* Scope, const std::string& FilePath) {
 
     last_stage = ErrorStage::Parse;
 
     Lexar l(Code);
     auto tokens_list = l.get_all_tokens();
 
-    Parser p(tokens_list);
-    auto pars_result = p.get_module_node();
+    Parser p(tokens_list, FilePath);
+    auto pars_result = p.get_module_node(FilePath);
     if (!pars_result.success) return pars_result;
 
     last_stage = ErrorStage::Semantic;
 
-    auto accept_result = pars_result.value->accept({Scope,Debugger.get()});
+    auto accept_result = pars_result.value->accept({Scope, Debugger.get(), FilePath});
     if (!accept_result.success){
         ReturnResult<Parser::PNode> re = {accept_result.Message,false,nullptr};
         re.error_info = accept_result.error_info;
@@ -251,7 +305,7 @@ Runtime::RunTime::analyze(Scopes::Scope* Scope) {
 // Get the result of befor runing analyses
 ReturnResult<bool> 
 Runtime::RunTime::semantic_analyses() {
-    auto r = analyze(semantic_scope.get());
+    auto r = analyze(semantic_scope.get(), FilePath);
     if (!r.success) {
         ReturnResult<bool> re = {r.Message,false,false};
         re.error_info = r.error_info;
@@ -263,7 +317,7 @@ Runtime::RunTime::semantic_analyses() {
 // Run thz code
 ReturnResult<bool> 
 Runtime::RunTime::execute_code() {
-    auto analyze_result = analyze(run_semantic_scope.get());
+    auto analyze_result = analyze(run_semantic_scope.get(), FilePath);
     if (!analyze_result.success) {
         ReturnResult<bool> re = {analyze_result.Message,false,false};
         re.error_info = analyze_result.error_info;
@@ -274,7 +328,7 @@ Runtime::RunTime::execute_code() {
 
     last_stage = ErrorStage::Runtime;
 
-    auto exec_result = analyze_result.value->exec({run_scope.get(),Debugger.get()});
+    auto exec_result = analyze_result.value->exec({run_scope.get(), Debugger.get(), FilePath});
 
     if (!exec_result.success){
         ReturnResult<bool> re = {exec_result.Message,false,false};
@@ -289,7 +343,7 @@ Runtime::RunTime::execute_code() {
 
 // analyze -> semantic check -> execute, and never throw
 Runtime::RunResult
-Runtime::RunTime::execute_source(const std::string& code, ScopeMode mode) {
+Runtime::RunTime::execute_source(const std::string& code, ScopeMode mode, const std::string& FilePath) {
 
     // Fresh mode: put the persistent scopes aside and work in new ones
     std::unique_ptr<Scopes::Scope> saved_run, saved_run_semantic, saved_semantic;
@@ -305,6 +359,7 @@ Runtime::RunTime::execute_source(const std::string& code, ScopeMode mode) {
         if (mode == ScopeMode::Fresh) create_scopes();
 
         Code = code;
+        this->FilePath = FilePath;
         last_stage = ErrorStage::None;
         last_value.clear();
         last_type.clear();
@@ -338,7 +393,7 @@ Runtime::RunTime::execute_source(const std::string& code, ScopeMode mode) {
 // Run code from a string
 Runtime::RunResult
 Runtime::RunTime::run(const std::string& code, ScopeMode mode) {
-    return execute_source(code, mode);
+    return execute_source(code, mode, "");
 }
 
 // Run code from a file
@@ -354,7 +409,7 @@ Runtime::RunTime::run_file(const std::string& path, ScopeMode mode) {
     // Skip the UTF-8 BOM if the file has one
     if (code.size() >= 3 && code.compare(0, 3, "\xEF\xBB\xBF") == 0) code.erase(0, 3);
 
-    return execute_source(code, mode);
+    return execute_source(code, mode, path);
 }
 
 // Clear all script state, keep the native functions

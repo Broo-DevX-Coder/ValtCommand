@@ -194,6 +194,7 @@ namespace Runtime {
 
             // Tools
             std::string Code;                                   ///< The last programming code.
+            std::string FilePath;                               ///< Path of the current source file.
             std::unique_ptr<DevTools::Debugger> Debugger = nullptr; ///< The debugger of the runtime.
 
             // Info about the last run (filled by analyze / execute_code)
@@ -223,7 +224,7 @@ namespace Runtime {
              * @param mode Which global scope to use.
              * @return The value of the run, or the error with its stage and position.
              */
-            RunResult execute_source(const std::string& code, ScopeMode mode);
+            RunResult execute_source(const std::string& code, ScopeMode mode, const std::string& FilePath);
 
             /**
              * @brief Builds a failed RunResult.
@@ -258,9 +259,99 @@ namespace Runtime {
              */
             void Initialyze(bool DebugMode = false);
 
-            /// @brief Get the debugger pointer 
-            /// @return Debugger pointer
+            /**
+             * @brief Gets the debugger owned by this runtime.
+             * @return A pointer to the debugger, or @c nullptr when debugging is disabled.
+             */
             DevTools::Debugger* GetDebugger();
+
+            /**
+             * @brief Sends an event to the runtime tracker.
+             * @param event The event to record and dispatch.
+             * @note Does nothing when debugging is disabled.
+             */
+            void emit_event(DevTools::event event);
+
+            /**
+             * @brief Sets the callback invoked for each runtime tracker event.
+             * @param slot The host callback receiving each event.
+             * @note Does nothing when debugging is disabled.
+             */
+            void set_emit_event_slot(DevTools::Debugger::EmitSlotType slot);
+
+            /**
+             * @brief Gets the next recorded runtime event as formatted text.
+             * @return The next event string, "EVENTS END" when exhausted, or an empty string when debugging is disabled.
+             */
+            std::string get_next_event_str();
+
+            /**
+             * @brief Gets all recorded runtime events as formatted text.
+             * @return The event strings, or an empty string when debugging is disabled.
+             */
+            std::string get_all_events_strs();
+
+            /**
+             * @brief Sets the stream used by the debugger for output.
+             * @param output The output stream. It must outlive the debugger's use of it.
+             * @note Does nothing when debugging is disabled.
+             */
+            void set_ostream(std::ostream& output);
+
+            /**
+             * @brief Gets the debugger output stream.
+             * @return A pointer to the stream, or @c nullptr when debugging is disabled.
+             */
+            const std::ostream* get_ostream() const;
+
+            /**
+             * @brief Adds breakpoints at the requested source lines.
+             * @param points The 1-based source line numbers.
+             * @param FilePath The source file to match. An empty path matches any file.
+             * @note Does nothing when debugging is disabled.
+             */
+            void add_break_points(
+                const std::vector<size_t>& points,
+                const std::string& FilePath = ""
+            );
+
+            /**
+             * @brief Checks whether a source location matches a breakpoint.
+             * @param line The 1-based source line number.
+             * @param scope The scope active at that location, passed to the stop callback.
+             * @param FilePath The source file path used for breakpoint matching.
+             * @note Does nothing when debugging is disabled.
+             */
+            void check_break_point(
+                size_t line,
+                Scopes::Scope* scope,
+                const std::string& FilePath = ""
+            );
+
+            /**
+             * @brief Sets the callback invoked when execution pauses.
+             * @param slot The host callback receiving the debugger and active scope.
+             * @note Does nothing when debugging is disabled.
+             */
+            void set_stop_slot(DevTools::Debugger::StopSlotType slot);
+
+            /**
+             * @brief Resumes execution after a debugger pause.
+             * @note Does nothing when debugging is disabled.
+             */
+            void continue_exec();
+
+            /**
+             * @brief Pauses execution at the next source line.
+             * @note Does nothing when debugging is disabled.
+             */
+            void next_line();
+
+            /**
+             * @brief Stops execution through the debugger.
+             * @note Does nothing when debugging is disabled.
+             */
+            void exit_debugging();
 
             RunTime(const RunTime&) = delete;            ///< Not copyable.
             RunTime& operator=(const RunTime&) = delete; ///< Not copyable.
@@ -362,7 +453,7 @@ namespace Runtime {
              * @return The module node, or the error. On failure the stage
              *         (Parse or Semantic) is stored in the runtime.
              */
-            ReturnResult<std::unique_ptr<ModuleNode>> analyze(Scopes::Scope* scope);
+            ReturnResult<std::unique_ptr<ModuleNode>> analyze(Scopes::Scope* scope, const std::string& FilePath);
 
             /**
              * @brief Analyzes the code before running it, using the pure analysis scope.

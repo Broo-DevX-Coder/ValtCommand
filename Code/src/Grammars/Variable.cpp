@@ -14,7 +14,7 @@
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_set_variable_node(
+Parser::get_set_variable_node(const std::string& FilePath,
     bool is_const
 ) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
@@ -70,17 +70,17 @@ Parser::get_set_variable_node(
         }
 
         // Get the ASTNode of variable value
-        auto var_value = get_expretion();
+        auto var_value = get_expretion(FilePath);
         if (!var_value.success) {
             ReturnResult<Node> re = {var_value.Message, false, nullptr};
             re.error_info = var_value.error_info;
             return re;
         }
 
+        const Token END_token = tokens_list_[pos - 1];
         return {
             "", true,
-            std::make_unique<SetVariableNode>(
-                var_name_t.value,
+            std::make_unique<SetVariableNode>(FilePath, END_token, var_name_t.value,
                 var_type_t.value,
                 std::move(var_value.value),
                 is_const
@@ -98,17 +98,17 @@ Parser::get_set_variable_node(
         }
 
         // Get the ASTNode of variable value
-        auto var_value = get_expretion();
+        auto var_value = get_expretion(FilePath);
         if (!var_value.success) {
             ReturnResult<Node> re = {var_value.Message, false, nullptr};
             re.error_info = var_value.error_info;
             return re;
         }
 
+        const Token END_token = tokens_list_[pos - 1];
         return {
             "", true,
-            std::make_unique<ResetVariableNode>(
-                var_name_t.value,
+            std::make_unique<ResetVariableNode>(FilePath, END_token, var_name_t.value,
                 std::move(var_value.value)
             )
         };
@@ -132,7 +132,7 @@ Parser::get_set_variable_node(
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_get_variable_node() {
+Parser::get_get_variable_node(const std::string& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
 
     // Jump on `GET`
@@ -151,8 +151,9 @@ Parser::get_get_variable_node() {
         return re;
     }
 
+    const Token END_token = var_name_t.value;
     return {
         "", true,
-        std::make_unique<GetVariableNode>(var_name_t.value)
+        std::make_unique<GetVariableNode>(FilePath, END_token, var_name_t.value)
     };
 }

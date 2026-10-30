@@ -13,7 +13,7 @@
     #if defined(_WIN32)
         #define API __declspec(dllimport)
     #else
-        #define API 
+        #define API
     #endif
 #endif
 
@@ -42,7 +42,7 @@ class IfStatmentsNode: public ASTNode{
         Token condition_FT; // The first token of condition
 
     public:
-        IfStatmentsNode(Token& CFtoken ,Node& condition, Nodes_list& statments, Nodes_list& else_statments); // Constructure
+        IfStatmentsNode(const std::string& FilePath, const Token& END_token, Token& CFtoken ,Node& condition, Nodes_list& statments, Nodes_list& else_statments); // Constructure
         std::string get_str(int level) override; // Get the str to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node

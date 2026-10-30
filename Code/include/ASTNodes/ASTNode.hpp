@@ -70,6 +70,7 @@ enum ASTNodesTypes {
 struct NodesContext {
     Scopes::Scope* ParentScope;
     DevTools::Debugger* Debugger;
+    std::string FilePath;
 };
 
 // ==================================================================
@@ -78,13 +79,28 @@ struct NodesContext {
 class ASTNode {
     public:
         std::string return_type; // The type of return value
-        virtual ~ASTNode() = default;
+        std::string file; // The path of file that encludes the nodes
+        Token END_token; // Token marking the end location associated with this node
+        ASTNode(const std::string& FilePath, const Token& END_token); // Constructure
+        void emit_exec_end_event(const NodesContext& Context) const;
+        virtual ~ASTNode()= default; 
         virtual std::string get_str(int level) = 0; // Get the string of node to print AST
         virtual nlohmann::json get_json() = 0; // Get the json file of ASTNode
         virtual ASTNodesTypes NType() = 0; // get the type of node
         virtual ReturnResult<bool> accept(NodesContext Context) = 0; // The node verifi it self befor runnig
         virtual ReturnResult<Value> exec(NodesContext Context) = 0; // Run the node
         virtual ASTNode* clone() = 0; // Clone the class or get a new copy from them
+};
+
+class ASTNodeExecCompletionGuard {
+private:
+    const ASTNode& node;
+    const NodesContext& context;
+
+public:
+    ASTNodeExecCompletionGuard(const ASTNode& node, const NodesContext& context)
+        : node(node), context(context) {}
+    ~ASTNodeExecCompletionGuard() { node.emit_exec_end_event(context); }
 };
 
 // ==================================================================
@@ -104,7 +120,7 @@ class ModuleNode : public ASTNode
         Token FToken;
 
     public:
-        ModuleNode(StatmentsT& s_,Token& First_token); // Constructure
+        ModuleNode(const std::string& FilePath, const Token& END_token, StatmentsT& s_,Token& First_token); // Constructure
         std::string get_str(int level=0) override; // get the str of node to print
         nlohmann::json get_json(); // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node

@@ -26,7 +26,9 @@ static void emit_event(
         Context.Debugger->emit({
             type,
             message,
-            line
+            line,
+            Context.ParentScope,
+            Context.FilePath
         });
     }
 }
@@ -36,7 +38,8 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-UserFunctionArgumentNode::UserFunctionArgumentNode(
+UserFunctionArgumentNode::UserFunctionArgumentNode(const std::string& FilePath,
+    const Token& END_token,
     Token& nameT,
     Token& typeT,
     Token& default_value_FT,
@@ -47,7 +50,8 @@ UserFunctionArgumentNode::UserFunctionArgumentNode(
     type_token(typeT),
     default_value_node(std::move(default_value_N)),
     default_value_ftoekn(default_value_FT),
-    is_argument_any(is_argument_any) {}
+    is_argument_any(is_argument_any),
+    ASTNode(FilePath, END_token) {}
 
 
 // Get string for print
@@ -191,6 +195,7 @@ ReturnResult<Value>
 UserFunctionArgumentNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     return_type = type_token.value;
 
     emit_event(
@@ -252,8 +257,7 @@ UserFunctionArgumentNode::clone() {
             : default_value_node->clone()
     );
 
-    return new UserFunctionArgumentNode(
-        name_token,
+    return new UserFunctionArgumentNode(file, END_token, name_token,
         type_token,
         default_value_ftoekn,
         std::move(new_defualt_value_node),
@@ -267,12 +271,14 @@ UserFunctionArgumentNode::clone() {
 // ==================================================================
 
 // Constructor
-UserFunctionReturnNode::UserFunctionReturnNode(
+UserFunctionReturnNode::UserFunctionReturnNode(const std::string& FilePath,
+    const Token& END_token,
     Token& t_,
     std::unique_ptr<ASTNode> value_node
 ):
     VNode(std::move(value_node)),
-    ReturnT(t_) {}
+    ReturnT(t_),
+    ASTNode(FilePath, END_token) {}
 
 
 // Get string to print
@@ -392,6 +398,7 @@ ReturnResult<Value>
 UserFunctionReturnNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -474,8 +481,7 @@ UserFunctionReturnNode::clone() {
         VNode == nullptr ? nullptr : VNode->clone()
     );
 
-    return new UserFunctionReturnNode(
-        ReturnT,
+    return new UserFunctionReturnNode(file, END_token, ReturnT,
         std::move(new_VNode)
     );
 }
@@ -486,11 +492,13 @@ UserFunctionReturnNode::clone() {
 // ==================================================================
 
 // Constructor
-UserProxyFunctionNode::UserProxyFunctionNode(
+UserProxyFunctionNode::UserProxyFunctionNode(const std::string& FilePath,
+    const Token& END_token,
     NodesListT statements,
     const std::string& type
 ):
-    statements(std::move(statements)) {
+    statements(std::move(statements)),
+    ASTNode(FilePath, END_token) {
     return_type = type;
 }
 
@@ -585,6 +593,7 @@ ReturnResult<Value>
 UserProxyFunctionNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -656,8 +665,7 @@ UserProxyFunctionNode::clone() {
         new_statments.push_back(std::move(stm));
     }
 
-    return new UserProxyFunctionNode(
-        std::move(new_statments),
+    return new UserProxyFunctionNode(file, END_token, std::move(new_statments),
         return_type
     );
 }
@@ -668,7 +676,8 @@ UserProxyFunctionNode::clone() {
 // ==================================================================
 
 // Constructor
-UserFunctionNode::UserFunctionNode(
+UserFunctionNode::UserFunctionNode(const std::string& FilePath,
+    const Token& END_token,
     Token& nameT,
     Token& typeT,
     argumentsList arguments_list,
@@ -679,7 +688,8 @@ UserFunctionNode::UserFunctionNode(
     return_type_token(typeT),
     arguments_list(std::move(arguments_list)),
     statements(std::move(statements)),
-    is_function_any(is_any) {}
+    is_function_any(is_any),
+    ASTNode(FilePath, END_token) {}
 
 
 // Get string to print
@@ -880,7 +890,8 @@ UserFunctionNode::accept(
 
         auto r = statement->accept({
             func_scoupe.get(),
-            Context.Debugger
+            Context.Debugger,
+            Context.FilePath
         });
 
         if (!r.success) {
@@ -995,8 +1006,7 @@ UserFunctionNode::accept(
         statements_copy.push_back(std::move(t_ptr));
     }
 
-    auto proxy_node = new UserProxyFunctionNode(
-        std::move(statements_copy),
+    auto proxy_node = new UserProxyFunctionNode(file, END_token, std::move(statements_copy),
         return_type_token.value
     );
 
@@ -1019,6 +1029,7 @@ ReturnResult<Value>
 UserFunctionNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     return_type = "void";
 
     emit_event(
@@ -1029,8 +1040,7 @@ UserFunctionNode::exec(
     );
 
     // Create proxy node
-    auto proxy_node = new UserProxyFunctionNode(
-        std::move(statements),
+    auto proxy_node = new UserProxyFunctionNode(file, END_token, std::move(statements),
         return_type_token.value
     );
 
@@ -1124,8 +1134,7 @@ UserFunctionNode::clone() {
         new_statements.push_back(std::move(new_stm));
     }
 
-    return new UserFunctionNode(
-        name_token,
+    return new UserFunctionNode(file, END_token, name_token,
         return_type_token,
         std::move(new_arguments_list),
         std::move(new_statements),

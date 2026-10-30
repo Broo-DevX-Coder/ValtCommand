@@ -13,7 +13,7 @@
     #if defined(_WIN32)
         #define API __declspec(dllimport)
     #else
-        #define API 
+        #define API
     #endif
 #endif
 
@@ -33,7 +33,7 @@ class BreakLoopNode: public ASTNode {
     private:
         Token BreakT;
     public:
-        BreakLoopNode(Token& token);
+        BreakLoopNode(const std::string& FilePath, const Token& END_token, Token& token);
         std::string get_str(int level) override; // Get the str to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
@@ -47,7 +47,7 @@ class ContinueLoopNode: public ASTNode {
     private:
         Token ContinueT;
     public:
-        ContinueLoopNode(Token& token);
+        ContinueLoopNode(const std::string& FilePath, const Token& END_token, Token& token);
         std::string get_str(int level) override; // Get the str to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
@@ -72,7 +72,7 @@ class WhileLoopsNode: public ASTNode {
         Token FirstToken; // The first token of loop definition
 
     public:
-        WhileLoopsNode(Token& FirstToken, Node& condition, NodesL& nodes_list); // Constructure
+        WhileLoopsNode(const std::string& FilePath, const Token& END_token, Token& FirstToken, Node& condition, NodesL& nodes_list); // Constructure
         std::string get_str(int level) override; // Get the str to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
@@ -97,12 +97,12 @@ class ForLoopsNode: public ASTNode {
 
     private:
         Component Initialization; // Initialyze the variable of condition one time
-        Component Condition; // The condition of continuation of loop 
+        Component Condition; // The condition of continuation of loop
         Component Update; // Update the condition's var
         NodesL Statments; // All instructions of loop excuting
 
     public:
-        ForLoopsNode(Component& Initialization, Component& Condition, Component& Update, NodesL& statments); // Constructure
+        ForLoopsNode(const std::string& FilePath, const Token& END_token, Component& Initialization, Component& Condition, Component& Update, NodesL& statments); // Constructure
         std::string get_str(int level) override; // Get the str to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node

@@ -12,7 +12,8 @@
 
 // Constructure
 Parser::Parser(
-    TList& tl_
+    TList& tl_,
+    const std::string& FilePath
 ): tokens_list_(std::move(tl_)) {
 
     if (tokens_list_.empty()) {
@@ -47,8 +48,7 @@ Parser::curent() {
 
 // Get the next <offset> token
 const Token&
-Parser::peek(
-    size_t offset
+Parser::peek(size_t offset
 ) {
     if (pos+offset < tokens_list_.size())
         return tokens_list_[pos+offset];
@@ -91,7 +91,7 @@ Parser::isAsEnd() {
 
 // Get clear module node ==================================================
 ReturnResult<Parser::PNode>
-Parser::get_module_node() {
+Parser::get_module_node(const std::string& FilePath) {
 
     ModuleNode::StatmentsT s_list;
     ReturnResult<Parser::Node> nt;
@@ -99,7 +99,7 @@ Parser::get_module_node() {
 
     do {
         Token FT = curent();
-        nt = get_expretion();
+        nt = get_expretion(FilePath);
         if (!nt.success) {
             ReturnResult<PNode> re = {nt.Message, false, nullptr};
             re.error_info = nt.error_info;
@@ -108,11 +108,16 @@ Parser::get_module_node() {
         s_list.push_back({std::move(nt.value),FT});
     } while (!isAsEnd());
 
+    // The final consumed source token is the module end token.
+    const Token END_token = tokens_list_[pos > 0 ? pos - 1 : 0];
+
     // make module node and return them
     return {
         "",
         true,
         std::make_unique<ModuleNode>(
+            FilePath,
+            END_token,
             s_list,
             FirstT
         )

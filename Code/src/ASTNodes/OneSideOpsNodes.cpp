@@ -24,7 +24,9 @@ static void emit_sign_event(
         Context.Debugger->emit({
             type,
             message,
-            line
+            line,
+            Context.ParentScope,
+            Context.FilePath
         });
     }
 }
@@ -49,7 +51,8 @@ static std::string sign_to_string(SignOpsTypes type) {
 // Constructor
 // ==================================================================
 
-SignOpNode::SignOpNode(
+SignOpNode::SignOpNode(const std::string& FilePath,
+    const Token& END_token,
     SignOpsTypes type,
     const Token& token,
     const Token& operand_ft,
@@ -58,7 +61,8 @@ SignOpNode::SignOpNode(
     type(type),
     token(token),
     Operand_FT(operand_ft),
-    node(std::move(node)) {}
+    node(std::move(node)),
+    ASTNode(FilePath, END_token) {}
 
 // ==================================================================
 // Get string representation
@@ -123,8 +127,7 @@ SignOpNode::clone() {
     if (node)
         node_copy.reset(node->clone());
 
-    return new SignOpNode(
-        type,
+    return new SignOpNode(file, END_token, type,
         token,
         Operand_FT,
         node_copy
@@ -237,6 +240,7 @@ SignOpNode::accept(NodesContext Context) {
 
 ReturnResult<Value>
 SignOpNode::exec(NodesContext Context) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     if (!node) {
         emit_sign_event(
             Context,
@@ -322,8 +326,8 @@ SignOpNode::exec(NodesContext Context) {
 
         auto v = Value(value_r.value);
         return {"", true, reconsiliation_int_float(node->return_type,v)};
-    
-    } 
+
+    }
 
     // Negative sign
     auto negative = Value(-value_r.value);
@@ -334,7 +338,7 @@ SignOpNode::exec(NodesContext Context) {
         "Unary '-' completed successfully",
         token.line
     );
-    
+
     return {"", true, reconsiliation_int_float(node->return_type,negative)};
 }
 
@@ -344,14 +348,16 @@ SignOpNode::exec(NodesContext Context) {
 // ==================================================================
 
 // Constructor
-LogicalNotNode::LogicalNotNode(
+LogicalNotNode::LogicalNotNode(const std::string& FilePath,
+    const Token& END_token,
     const Token& token,
     const Token& operand_token,
     std::unique_ptr<ASTNode>& node
 )
     : token(token),
       Operand_FT(operand_token),
-      node(std::move(node)) {}
+      node(std::move(node)),
+    ASTNode(FilePath, END_token) {}
 
 // Get string representation
 std::string
@@ -387,20 +393,20 @@ LogicalNotNode::get_json() {
 }
 
 // Get node type
-ASTNodesTypes 
+ASTNodesTypes
 LogicalNotNode::NType() {
     return NT__LogicalNotNode;
 }
 
 // Semantic analysis
-ReturnResult<bool> 
+ReturnResult<bool>
 LogicalNotNode::accept(
     NodesContext Context
 ) {
     // Analyze the operand
     auto result = node->accept(Context);
     if (!result.success) return result;
-    
+
 
     // Logical NOT only supports boolean operands
     if (node->return_type != "bool") {
@@ -424,6 +430,7 @@ LogicalNotNode::accept(
 
 // Execution
 ReturnResult<Value> LogicalNotNode::exec(NodesContext Context) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     // Execute the operand
     auto result = node->exec(Context);
 
@@ -432,14 +439,13 @@ ReturnResult<Value> LogicalNotNode::exec(NodesContext Context) {
     }
 
     return {"",true,result.value != Value(true)};
-    
+
 }
 
 // Clone
 ASTNode* LogicalNotNode::clone() {
     std::unique_ptr<ASTNode> new_node(node->clone());
-    return new LogicalNotNode(
-        token,
+    return new LogicalNotNode(file, END_token, token,
         Operand_FT,
         new_node
     );

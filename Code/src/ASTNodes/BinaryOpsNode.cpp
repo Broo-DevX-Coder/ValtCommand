@@ -37,7 +37,9 @@ static void emit_event(
         Context.Debugger->emit({
             type,
             message,
-            line
+            line,
+            Context.ParentScope,
+            Context.FilePath
         });
     }
 }
@@ -90,7 +92,7 @@ static std::string binary_to_string(TokenType op) {
 
         case TokenType::DIV:
             return "DIV";
-        
+
         case TokenType::MOD:
             return "MOD";
 
@@ -104,10 +106,12 @@ static std::string binary_to_string(TokenType op) {
 // ==================================================================
 
 // Constructor
-BinOpsNode::BinOpsNode(
+BinOpsNode::BinOpsNode(const std::string& FilePath,
+    const Token& END_token,
     OperationPartsList& parts_
 ):
-    Parts(std::move(parts_)) {}
+    Parts(std::move(parts_)),
+    ASTNode(FilePath, END_token) {}
 
 // Get string representation
 std::string
@@ -123,7 +127,7 @@ BinOpsNode::get_str(int level) {
     for (auto& part : Parts) {
         for (int i = 0; i < level + 1; i++)
             ss << "|  ";
-        
+
         if (part_i == 0)
             ss << "First" << ":\n";
         else
@@ -137,7 +141,7 @@ BinOpsNode::get_str(int level) {
 }
 
 // Get the json file of ASTNode
-nlohmann::json 
+nlohmann::json
 BinOpsNode::get_json() {
     nlohmann::json result;
 
@@ -289,6 +293,7 @@ BinOpsNode::push_to_result(
 
 ReturnResult<Value>
 BinOpsNode::exec(NodesContext Context) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     return_type = "float";
 
     if (Parts.empty()) {
@@ -405,7 +410,7 @@ BinOpsNode::clone() {
         });
     }
 
-    return new BinOpsNode(new_parts);
+    return new BinOpsNode(file, END_token, new_parts);
 }
 
 // ==================================================================
@@ -413,14 +418,16 @@ BinOpsNode::clone() {
 // ==================================================================
 
 // Constructor
-CompOpsNode::CompOpsNode(
+CompOpsNode::CompOpsNode(const std::string& FilePath,
+    const Token& END_token,
     OperationPart& FToken,
     OperationPart& SToken,
     ComparitonOpsTypes T
 ):
     first_part(std::move(FToken)),
     second_part(std::move(SToken)),
-    type(T) {}
+    type(T),
+    ASTNode(FilePath, END_token) {}
 
 // Get string representation
 std::string
@@ -453,7 +460,7 @@ CompOpsNode::get_str(int level) {
 }
 
 // Get the json file of ASTNode
-nlohmann::json 
+nlohmann::json
 CompOpsNode::get_json() {
     nlohmann::json result;
 
@@ -493,7 +500,7 @@ CompOpsNode::clone() {
         std::move(spart_ptr)
     };
 
-    return new CompOpsNode(FirstP, SecondP, type);
+    return new CompOpsNode(file, END_token, FirstP, SecondP, type);
 }
 
 // ==================================================================
@@ -643,6 +650,7 @@ CompOpsNode::accept(NodesContext Context) {
 
 ReturnResult<Value>
 CompOpsNode::exec(NodesContext Context) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     return_type = "bool";
 
     const std::string op = comparison_to_string(type);
@@ -753,10 +761,12 @@ CompOpsNode::exec(NodesContext Context) {
 // ==================================================================
 
 // Constructor
-LogicOpsNode::LogicOpsNode(
+LogicOpsNode::LogicOpsNode(const std::string& FilePath,
+    const Token& END_token,
     OperationPartsList& parts
 ):
-    Parts(std::move(parts)) {}
+    Parts(std::move(parts)),
+    ASTNode(FilePath, END_token) {}
 
 // Get string representation
 std::string
@@ -786,7 +796,7 @@ LogicOpsNode::get_str(int level) {
 }
 
 // Get the json file of ASTNode
-nlohmann::json 
+nlohmann::json
 LogicOpsNode::get_json() {
     nlohmann::json result;
 
@@ -835,7 +845,7 @@ LogicOpsNode::clone() {
         });
     }
 
-    return new LogicOpsNode(new_parts);
+    return new LogicOpsNode(file, END_token, new_parts);
 }
 
 // ==================================================================
@@ -926,6 +936,7 @@ LogicOpsNode::accept(NodesContext Context) {
 
 ReturnResult<Value>
 LogicOpsNode::exec(NodesContext Context) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     return_type = "bool";
 
     if (Parts.empty()) {
@@ -1041,14 +1052,16 @@ LogicOpsNode::exec(NodesContext Context) {
 
 
 // Constructor
-PowerNode::PowerNode(
+PowerNode::PowerNode(const std::string& FilePath,
+    const Token& END_token,
     const Token& token,
     OperationPart& left,
     OperationPart& right
 )
     : token(token),
       left(std::move(left)),
-      right(std::move(right)) {}
+      right(std::move(right)),
+    ASTNode(FilePath, END_token) {}
 
 // Get string representation
 std::string
@@ -1081,7 +1094,7 @@ PowerNode::get_str(int level) {
 }
 
 // Get the json file of ASTNode
-nlohmann::json 
+nlohmann::json
 PowerNode::get_json() {
     nlohmann::json result;
 
@@ -1095,13 +1108,13 @@ PowerNode::get_json() {
 }
 
 // Get node type
-ASTNodesTypes 
+ASTNodesTypes
 PowerNode::NType() {
     return NT__PowerNode;
 }
 
 // Semantic analysis
-ReturnResult<bool> 
+ReturnResult<bool>
 PowerNode::accept(
     NodesContext Context
 ) {
@@ -1158,7 +1171,7 @@ PowerNode::accept(
 }
 
 // Execution
-ReturnResult<Value> 
+ReturnResult<Value>
 PowerNode::exec
 (
     NodesContext Context
@@ -1188,7 +1201,7 @@ PowerNode::exec
         Errors::ErrorInfo err_info = {
             "ValueError",
             "invalid result in power operation",
-            "", 
+            "",
             left.token.line,
             left.token.column,
             left.token.value.size()
@@ -1203,7 +1216,7 @@ PowerNode::exec
         Errors::ErrorInfo err_info = {
             "OverflowError",
             "power operation result is out of range",
-            "", 
+            "",
             left.token.line,
             left.token.column,
             left.token.value.size()
@@ -1230,5 +1243,5 @@ ASTNode* PowerNode::clone() {
         std::unique_ptr<ASTNode>(right.node->clone())
     };
 
-    return new PowerNode(token, left_copy, right_copy);
+    return new PowerNode(file, END_token, token, left_copy, right_copy);
 }

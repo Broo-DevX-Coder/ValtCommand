@@ -13,7 +13,7 @@
     #if defined(_WIN32)
         #define API __declspec(dllimport)
     #else
-        #define API 
+        #define API
     #endif
 #endif
 
@@ -36,7 +36,7 @@ class ValueNode: public ASTNode
         std::string type; // The expected type of value
         Value value; // Value that in argumen
 
-        ValueNode(Token token, std::string type); // Constructure
+        ValueNode(const std::string& FilePath, const Token& END_token, Token token, std::string type); // Constructure
         std::string get_str(int level) override; // Get str of node to print
         nlohmann::json get_json() override; // Get the json file of ASTNode
         ASTNodesTypes NType() override; // Get the type of node
@@ -49,7 +49,7 @@ class ValueNode: public ASTNode
 // Class String Value Node
 class StringValueNode: public ValueNode {
     public:
-        StringValueNode(Token token); // Constructure
+        StringValueNode(const std::string& FilePath, const Token& END_token, Token token); // Constructure
         ReturnResult<bool> accept(NodesContext Context) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(NodesContext Context) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
@@ -57,9 +57,9 @@ class StringValueNode: public ValueNode {
 };
 
 // Class Value Number Node
-class NumberValueNode: public ValueNode {   
+class NumberValueNode: public ValueNode {
     public:
-        NumberValueNode(Token token, std::string type="float"); // Constructure
+        NumberValueNode(const std::string& FilePath, const Token& END_token, Token token, std::string type="float"); // Constructure
         ReturnResult<bool> accept(NodesContext Context) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(NodesContext Context) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node
@@ -69,7 +69,7 @@ class NumberValueNode: public ValueNode {
 // Class Value Bool Node
 class BooleanValueNode: public ValueNode {
     public:
-        BooleanValueNode(Token token); // Constructure
+        BooleanValueNode(const std::string& FilePath, const Token& END_token, Token token); // Constructure
         ReturnResult<bool> accept(NodesContext Context) override; // The node verifi it self befor runnig
         ReturnResult<Value> exec(NodesContext Context) override; // Execute the node and get result
         ASTNodesTypes NType() override; // Get the type of node

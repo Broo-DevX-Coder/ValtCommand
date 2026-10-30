@@ -25,7 +25,9 @@ static void emit_event(
         Context.Debugger->emit({
             type,
             message,
-            line
+            line,
+            Context.ParentScope,
+            Context.FilePath
         });
     }
 }
@@ -35,13 +37,14 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-ValueNode::ValueNode(
+ValueNode::ValueNode(const std::string& FilePath,
+    const Token& END_token,
     Token t_,
     std::string tt_
 ):
     vToken(t_),
-    type(tt_)
-{
+    type(tt_),
+    ASTNode(FilePath, END_token) {
     return_type = type;
 }
 
@@ -92,9 +95,10 @@ ValueNode::NType() {
 // String Value Node
 // ==================================================================
 
-StringValueNode::StringValueNode(
+StringValueNode::StringValueNode(const std::string& FilePath,
+    const Token& END_token,
     Token t_
-): ValueNode(t_, "str") {}
+): ValueNode(FilePath, END_token, t_, "str") {}
 
 // Semantic analysis
 ReturnResult<bool>
@@ -150,6 +154,7 @@ ReturnResult<Value>
 StringValueNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -178,17 +183,18 @@ StringValueNode::NType() {
 // Clone node
 ASTNode*
 StringValueNode::clone() {
-    return new StringValueNode(vToken);
+    return new StringValueNode(file, END_token, vToken);
 }
 
 // ==================================================================
 // Number Value Node
 // ==================================================================
 
-NumberValueNode::NumberValueNode(
+NumberValueNode::NumberValueNode(const std::string& FilePath,
+    const Token& END_token,
     Token t_,
     std::string tt_
-): ValueNode(t_, tt_) {}
+): ValueNode(FilePath, END_token, t_, tt_) {}
 
 // Semantic analysis
 ReturnResult<bool>
@@ -247,6 +253,7 @@ ReturnResult<Value>
 NumberValueNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -297,16 +304,17 @@ NumberValueNode::NType() {
 // Clone node
 ASTNode*
 NumberValueNode::clone() {
-    return new NumberValueNode(vToken, type);
+    return new NumberValueNode(file, END_token, vToken, type);
 }
 
 // ==================================================================
 // Boolean Value Node
 // ==================================================================
 
-BooleanValueNode::BooleanValueNode(
+BooleanValueNode::BooleanValueNode(const std::string& FilePath,
+    const Token& END_token,
     Token t_
-): ValueNode(t_, "bool") {}
+): ValueNode(FilePath, END_token, t_, "bool") {}
 
 // Semantic analysis
 ReturnResult<bool>
@@ -362,6 +370,7 @@ ReturnResult<Value>
 BooleanValueNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -390,5 +399,5 @@ BooleanValueNode::NType() {
 // Clone node
 ASTNode*
 BooleanValueNode::clone() {
-    return new BooleanValueNode(vToken);
+    return new BooleanValueNode(file, END_token, vToken);
 }

@@ -22,7 +22,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "API/globals.hpp"
+#include "Scope.hpp"
 
 // == Libs ==
 #include <functional>
@@ -50,6 +50,9 @@ namespace DevTools {
         EventsT type; // The level of event
         std::string message; // Message of event
         size_t line; // Line of event
+        Scopes::Scope* curent_scope; // The scope of event line 
+        std::string file; // The file of the event
+
 
         // print event
         std::string get_str() {
@@ -61,19 +64,21 @@ namespace DevTools {
     struct breakPointType {
         private:
             size_t line; // The line of breakpoint
+            std::string file; // File containing the breakpoint; empty matches any file
             bool avilable = true; // Is the breakpoint avilable to stop
 
             bool temp = false; // is the breakpoint temp
             bool used = false; // did the breakpoint used
 
         public:
-            breakPointType(size_t l_) {line=l_;}
-            breakPointType(size_t l_,bool temp) {line=l_;temp=temp;} // Constructor of temp types
+            breakPointType(size_t l_, const std::string& file_path = "", bool temporary = false)
+                : line(l_), file(file_path), temp(temporary) {}
 
             void set_av__(bool av_){avilable = av_;} // Set avilability of breakpointr
 
             void use(){used=temp;} // use the breakpoint if it is temp
             bool is_used() const {return used;} // Is the breakpoin used
+            const std::string& get_file() const { return file; }
 
             explicit operator bool() const {return avilable && !used;}
             explicit operator size_t() const {return line;}
@@ -82,8 +87,13 @@ namespace DevTools {
 
     // The debugger class
     class Debugger {
-            using emitSlotType = std::function<void(event)>; // The type of emit slot's function
-            using stopSlotType = std::function<void(Debugger&)>; // The type of slot when code stops
+        public:
+            using EmitSlotType = std::function<void(event)>; // Runtime tracker event callback
+            using StopSlotType = std::function<void(Debugger&, Scopes::Scope*)>; // Called when execution pauses
+
+        private:
+            using emitSlotType = EmitSlotType;
+            using stopSlotType = StopSlotType;
             
         private:
 
@@ -105,8 +115,9 @@ namespace DevTools {
 
             std::vector<breakPointType> breakpoints; // The breakpoints list
             size_t curent_line; // the number of curent line emited
+            std::string curent_file; // File of the most recently emitted event
 
-            static void stop_slot(Debugger& debuger); // When breakpoint activated, it will shows `Enter to continue ...`
+            static void stop_slot(Debugger& debuger, Scopes::Scope* scope); // When breakpoint activated, it will shows `Enter to continue ...`
             stopSlotType stopCodeSlot = stop_slot; // Teh slot when the code stops
 
 
@@ -117,21 +128,24 @@ namespace DevTools {
             Debugger(std::ostream& ostream){output_stream = &ostream;} // Contructure sepports set ostream
 
             void set_ostream(std::ostream& ostream){output_stream=&ostream;} // Set the output stream of debugger
-            const std::ostream* get_ostream(){return output_stream;} // Get output stream
+            const std::ostream* get_ostream() const {return output_stream;} // Get output stream
 
             // Runtime tracker =============
 
             void emit(event event); // emit event
-            void set_emit_event_slot(emitSlotType func); // Set the slot of 
+            void set_emit_event_slot(EmitSlotType func); // Set the runtime tracker callback
             std::string get_next_event_str(); // Get the str of next event aftre pos
             std::string get_all_events_strs(); // Get all strings of events
 
             // Breakpoints ============
 
             // Managinng breakpoints
-            void add_break_points(const std::vector<size_t>& points_buffer); // Add breakpoints like a buffer
-            void check_break_point(size_t line); // Verifi if need to stop in curent line and stop if needed
-            void set_stop_slot(stopSlotType slot); // Set the function that activated when the breakpoint activated or any other event thaat stops the code execution
+            void add_break_points(
+                const std::vector<size_t>& points_buffer,
+                const std::string& FilePath = ""
+            ); // Add breakpoints like a buffer
+            void check_break_point(size_t line, Scopes::Scope* scope, const std::string& FilePath = ""); // Check the current line and file
+            void set_stop_slot(StopSlotType slot); // Set the callback used when execution pauses
 
             // Managing debugging
             void continue_exec();

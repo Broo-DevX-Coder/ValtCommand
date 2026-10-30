@@ -25,7 +25,9 @@ static void emit_event(
         Context.Debugger->emit({
             type,
             message,
-            line
+            line,
+            Context.ParentScope,
+            Context.FilePath
         });
     }
 }
@@ -35,7 +37,8 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-SetVariableNode::SetVariableNode(
+SetVariableNode::SetVariableNode(const std::string& FilePath,
+    const Token& END_token,
     Token name_token,
     Token type_token,
     std::unique_ptr<ASTNode> value_node_,
@@ -46,11 +49,12 @@ SetVariableNode::SetVariableNode(
     name(name_token.value),
     type(type_token.value),
     is_const(is_const_),
-    VNode(std::move(value_node_)) {}
+    VNode(std::move(value_node_)),
+    ASTNode(FilePath, END_token) {}
 
 
 // Get the string representation
-std::string 
+std::string
 SetVariableNode::get_str(
     int level
 ) {
@@ -237,6 +241,7 @@ ReturnResult<Value>
 SetVariableNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     return_type = "void";
 
     emit_event(
@@ -291,8 +296,7 @@ SetVariableNode::clone() {
         VNode->clone()
     );
 
-    return new SetVariableNode(
-        NameToken,
+    return new SetVariableNode(file, END_token, NameToken,
         TypeToken,
         std::move(new_value_node),
         is_const
@@ -305,13 +309,15 @@ SetVariableNode::clone() {
 // ==================================================================
 
 // Constructor
-ResetVariableNode::ResetVariableNode(
+ResetVariableNode::ResetVariableNode(const std::string& FilePath,
+    const Token& END_token,
     Token name_token,
     std::unique_ptr<ASTNode> value_node_
 ):
     NameToken(name_token),
     name(name_token.value),
-    VNode(std::move(value_node_)) {}
+    VNode(std::move(value_node_)),
+    ASTNode(FilePath, END_token) {}
 
 
 // Get the string representation
@@ -499,6 +505,7 @@ ReturnResult<Value>
 ResetVariableNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     return_type = "void";
 
     emit_event(
@@ -568,8 +575,7 @@ ResetVariableNode::clone() {
         VNode->clone()
     );
 
-    return new ResetVariableNode(
-        NameToken,
+    return new ResetVariableNode(file, END_token, NameToken,
         std::move(new_value_node)
     );
 }
@@ -580,11 +586,13 @@ ResetVariableNode::clone() {
 // ==================================================================
 
 // Constructor
-GetVariableNode::GetVariableNode(
+GetVariableNode::GetVariableNode(const std::string& FilePath,
+    const Token& END_token,
     Token name_token
 ):
     NameToken(name_token),
-    name(name_token.value) {}
+    name(name_token.value),
+    ASTNode(FilePath, END_token) {}
 
 
 // Get the string representation
@@ -672,6 +680,7 @@ ReturnResult<Value>
 GetVariableNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -716,5 +725,5 @@ GetVariableNode::exec(
 // Copy node
 ASTNode*
 GetVariableNode::clone() {
-    return new GetVariableNode(NameToken);
+    return new GetVariableNode(file, END_token, NameToken);
 }

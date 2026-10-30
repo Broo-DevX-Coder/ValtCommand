@@ -26,7 +26,9 @@ static void emit_event(
         Context.Debugger->emit({
             type,
             message,
-            line
+            line,
+            Context.ParentScope,
+            Context.FilePath
         });
     }
 }
@@ -36,7 +38,8 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-FunctionCallArgumentNode::FunctionCallArgumentNode(
+FunctionCallArgumentNode::FunctionCallArgumentNode(const std::string& FilePath,
+    const Token& END_token,
     std::string& Aname,
     Token TToken,
     std::unique_ptr<ASTNode> Value_node
@@ -44,8 +47,8 @@ FunctionCallArgumentNode::FunctionCallArgumentNode(
     name(Aname),
     type(TToken.value),
     TypeToken(TToken),
-    VNode(std::move(Value_node))
-{
+    VNode(std::move(Value_node)),
+    ASTNode(FilePath, END_token) {
     return_type = type;
 }
 
@@ -67,7 +70,7 @@ FunctionCallArgumentNode::get_str(
 }
 
 // Get the json file of ASTNode
-nlohmann::json 
+nlohmann::json
 FunctionCallArgumentNode::get_json() {
     nlohmann::json result;
 
@@ -202,6 +205,7 @@ ReturnResult<Value>
 FunctionCallArgumentNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -283,8 +287,7 @@ ASTNode*
 FunctionCallArgumentNode::clone() {
     std::unique_ptr<ASTNode> new_value_node(VNode->clone());
 
-    return new FunctionCallArgumentNode(
-        name,
+    return new FunctionCallArgumentNode(file, END_token, name,
         TypeToken,
         std::move(new_value_node)
     );
@@ -295,15 +298,16 @@ FunctionCallArgumentNode::clone() {
 // ==================================================================
 
 // Constructor
-FunctionCallNode::FunctionCallNode(
+FunctionCallNode::FunctionCallNode(const std::string& FilePath,
+    const Token& END_token,
     std::string Fname,
     ArgsT& Args_list,
     Token n_token
 ):
     name(Fname),
     arguments(std::move(Args_list)),
-    NameToken(n_token)
-{}
+    NameToken(n_token),
+    ASTNode(FilePath, END_token) {}
 
 // Get string representation
 std::string
@@ -329,7 +333,7 @@ FunctionCallNode::get_str(
 }
 
 // Get the json file of ASTNode
-nlohmann::json 
+nlohmann::json
 FunctionCallNode::get_json() {
     nlohmann::json result;
 
@@ -778,7 +782,8 @@ FunctionCallNode::accept(
 
         auto a_r = user_func_copy->accept({
             func_scoupe.get(),
-            Context.Debugger
+            Context.Debugger,
+            Context.FilePath
         });
 
         if (!a_r.success) {
@@ -829,6 +834,7 @@ ReturnResult<Value>
 FunctionCallNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -1080,7 +1086,8 @@ FunctionCallNode::exec(
 
     auto result = user_func_copy->exec({
         func_scoupe.get(),
-        Context.Debugger
+        Context.Debugger,
+            Context.FilePath
     });
 
     if (!result.success) {
@@ -1127,7 +1134,7 @@ FunctionCallNode::clone() {
         new_args_list.push_back(std::move(arg));
     }
 
-    auto* node = new FunctionCallNode(name, new_args_list, NameToken);
+    auto* node = new FunctionCallNode(file, END_token, name, new_args_list, NameToken);
 
     // Keep the analyzed copy of the user function (null for external functions)
     node->return_type = return_type;

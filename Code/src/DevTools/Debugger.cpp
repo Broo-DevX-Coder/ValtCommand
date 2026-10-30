@@ -4,6 +4,7 @@
 
 // == Locals ==
 #include "API/DevTools/Debugger.hpp"
+#include "API/DevTools/Inspectures.hpp"
 
 // == Libs ==
 #include <sstream>
@@ -36,10 +37,19 @@ namespace {
 
     // All commands types should user enter them after stoping code
     enum COMMANDT {
-        CONTINUE, // contenue executing 
-        NEXT_LINE, // Move to the next line
-        EXIT, // Exit all the code
-        UNKNOWN // Unknown command
+
+        // Basic Commands =====
+
+        CONTINUE, ///< contenue executing 
+        NEXT_LINE, ///< Move to the next line
+        EXIT, ///< Exit all the code
+
+        // Inspect methods =====
+        INSPECT_VARS, // Print the vars table
+        INSPECT_FUNCTIONS, // Print functions table
+        INSPECT_SCOPE, // Print scope info
+
+        UNKNOWN ///< Unknown command
     };
 
     // All command in unordered map
@@ -47,10 +57,16 @@ namespace {
         {"continue",CONTINUE},
         {"nextl",NEXT_LINE},
         {"exit",EXIT},
+        {"show vars",INSPECT_VARS},
+        {"show functions",INSPECT_FUNCTIONS},
+        {"show scope info",INSPECT_SCOPE},
 
         {"c",CONTINUE},
         {"n",NEXT_LINE},
-        {"e",EXIT}
+        {"e",EXIT},
+        {"sv",INSPECT_VARS},
+        {"sf",INSPECT_FUNCTIONS},
+        {"sc",INSPECT_SCOPE},
     };
 
     COMMANDT command_2enum(const std::string& command) {
@@ -80,9 +96,10 @@ void
 DevTools::Debugger::emit(
     event event
 ) {
+    curent_file = event.file;
     if (event.type != DevTools::EventsT::Analysis && event.line != curent_line) {
         curent_line = event.line;
-        check_break_point(event.line);
+        check_break_point(event.line, event.curent_scope, event.file);
     }
     events_list.push_back(event);
     emit_slot(event);
@@ -121,29 +138,33 @@ DevTools::Debugger::get_all_events_strs() {
 // Add breakpoints like a buffer
 void 
 DevTools::Debugger::add_break_points(
-    const std::vector<size_t>& points_buffer
+    const std::vector<size_t>& points_buffer,
+    const std::string& FilePath
 ) {
     for (auto& p: points_buffer) {
-        breakpoints.push_back(breakPointType(p));
+        breakpoints.push_back(breakPointType(p, FilePath));
     }
 }
 
 
 void
 DevTools::Debugger::check_break_point(
-    size_t line
+    size_t line,
+    Scopes::Scope* scope,
+    const std::string& FilePath
 ) {
     for (size_t i = 0; i < breakpoints.size(); ++i) {
 
         const bool matched =
             line == static_cast<size_t>(breakpoints[i]) &&
+            (breakpoints[i].get_file().empty() || breakpoints[i].get_file() == FilePath) &&
             static_cast<bool>(breakpoints[i]);
 
         if (matched) {
             breakpoints[i].set_av__(false);
             breakpoints[i].use();
 
-            stopCodeSlot(*this);
+            stopCodeSlot(*this, scope);
         } else {
             breakpoints[i].set_av__(true);
         }
@@ -165,7 +186,8 @@ DevTools::Debugger::check_break_point(
 
 void
 DevTools::Debugger::stop_slot(
-    DevTools::Debugger& debuger
+    DevTools::Debugger& debuger,
+    Scopes::Scope* scope
 ) {
     bool waiting = true;
 
@@ -195,6 +217,18 @@ DevTools::Debugger::stop_slot(
                 waiting = false;
                 break;
 
+            case INSPECT_SCOPE:
+                std::cout << ScopeInspect(scope).printable;
+                break;
+
+            case INSPECT_VARS:
+                std::cout << VariablesInspect(scope).printable;
+                break;
+
+            case INSPECT_FUNCTIONS:
+                std::cout << FunctionsInspect(scope).printable;
+                break;
+
             default:
                 std::cout
                     << "Command `" << command
@@ -208,7 +242,7 @@ DevTools::Debugger::stop_slot(
 // Move to the next line
 void 
 DevTools::Debugger::next_line() {
-    breakpoints.push_back(breakPointType(curent_line+1,true));
+    breakpoints.push_back(breakPointType(curent_line + 1, curent_file, true));
 }
 
 // Continue executing
@@ -228,4 +262,3 @@ DevTools::Debugger::set_stop_slot(
 ) {
     stopCodeSlot = slot;
 }
- 

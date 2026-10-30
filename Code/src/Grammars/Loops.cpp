@@ -15,7 +15,7 @@
 
 // Get the node of While loop `WHILE`
 ReturnResult<Parser::Node>
-Parser::get_while_loop_node() {
+Parser::get_while_loop_node(const std::string& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
 
     // Jump on `WHILE`
@@ -32,7 +32,7 @@ Parser::get_while_loop_node() {
 
     // Get condition node
     auto condition_FT = curent();
-    auto condition_N_r = get_expretion();
+    auto condition_N_r = get_expretion(FilePath);
     if (!condition_N_r.success) {
         ReturnResult<Node> re = {
             condition_N_r.Message,
@@ -80,7 +80,7 @@ Parser::get_while_loop_node() {
 
     // Get all statements
     while (!check(TokenType::END_BLOCK) && !isAsEnd()) {
-        auto r = get_expretion();
+        auto r = get_expretion(FilePath);
 
         if (!r.success) {
             ReturnResult<Node> re = {
@@ -115,12 +115,12 @@ Parser::get_while_loop_node() {
         re.error_info = consume_result.error_info;
         return re;
     }
+    const Token END_token = consume_result.value;
 
     return {
         "",
         true,
-        std::make_unique<WhileLoopsNode>(
-            loop_first_token_r.value,
+        std::make_unique<WhileLoopsNode>(FilePath, END_token, loop_first_token_r.value,
             condition_N_r.value,
             statments
         )
@@ -133,7 +133,7 @@ Parser::get_while_loop_node() {
 
 // Get the node of for loop `FOR`
 ReturnResult<Parser::Node>
-Parser::get_for_loop_node() {
+Parser::get_for_loop_node(const std::string& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
 
     // Jump on `FOR`
@@ -150,7 +150,7 @@ Parser::get_for_loop_node() {
 
     // Get Initialization
     auto initialyzation_FT = curent();
-    auto initialyzation_node_r = get_expretion();
+    auto initialyzation_node_r = get_expretion(FilePath);
 
     if (!initialyzation_node_r.success) {
         ReturnResult<Node> re = {
@@ -176,7 +176,7 @@ Parser::get_for_loop_node() {
 
     // Get condition
     auto condition_FT = curent();
-    auto condition_node_r = get_expretion();
+    auto condition_node_r = get_expretion(FilePath);
 
     if (!condition_node_r.success) {
         ReturnResult<Node> re = {
@@ -202,7 +202,7 @@ Parser::get_for_loop_node() {
 
     // Get update
     auto update_FT = curent();
-    auto update_node_r = get_expretion();
+    auto update_node_r = get_expretion(FilePath);
 
     if (!update_node_r.success) {
         ReturnResult<Node> re = {
@@ -251,7 +251,7 @@ Parser::get_for_loop_node() {
 
     // Get all statements
     while (!check(TokenType::END_BLOCK) && !isAsEnd()) {
-        auto r = get_expretion();
+        auto r = get_expretion(FilePath);
 
         if (!r.success) {
             ReturnResult<Node> re = {
@@ -286,6 +286,7 @@ Parser::get_for_loop_node() {
         re.error_info = consume_result.error_info;
         return re;
     }
+    const Token END_token = consume_result.value;
 
     // Create component variables
     ForLoopsNode::Component Init = {
@@ -306,8 +307,7 @@ Parser::get_for_loop_node() {
     return {
         "",
         true,
-        std::make_unique<ForLoopsNode>(
-            Init,
+        std::make_unique<ForLoopsNode>(FilePath, END_token, Init,
             Cond,
             Updt,
             statments
@@ -321,7 +321,7 @@ Parser::get_for_loop_node() {
 
 // Get the node of break a loop `BREAK`
 ReturnResult<Parser::Node>
-Parser::get_break_loop_node() {
+Parser::get_break_loop_node(const std::string& FilePath) {
     auto consume_result = consume(TokenType::KEY_WORD);
 
     if (!consume_result.success) {
@@ -333,11 +333,12 @@ Parser::get_break_loop_node() {
         re.error_info = consume_result.error_info;
         return re;
     }
+    const Token END_token = consume_result.value;
 
     return {
         "",
         true,
-        std::make_unique<BreakLoopNode>(consume_result.value)
+        std::make_unique<BreakLoopNode>(FilePath, END_token, consume_result.value)
     };
 }
 
@@ -347,7 +348,7 @@ Parser::get_break_loop_node() {
 
 // Get the node of continue a loop `CONTINUE`
 ReturnResult<Parser::Node>
-Parser::get_continue_loop_node() {
+Parser::get_continue_loop_node(const std::string& FilePath) {
     auto consume_result = consume(TokenType::KEY_WORD);
 
     if (!consume_result.success) {
@@ -359,10 +360,11 @@ Parser::get_continue_loop_node() {
         re.error_info = consume_result.error_info;
         return re;
     }
+    const Token END_token = consume_result.value;
 
     return {
         "",
         true,
-        std::make_unique<ContinueLoopNode>(consume_result.value)
+        std::make_unique<ContinueLoopNode>(FilePath, END_token, consume_result.value)
     };
 }

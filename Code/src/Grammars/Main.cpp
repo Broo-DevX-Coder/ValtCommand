@@ -34,7 +34,7 @@ static ReturnResult<Parser::Node> propagate_error(
 }
 
 ReturnResult<Parser::Node>
-Parser::get_primary() {
+Parser::get_primary(const std::string& FilePath) {
 
     auto cu = curent(); // Get curent token
 
@@ -58,43 +58,43 @@ Parser::get_primary() {
 
         // Function call node
         if (curent().value == "CALL") {
-            result = get_functioncall_node();
+            result = get_functioncall_node(FilePath);
 
         // Set or reset variable node
         } else if (curent().value == "SET" || curent().value == "SET_CONST") {
-            result = get_set_variable_node(curent().value == "SET_CONST");
+            result = get_set_variable_node(FilePath, curent().value == "SET_CONST");
 
         // Get variable's value node
         } else if (curent().value == "GET") {
-            result = get_get_variable_node();
+            result = get_get_variable_node(FilePath);
 
         // Get user function
         } else if (curent().value == "FUNCTION") {
-            result = get_user_function_node();
+            result = get_user_function_node(FilePath);
 
         // Get return node
         } else if (curent().value == "RETURN") {
-            result = get_return_noode();
+            result = get_return_noode(FilePath);
 
         // Get If statement node
         } else if (curent().value == "IF") {
-            result = get_if_statment_node();
+            result = get_if_statment_node(FilePath);
 
         // Get the while loop node
         } else if (curent().value == "WHILE") {
-            result = get_while_loop_node();
+            result = get_while_loop_node(FilePath);
 
         // Get the for loop node
         } else if (curent().value == "FOR") {
-            result = get_for_loop_node();
+            result = get_for_loop_node(FilePath);
 
         // Get the break a loop node
         } else if (curent().value == "BREAK") {
-            result = get_break_loop_node();
+            result = get_break_loop_node(FilePath);
 
         // Get the continue a loop node
         } else if (curent().value == "CONTINUE") {
-            result = get_continue_loop_node();
+            result = get_continue_loop_node(FilePath);
         }
 
     // If the curent type is pure value
@@ -104,7 +104,7 @@ Parser::get_primary() {
         check(TokenType::FLOAT) ||
         check(TokenType::BOOLEAN)
     ) {
-        result = get_value_node();
+        result = get_value_node(FilePath);
 
     // Get between parens
     } else if (check(TokenType::LEFT_PAREN)) {
@@ -113,7 +113,7 @@ Parser::get_primary() {
         auto left_paren_r = consume(TokenType::LEFT_PAREN);
 
         // Get expression inside parens
-        auto node_r = get_expretion();
+        auto node_r = get_expretion(FilePath);
 
         if (!node_r.success) {
             ReturnResult<Node> re = {
@@ -155,8 +155,8 @@ Parser::get_primary() {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_expretion() {
-    return get_logical_or();
+Parser::get_expretion(const std::string& FilePath) {
+    return get_logical_or(FilePath);
 }
 
 // ==================================================================
@@ -164,11 +164,11 @@ Parser::get_expretion() {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_logical_or() {
+Parser::get_logical_or(const std::string& FilePath) {
     OperationPartsList parts;
 
     auto first_token = curent();
-    auto first = get_logical_and();
+    auto first = get_logical_and(FilePath);
 
     if (!first.success)
         return first;
@@ -189,7 +189,7 @@ Parser::get_logical_or() {
             return propagate_error(op);
 
         auto operand_token = curent();
-        auto operand = get_logical_and();
+        auto operand = get_logical_and(FilePath);
 
         if (!operand.success)
             return operand;
@@ -201,10 +201,11 @@ Parser::get_logical_or() {
         });
     }
 
+    const Token END_token = tokens_list_[pos - 1];
     return {
         "",
         true,
-        std::make_unique<LogicOpsNode>(parts)
+        std::make_unique<LogicOpsNode>(FilePath, END_token, parts)
     };
 }
 
@@ -213,11 +214,11 @@ Parser::get_logical_or() {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_logical_and() {
+Parser::get_logical_and(const std::string& FilePath) {
     OperationPartsList parts;
 
     auto first_token = curent();
-    auto first = get_equality();
+    auto first = get_equality(FilePath);
 
     if (!first.success)
         return first;
@@ -238,7 +239,7 @@ Parser::get_logical_and() {
             return propagate_error(op);
 
         auto operand_token = curent();
-        auto operand = get_equality();
+        auto operand = get_equality(FilePath);
 
         if (!operand.success)
             return operand;
@@ -250,10 +251,11 @@ Parser::get_logical_and() {
         });
     }
 
+    const Token END_token = tokens_list_[pos - 1];
     return {
         "",
         true,
-        std::make_unique<LogicOpsNode>(parts)
+        std::make_unique<LogicOpsNode>(FilePath, END_token, parts)
     };
 }
 
@@ -263,9 +265,9 @@ Parser::get_logical_and() {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_equality() {
+Parser::get_equality(const std::string& FilePath) {
     auto first_token = curent();
-    auto first = get_comparison();
+    auto first = get_comparison(FilePath);
 
     if (!first.success)
         return first;
@@ -285,7 +287,7 @@ Parser::get_equality() {
         return propagate_error(consumed);
 
     auto second_token = curent();
-    auto second = get_comparison();
+    auto second = get_comparison(FilePath);
 
     if (!second.success)
         return second;
@@ -326,11 +328,11 @@ Parser::get_equality() {
 
     auto comparison_type = ComparitonSymbols_ToOps.at(op.Type);
 
+    const Token END_token = tokens_list_[pos - 1];
     return {
         "",
         true,
-        std::make_unique<CompOpsNode>(
-            left,
+        std::make_unique<CompOpsNode>(FilePath, END_token, left,
             right,
             comparison_type
         )
@@ -343,14 +345,14 @@ Parser::get_equality() {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_comparison() {
+Parser::get_comparison(const std::string& FilePath) {
     auto first_token = curent();
-    auto first = get_additive();
+    auto first = get_additive(FilePath);
 
     if (!first.success)
         return first;
 
-    const auto is_relational = [this]() {
+    const auto is_relational = [this, &FilePath]() {
         return
             check(TokenType::LESS_THAN) ||
             check(TokenType::GREATER_THAN) ||
@@ -369,7 +371,7 @@ Parser::get_comparison() {
         return propagate_error(consumed);
 
     auto second_token = curent();
-    auto second = get_additive();
+    auto second = get_additive(FilePath);
 
     if (!second.success)
         return second;
@@ -407,11 +409,11 @@ Parser::get_comparison() {
 
     auto comparison_type = ComparitonSymbols_ToOps.at(op.Type);
 
+    const Token END_token = tokens_list_[pos - 1];
     return {
         "",
         true,
-        std::make_unique<CompOpsNode>(
-            left,
+        std::make_unique<CompOpsNode>(FilePath, END_token, left,
             right,
             comparison_type
         )
@@ -424,11 +426,11 @@ Parser::get_comparison() {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_additive() {
+Parser::get_additive(const std::string& FilePath) {
     OperationPartsList parts;
 
     auto first_token = curent();
-    auto first = get_multiplicative();
+    auto first = get_multiplicative(FilePath);
 
     if (!first.success)
         return first;
@@ -458,7 +460,7 @@ Parser::get_additive() {
             return propagate_error(consumed);
 
         auto operand_token = curent();
-        auto operand = get_multiplicative();
+        auto operand = get_multiplicative(FilePath);
 
         if (!operand.success)
             return operand;
@@ -470,10 +472,11 @@ Parser::get_additive() {
         });
     }
 
+    const Token END_token = tokens_list_[pos - 1];
     return {
         "",
         true,
-        std::make_unique<BinOpsNode>(parts)
+        std::make_unique<BinOpsNode>(FilePath, END_token, parts)
     };
 }
 
@@ -483,16 +486,16 @@ Parser::get_additive() {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_multiplicative() {
+Parser::get_multiplicative(const std::string& FilePath) {
     OperationPartsList parts;
 
     auto first_token = curent();
-    auto first = get_unary();
+    auto first = get_unary(FilePath);
 
     if (!first.success)
         return first;
 
-    const auto is_multiplicative = [this]() {
+    const auto is_multiplicative = [this, &FilePath]() {
         return
             check(TokenType::STAR) ||
             check(TokenType::SLASH) ||
@@ -518,7 +521,7 @@ Parser::get_multiplicative() {
             return propagate_error(consumed);
 
         auto operand_token = curent();
-        auto operand = get_unary();
+        auto operand = get_unary(FilePath);
 
         if (!operand.success)
             return operand;
@@ -530,10 +533,11 @@ Parser::get_multiplicative() {
         });
     }
 
+    const Token END_token = tokens_list_[pos - 1];
     return {
         "",
         true,
-        std::make_unique<BinOpsNode>(parts)
+        std::make_unique<BinOpsNode>(FilePath, END_token, parts)
     };
 }
 
@@ -543,7 +547,7 @@ Parser::get_multiplicative() {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_unary() {
+Parser::get_unary(const std::string& FilePath) {
     const bool is_plus = check(TokenType::PLUS);
     const bool is_minus = check(TokenType::MINUS);
     const bool is_not_symbol = check(TokenType::EXCLAMATION);
@@ -559,7 +563,7 @@ Parser::get_unary() {
         !is_not_symbol &&
         !is_not_keyword
     ) {
-        return get_power();
+        return get_power(FilePath);
     }
 
     // Save the operator before consuming it
@@ -574,17 +578,17 @@ Parser::get_unary() {
     auto operand_token = curent();
 
     // Recursion makes unary operators right-associative
-    auto operand = get_unary();
+    auto operand = get_unary(FilePath);
 
     if (!operand.success)
         return operand;
 
     if (is_not_symbol || is_not_keyword) {
-        return {
+        const Token END_token = tokens_list_[pos - 1];
+    return {
             "",
             true,
-            std::make_unique<LogicalNotNode>(
-                op_token,
+            std::make_unique<LogicalNotNode>(FilePath, END_token, op_token,
                 operand_token,
                 operand.value
             )
@@ -595,11 +599,11 @@ Parser::get_unary() {
         ? SignOpsTypes::NEGATIVE
         : SignOpsTypes::POSITIVE;
 
+    const Token END_token = tokens_list_[pos - 1];
     return {
         "",
         true,
-        std::make_unique<SignOpNode>(
-            sign_type,
+        std::make_unique<SignOpNode>(FilePath, END_token, sign_type,
             op_token,
             operand_token,
             operand.value
@@ -613,9 +617,9 @@ Parser::get_unary() {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_power() {
+Parser::get_power(const std::string& FilePath) {
     auto first_token = curent();
-    auto first = get_primary();
+    auto first = get_primary(FilePath);
 
     if (!first.success)
         return first;
@@ -634,7 +638,7 @@ Parser::get_power() {
     // 2 ** 3 ** 2 => 2 ** (3 ** 2)
     // 2 ** -2     => 2 ** (-2)
     auto second_token = curent();
-    auto second = get_unary();
+    auto second = get_unary(FilePath);
 
     if (!second.success)
         return second;
@@ -651,11 +655,11 @@ Parser::get_power() {
         std::move(second.value)
     };
 
+    const Token END_token = tokens_list_[pos - 1];
     return {
         "",
         true,
-        std::make_unique<PowerNode>(
-            op_token,
+        std::make_unique<PowerNode>(FilePath, END_token, op_token,
             left,
             right
         )

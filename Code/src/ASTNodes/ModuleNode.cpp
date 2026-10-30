@@ -23,7 +23,25 @@ static void emit_event(
         Context.Debugger->emit({
             type,
             message,
-            line
+            line,
+            Context.ParentScope,
+            Context.FilePath
+        });
+    }
+}
+
+// Constructure of ASTNode that creates the file
+ASTNode::ASTNode(const std::string& FilePath, const Token& END_token)
+    : file(FilePath), END_token(END_token) {}
+
+void ASTNode::emit_exec_end_event(const NodesContext& Context) const {
+    if (Context.Debugger) {
+        Context.Debugger->emit({
+            DevTools::EventsT::Runtime,
+            "AST node execution finished",
+            END_token.line,
+            Context.ParentScope,
+            file
         });
     }
 }
@@ -34,10 +52,13 @@ static void emit_event(
 
 // Constructor
 ModuleNode::ModuleNode(
+    const std::string& FilePath,
+    const Token& END_token,
     StatmentsT& s_,
     Token& First_token
 ): statements(std::move(s_)),
-   FToken(First_token) {
+   FToken(First_token),
+   ASTNode(FilePath, END_token) {
     return_type = "void";
 }
 
@@ -91,6 +112,7 @@ ReturnResult<Value>
 ModuleNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -256,5 +278,5 @@ ModuleNode::clone() {
         new_statments.push_back({std::move(statment_c),s.first_token});
     }
 
-    return new ModuleNode(new_statments,FToken);
+    return new ModuleNode(file, END_token, new_statments, FToken);
 }

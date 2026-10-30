@@ -24,7 +24,9 @@ static void emit_event(
         Context.Debugger->emit({
             type,
             message,
-            line
+            line,
+            Context.ParentScope,
+            Context.FilePath
         });
     }
 }
@@ -34,14 +36,18 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-BreakLoopNode::BreakLoopNode(
+BreakLoopNode::BreakLoopNode(const std::string& FilePath,
+    const Token& END_token,
     Token& t_
-): BreakT(t_) {}
+): BreakT(t_),
+    ASTNode(FilePath, END_token) {}
 
 // Constructor
-ContinueLoopNode::ContinueLoopNode(
+ContinueLoopNode::ContinueLoopNode(const std::string& FilePath,
+    const Token& END_token,
     Token& t_
-): ContinueT(t_) {}
+): ContinueT(t_),
+    ASTNode(FilePath, END_token) {}
 
 // Get the string to print
 std::string
@@ -163,6 +169,7 @@ ReturnResult<Value>
 BreakLoopNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -186,6 +193,7 @@ ReturnResult<Value>
 ContinueLoopNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -207,12 +215,12 @@ ContinueLoopNode::exec(
 
 ASTNode*
 BreakLoopNode::clone() {
-    return new BreakLoopNode(BreakT);
+    return new BreakLoopNode(file, END_token, BreakT);
 }
 
 ASTNode*
 ContinueLoopNode::clone() {
-    return new ContinueLoopNode(ContinueT);
+    return new ContinueLoopNode(file, END_token, ContinueT);
 }
 
 // ==================================================================
@@ -220,15 +228,16 @@ ContinueLoopNode::clone() {
 // ==================================================================
 
 // Constructor
-WhileLoopsNode::WhileLoopsNode(
+WhileLoopsNode::WhileLoopsNode(const std::string& FilePath,
+    const Token& END_token,
     Token& FirstToken,
     Node& condition,
     NodesL& nodes_list
 ):
     condition_node(std::move(condition)),
     FirstToken(FirstToken),
-    Statments(std::move(nodes_list))
-{
+    Statments(std::move(nodes_list)),
+    ASTNode(FilePath, END_token) {
     return_type = "void";
 }
 
@@ -300,8 +309,7 @@ WhileLoopsNode::clone() {
         new_stms_list.push_back(std::move(new_stm));
     }
 
-    return new WhileLoopsNode(
-        FirstToken,
+    return new WhileLoopsNode(file, END_token, FirstToken,
         new_condition,
         new_stms_list
     );
@@ -418,7 +426,8 @@ WhileLoopsNode::accept(
 
         auto statement_result = smt->accept({
             while_scoupe.get(),
-            Context.Debugger
+            Context.Debugger,
+            Context.FilePath
         });
 
         if (!statement_result.success) {
@@ -464,6 +473,7 @@ ReturnResult<Value>
 WhileLoopsNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -555,7 +565,8 @@ WhileLoopsNode::exec(
             // Execute statement
             auto r = stm_ptr->exec({
                 while_scoupe.get(),
-                Context.Debugger
+                Context.Debugger,
+            Context.FilePath
             });
 
             if (!r.success) {
@@ -662,7 +673,8 @@ WhileLoopsNode::exec(
 // ==================================================================
 
 // Constructor
-ForLoopsNode::ForLoopsNode(
+ForLoopsNode::ForLoopsNode(const std::string& FilePath,
+    const Token& END_token,
     Component& Initialization,
     Component& Condition,
     Component& Update,
@@ -671,8 +683,8 @@ ForLoopsNode::ForLoopsNode(
     Initialization(std::move(Initialization)),
     Condition(std::move(Condition)),
     Update(std::move(Update)),
-    Statments(std::move(statments))
-{
+    Statments(std::move(statments)),
+    ASTNode(FilePath, END_token) {
     return_type = "void";
 }
 
@@ -792,8 +804,7 @@ ForLoopsNode::clone() {
     }
 
     // Create and return the new node
-    return new ForLoopsNode(
-        new_Initialization,
+    return new ForLoopsNode(file, END_token, new_Initialization,
         new_Condition,
         new_Update,
         new_stms_list
@@ -852,7 +863,8 @@ ForLoopsNode::accept(
 
         auto r = comp->node->accept({
             for_scoupe.get(),
-            Context.Debugger
+            Context.Debugger,
+            Context.FilePath
         });
 
         if (!r.success) {
@@ -928,7 +940,8 @@ ForLoopsNode::accept(
 
         auto r = stm->accept({
             for_scoupe.get(),
-            Context.Debugger
+            Context.Debugger,
+            Context.FilePath
         });
 
         if (!r.success) {
@@ -974,6 +987,7 @@ ReturnResult<Value>
 ForLoopsNode::exec(
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
@@ -1007,7 +1021,8 @@ ForLoopsNode::exec(
     {
         auto r = Initialization.node->exec({
             for_scoupe.get(),
-            Context.Debugger
+            Context.Debugger,
+            Context.FilePath
         });
 
         if (!r.success) {
@@ -1051,7 +1066,8 @@ ForLoopsNode::exec(
 
         condition_result = condition_cp->exec({
             for_scoupe.get(),
-            Context.Debugger
+            Context.Debugger,
+            Context.FilePath
         });
 
         if (!condition_result.success) {
@@ -1111,7 +1127,8 @@ ForLoopsNode::exec(
             // Execute statement
             auto r = stm_ptr->exec({
                 while_scoupe.get(),
-                Context.Debugger
+                Context.Debugger,
+            Context.FilePath
             });
 
             if (!r.success) {
@@ -1195,7 +1212,8 @@ ForLoopsNode::exec(
                 // Execute update
                 auto update_result = update_node_cp->exec({
                     for_scoupe.get(),
-                    Context.Debugger
+                    Context.Debugger,
+            Context.FilePath
                 });
 
                 if (!update_result.success) {
@@ -1217,7 +1235,8 @@ ForLoopsNode::exec(
             // Evaluate condition again
             condition_result = condition_node_cp->exec({
                 for_scoupe.get(),
-                Context.Debugger
+                Context.Debugger,
+            Context.FilePath
             });
 
             if (!condition_result.success) {

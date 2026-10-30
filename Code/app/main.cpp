@@ -30,11 +30,13 @@ int main1() {
 
 int main() {
     std::string code = R"RT(  
-        CALL println
-            value<str>: CALL format
-                text<str>:"Hello {name}, age: {age}"
-                name<str>:"World"
-                age<int>:18
+        FOR     
+            SET i<int> = 0;
+            (GET i) <= 10;
+            SET i = (GET i) +1
+        THEN
+            CALL println value<str>:
+                CALL format text<str>: "Loop number: {num}" num<int>:(GET i) END
             END
         END
     )RT";
@@ -42,7 +44,7 @@ int main() {
     Runtime::RunTime r(true);
 
     if (r.GetDebugger())
-        r.GetDebugger()->add_break_points({{1}});
+        r.GetDebugger()->add_break_points({{7}},"");
 
     auto result = r.run(code,Runtime::ScopeMode::Persistent);
     if (!result) {
