@@ -2,6 +2,7 @@
 # Build directories
 # ==========================
 build/
+build-perf/
 cmake-build-debug/
 cmake-build-release/
 out/
@@ -11,6 +12,7 @@ dist/
 # tesy files
 # ==========================
 **/test/
+**/tests/
 
 # ==========================
 # CMake generated files

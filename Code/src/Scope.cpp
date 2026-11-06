@@ -4,7 +4,6 @@
 
 // == Locals ==
 #include "Scope.hpp"
-#include "utils.hpp"
 #include "Errors.hpp"
 
 // ==================================================================
@@ -15,7 +14,8 @@
 Scopes::Scope::Scope(
     Scope* parent_
 ): Parent(parent_) {
-    ID = Utils::random_num();
+    static size_t next_id = 0;
+    ID = next_id++;
     Depth = 0;
     if (parent_) Depth = parent_->get_depth() + 1;
 };

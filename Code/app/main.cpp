@@ -2,56 +2,39 @@
 #include "Errors.hpp"
 
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 
-int main1() {
-    Runtime::RunTime rt;
-
-    std::string path = "/home/broodev/Desktop/PG/ValtCommand/Tests/arithmetic.vlt";
-
-    std::ifstream in(path, std::ios::binary);
-    std::ostringstream buffer;
-    buffer << in.rdbuf();
-    std::string code = buffer.str();
-
-    // ---- 1) Run the whole script ----
-    auto r = rt.run_file(path);
-    if (!r) {
-        std::cerr << Errors::formatter(r.error.info,code);
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cerr << "Usage: valtcommand <file.vc>\n";
+        return 1;
     }
 
+    std::ifstream file(argv[1]);
+    if (!file) {
+        std::cerr << "Cannot open file: " << argv[1] << "\n";
+        return 1;
+    }
 
-    return 0;
-}
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string source = buffer.str();
 
-int main() {
-    std::string code = R"RT(  
-        FOR     
-            SET i<int> = 0;
-            (GET i) <= 10;
-            SET i = (GET i) +1
-        THEN
-            CALL println value<str>:
-                CALL format text<str>: "Loop number: {num}" num<int>:(GET i) END
-            END
-        END
-    )RT";
-
-    Runtime::RunTime r(true);
+    Runtime::RunTime r(false);
 
     if (r.GetDebugger())
         r.GetDebugger()->add_break_points({{7}},"");
 
     r.set_ostream(std::clog);
 
-    auto result = r.run(code,Runtime::ScopeMode::Persistent);
+    auto result = r.run_file(argv[1]);
     if (!result) {
-        std::cout << Errors::formatter(result.error.info,code) << std::endl;
+        std::cout << Errors::formatter(result.error.info,source) << std::endl;
         return 1;
     }
+    return 0;
+
     return 0;
 }

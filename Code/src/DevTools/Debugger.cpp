@@ -226,7 +226,7 @@ DevTools::Debugger::stop_slot(
                 break;
 
             case INSPECT_FUNCTIONS:
-                std::cout << FunctionsInspect(scope).printable;
+                std::cout << FunctionsInspect(scope).printable; ///< closing the interpriter will close all process of host
                 break;
 
             default:
