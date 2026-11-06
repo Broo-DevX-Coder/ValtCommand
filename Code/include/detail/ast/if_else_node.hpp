@@ -1,0 +1,38 @@
+/**
+ * @file if_else_node.hpp
+ * @brief if else node declarations.
+ */
+
+#pragma once
+
+#include "detail/api_export.hpp"
+
+/// Include neccessary headers
+
+/// == Locals ==
+#include "detail/ast/ast_node.hpp"
+
+/// Class
+
+/// If satments's node class
+class IfStatmentsNode: public ASTNode{
+    public:
+        using Node = std::unique_ptr<ASTNode>;
+        using Nodes_list = std::vector<std::unique_ptr<ASTNode>>;
+
+    private:
+        Node condition_node; ///< Condition node that returns true or false
+        Nodes_list Statments; ///< All statmnts that will runed when condition is true
+        Nodes_list Else_statments; ///< All statmnts that will runed when condition is false
+
+        Token condition_FT; ///< The first token of condition
+
+    public:
+        IfStatmentsNode(const std::string& FilePath, const Token& END_token, Token& CFtoken ,Node& condition, Nodes_list& statments, Nodes_list& else_statments); ///< Constructure
+        std::string get_str(int level) override; ///< Get the str to print
+        nlohmann::json get_json() override; ///< Get the json file of ASTNode
+        ASTNodesTypes NType() override; ///< Get the type of node
+        ReturnResult<bool> accept(NodesContext Context) override; ///< types and value checking
+        ReturnResult<Value> exec(NodesContext Context) override; ///< execute condition and execute rest if condition is true
+        ASTNode* clone() override; ///< Clone the class or get a new copy from them
+};

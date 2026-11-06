@@ -11,18 +11,18 @@
 #include <utility>
 
 // == Locals ==
-#include "API/Runtime.hpp"
-#include "Errors.hpp"
-#include "Lexar.hpp"
-#include "utils.hpp"
-#include "Parser.hpp"
-#include "Scope.hpp"
+#include "valtcommand/runtime.hpp"
+#include "detail/errors.hpp"
+#include "detail/lexer.hpp"
+#include "detail/utils.hpp"
+#include "detail/parser.hpp"
+#include "valtcommand/scope.hpp"
 
 // == Embeded Libs ==
-#include "Libs/DevTools.hpp"
-#include "Libs/Math.hpp"
-#include "Libs/STDIO.hpp"
-#include "Libs/Format.hpp"
+#include "detail/builtins/devtools.hpp"
+#include "detail/builtins/math.hpp"
+#include "detail/builtins/stdio.hpp"
+#include "detail/builtins/format.hpp"
 
 // ==================================================================
 // Private helpers (this file only)

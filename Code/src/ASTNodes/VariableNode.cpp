@@ -3,8 +3,8 @@
 // ==================================================================
 
 // == Locals ==
-#include "ASTNodes/VariableNode.hpp"
-#include "Errors.hpp"
+#include "detail/ast/variable_node.hpp"
+#include "detail/errors.hpp"
 
 // == Libs ==
 #include <sstream>

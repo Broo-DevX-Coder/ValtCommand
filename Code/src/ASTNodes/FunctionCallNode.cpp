@@ -9,8 +9,8 @@
 #include <string>
 
 // == Locals ==
-#include "ASTNodes/FunctionCallNode.hpp"
-#include "Errors.hpp"
+#include "detail/ast/function_call_node.hpp"
+#include "detail/errors.hpp"
 
 // ==================================================================
 // Runtime Tracker Helpers

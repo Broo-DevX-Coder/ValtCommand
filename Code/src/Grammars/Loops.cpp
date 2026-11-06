@@ -3,11 +3,11 @@
 // ==================================================================
 
 // == Locals ==
-#include "Parser.hpp"
-#include "Errors.hpp"
+#include "detail/parser.hpp"
+#include "detail/errors.hpp"
 
 // Nodes
-#include "ASTNodes/LoopsNodes.hpp"
+#include "detail/ast/loops_nodes.hpp"
 
 // ==================================================================
 // Parse `WHILE`

@@ -7,8 +7,8 @@
 #include <sstream>
 
 // == Local ==
-#include "Errors.hpp"
-#include "utils.hpp"
+#include "detail/errors.hpp"
+#include "detail/utils.hpp"
 
 // ==================================================================
 // Errors formatter

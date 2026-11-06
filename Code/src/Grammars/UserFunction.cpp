@@ -3,10 +3,10 @@
 // ==================================================================
 
 // == Locals ==
-#include "Parser.hpp"
+#include "detail/parser.hpp"
 
 // Nodes
-#include "ASTNodes/UserFunctionNode.hpp"
+#include "detail/ast/user_function_node.hpp"
 
 // ==================================================================
 // Parse `FUNCTION`

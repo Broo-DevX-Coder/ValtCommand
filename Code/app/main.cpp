@@ -1,5 +1,5 @@
-#include "API/Runtime.hpp"
-#include "Errors.hpp"
+#include "valtcommand/runtime.hpp"
+#include "detail/errors.hpp"
 
 #include <iostream>
 #include <fstream>

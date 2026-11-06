@@ -3,8 +3,8 @@
 // ==================================================================
 
 // == Locals ==
-#include "ASTNodes/BinaryOpsNode.hpp"
-#include "Errors.hpp"
+#include "detail/ast/binary_ops_node.hpp"
+#include "detail/errors.hpp"
 
 // == Libs ==
 #include <sstream>

@@ -1,0 +1,99 @@
+/**
+ * @file parser.hpp
+ * @brief parser declarations.
+ */
+
+#pragma once
+
+#include "detail/api_export.hpp"
+
+/// Include neccessary headers
+
+/// == Locals ==
+#include "detail/ast/ast_node.hpp"
+#include "detail/globals.hpp"
+
+/// Parser
+
+class API Parser {
+    public:
+        using Node = std::unique_ptr<ASTNode>;
+        using PNode = std::unique_ptr<ModuleNode>;
+        using TList = std::vector<Token>;
+
+    private:
+        size_t pos = 0; ///< Iterator of the curent pos
+        Token curent_token_; ///< The curent token
+        TList tokens_list_; ///< All tokens that will parsed
+        bool is_code_ended_ = false; ///< Is the parsing operation Done
+
+    public:
+
+        Parser(TList& tokens_list, const std::string& FilePath); ///< Constructure
+        ReturnResult<PNode> get_module_node(const std::string& FilePath); ///< Get the clear program node that contain all parsed code
+        ReturnResult<Node> get_expretion(const std::string& FilePath); ///< Get node
+
+    private:
+
+        /// Basic functions
+        void advence(); ///< Go to the next token
+        const Token& curent(); ///< Get the curent token
+        const Token& peek(size_t offset=1); ///< Return the next <offset> token
+        bool check(TokenType type); ///< Check the type of curent token
+        ReturnResult<Token> consume(TokenType type); ///< Return curent token, check its type, and advence
+        bool isAsEnd(); ///< is the code ended
+
+        /// Expression Grammars
+
+        /// Get primary expressions:
+        /// Literals, variables, parenthesized expressions,
+        /// function calls, and the existing language statements.
+        ReturnResult<Node> get_primary(const std::string& FilePath);
+
+        /// Get exponentiation expressions:
+        /// Power operator (**).
+        ReturnResult<Node> get_power(const std::string& FilePath);
+
+        /// Get unary expressions:
+        /// Unary plus (+x) and unary minus (-x).
+        ReturnResult<Node> get_unary(const std::string& FilePath);
+
+        /// Get multiplicative expressions:
+        /// Multiplication (*), division (/), integer division (//),
+        /// and modulo operations (%, div, mod).
+        ReturnResult<Node> get_multiplicative(const std::string& FilePath);
+
+        /// Get additive expressions:
+        /// Addition (+) and subtraction (-).
+        ReturnResult<Node> get_additive(const std::string& FilePath);
+
+        /// Get relational comparison expressions:
+        /// Less than (<), greater than (>),
+        /// less than or equal (<=), greater than or equal (>=).
+        ReturnResult<Node> get_comparison(const std::string& FilePath);
+
+        /// Get equality comparison expressions:
+        /// Equal to (==) and not equal to (!=).
+        ReturnResult<Node> get_equality(const std::string& FilePath);
+
+        /// Get logical AND expressions:
+        /// Logical AND (AND, &&).
+        ReturnResult<Node> get_logical_and(const std::string& FilePath);
+
+        /// Get logical OR expressions:
+        /// Logical OR (OR, ||).
+        ReturnResult<Node> get_logical_or(const std::string& FilePath);
+
+
+        ReturnResult<Node> get_functioncall_node(const std::string& FilePath); ///< Get the function call node when found CALL keyword
+        ReturnResult<Node> get_value_node(const std::string& FilePath); ///< Get the pure value node
+        ReturnResult<Node> get_set_variable_node(const std::string& FilePath, bool is_const); ///< Get the set or reset variable node when found SET keyword
+        ReturnResult<Node> get_get_variable_node(const std::string& FilePath); ///< Get the node that get the variable value from symbols table
+        ReturnResult<Node> get_user_function_node(const std::string& FilePath); ///< Get the node of user's function that put the function in symbol table
+        ReturnResult<Node> get_return_noode(const std::string& FilePath); ///< Get the node of returning value in function
+        ReturnResult<Node> get_if_statment_node(const std::string& FilePath); ///< Get the node of `IF` keyword (if statment)
+        ReturnResult<Node> get_while_loop_node(const std::string& FilePath); ///< Get the node of While loop `WHILE`
+        ReturnResult<Node> get_for_loop_node(const std::string& FilePath); ///< Get the node of for loop `FOR`
+        ReturnResult<Node> get_break_loop_node(const std::string& FilePath); ///< Get the node of break a loop `BREAK`
+        ReturnResult<Node> get_continue_loop_node(const std::string& FilePath); ///< Get the node of continue a loop `CONTINUE`
+};

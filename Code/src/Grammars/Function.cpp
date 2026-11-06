@@ -3,10 +3,10 @@
 // ==================================================================
 
 // == Locals ==
-#include "Parser.hpp"
+#include "detail/parser.hpp"
 
 // Nodes
-#include "ASTNodes/FunctionCallNode.hpp"
+#include "detail/ast/function_call_node.hpp"
 
 // ==================================================================
 // Parse `CALL`

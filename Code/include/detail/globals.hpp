@@ -17,35 +17,11 @@
  * - Type compatibility and conversion functions.
  */
 
-// ==================================================================
-// Macros
-// ==================================================================
+#include "detail/api_export.hpp"
+#include "valtcommand/result.hpp"
+#include "valtcommand/value.hpp"
 
-/**
- * @brief Defines the API visibility for the compiler library.
- *
- * When building the compiler DLL, this macro exports symbols.
- * When using the compiler DLL, it imports symbols on Windows.
- *
- * On non-Windows platforms, symbol visibility is configured accordingly.
- */
-#ifdef BUILDING_COMPILER_DLL
-    #if defined(_WIN32)
-        #define API __declspec(dllexport)
-    #else
-        #define API __attribute__((visibility("default")))
-    #endif
-#else
-    #if defined(_WIN32)
-        #define API __declspec(dllimport)
-    #else
-        #define API
-    #endif
-#endif
-
-// ==================================================================
-// Include necessary headers
-// ==================================================================
+/// Include necessary headers
 
 /**
  * @brief Standard and third-party dependencies required by this file.
@@ -59,9 +35,7 @@
 #include <variant>
 #include <fmt/format.h>
 
-// ==================================================================
-// Forward declarations
-// ==================================================================
+/// Forward declarations
 
 /**
  * @brief Base AST node.
@@ -82,74 +56,7 @@ namespace Scopes {
     class Scope;
 }
 
-// ==================================================================
-// Types
-// ==================================================================
-
-/**
- * @namespace Errors
- * @brief Contains error-related structures and definitions.
- */
-namespace Errors {
-
-    /**
-     * @struct ErrorInfo
-     * @brief Contains detailed information about a runtime or interpreter error.
-     *
-     * Stores the error type, message, additional information, and the
-     * source location where the error occurred.
-     */
-    struct ErrorInfo {
-
-        /**
-         * @brief Error category or type.
-         */
-        std::string type;
-
-        /**
-         * @brief Main error message.
-         */
-        std::string message;
-
-        /**
-         * @brief Additional information about the error.
-         */
-        std::string comment;
-
-        /**
-         * @brief Source line where the error occurred.
-         */
-        std::size_t line = 0;
-
-        /**
-         * @brief Source column where the error occurred.
-         */
-        std::size_t column = 0;
-
-        /**
-         * @brief Length of the source region associated with the error.
-         */
-        std::size_t length = 1;
-    };
-}
-
-/**
- * @brief Represents a runtime value supported by ValtCommand.
- *
- * The value can contain:
- * - std::monostate: Represents an empty or null value.
- * - int64_t: Represents an integer.
- * - long double: Represents a floating-point number.
- * - std::string: Represents a string.
- * - bool: Represents a boolean.
- */
-using Value = std::variant<
-    std::monostate,
-    int64_t,
-    long double,
-    std::string,
-    bool
->;
+/// Types
 
 /**
  * @enum ExecState
@@ -236,9 +143,7 @@ struct ReturnResult {
     Errors::ErrorInfo error_info;
 };
 
-// ==================================================================
-// External function types
-// ==================================================================
+/// External function types
 
 /**
  * @struct ExternalFunInType
@@ -280,9 +185,7 @@ struct ExternalFunInType {
 using ExternalFuncType =
     std::function<ReturnResult<Value>(ExternalFunInType)>;
 
-// ==================================================================
-// Enums
-// ==================================================================
+/// Enums
 
 /**
  * @enum TokenType
@@ -408,9 +311,7 @@ enum class TokenType {
     UNKNOWN
 };
 
-// ==================================================================
-// Global variables
-// ==================================================================
+/// Global variables
 
 /**
  * @brief Maps token types to their corresponding string representations.
@@ -419,9 +320,7 @@ enum class TokenType {
  */
 extern std::unordered_map<TokenType, std::string> TokenTypesStr;
 
-// ==================================================================
-// Structures
-// ==================================================================
+/// Structures
 
 /**
  * @struct Token
@@ -473,9 +372,7 @@ struct Token {
     }
 };
 
-// ==================================================================
-// Global token definitions
-// ==================================================================
+/// Global token definitions
 
 /**
  * @brief Maps token types to their string representations.
@@ -514,9 +411,7 @@ extern std::unordered_map<std::string, Token> __complex_2_symbols__;
  */
 extern std::unordered_map<char, char> __backslashed_symbols__;
 
-// ==================================================================
-// Functions
-// ==================================================================
+/// Functions
 
 /**
  * @brief Checks whether a string represents a supported data type.

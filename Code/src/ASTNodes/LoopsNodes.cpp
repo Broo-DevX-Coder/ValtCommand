@@ -3,8 +3,8 @@
 // ==================================================================
 
 // == Locals ==
-#include "ASTNodes/LoopsNodes.hpp"
-#include "Errors.hpp"
+#include "detail/ast/loops_nodes.hpp"
+#include "detail/errors.hpp"
 
 // == Libs ==
 #include <sstream>

@@ -3,11 +3,11 @@
 // ==================================================================
 
 // == Locals ==
-#include "Parser.hpp"
-#include "Errors.hpp"
+#include "detail/parser.hpp"
+#include "detail/errors.hpp"
 
 // Nodes
-#include "ASTNodes/VariableNode.hpp"
+#include "detail/ast/variable_node.hpp"
 
 // ==================================================================
 // Get Set Variable Node

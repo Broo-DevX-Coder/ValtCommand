@@ -3,11 +3,11 @@
 // ==================================================================
 
 // == Locals ==
-#include "Parser.hpp"
-#include "Errors.hpp"
+#include "detail/parser.hpp"
+#include "detail/errors.hpp"
 
 // Nodes
-#include "ASTNodes/IfElseNode.hpp"
+#include "detail/ast/if_else_node.hpp"
 
 // ==================================================================
 // Parse `IF`

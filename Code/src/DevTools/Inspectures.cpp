@@ -3,7 +3,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "API/DevTools/Inspectures.hpp"
+#include "valtcommand/debugger/inspect.hpp"
 
 // == Libs ==
 #include <sstream>

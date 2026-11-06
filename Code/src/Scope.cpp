@@ -3,8 +3,9 @@
 // ==================================================================
 
 // == Locals ==
-#include "Scope.hpp"
-#include "Errors.hpp"
+#include "valtcommand/scope.hpp"
+#include "detail/ast/ast_node.hpp"
+#include "detail/errors.hpp"
 
 // ==================================================================
 // Scope functions

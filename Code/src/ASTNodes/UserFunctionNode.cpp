@@ -3,8 +3,8 @@
 // ==================================================================
 
 // == Locals ==
-#include "ASTNodes/UserFunctionNode.hpp"
-#include "Errors.hpp"
+#include "detail/ast/user_function_node.hpp"
+#include "detail/errors.hpp"
 
 // == Libs ==
 #include <sstream>

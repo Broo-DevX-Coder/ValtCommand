@@ -1,14 +1,14 @@
 // ==================================================================
 // Include necessary headers
 // ==================================================================
-#include "Parser.hpp"
-#include "Errors.hpp"
+#include "detail/parser.hpp"
+#include "detail/errors.hpp"
 
 // ==================================================================
 // AST Nodes
 // ==================================================================
-#include "ASTNodes/BinaryOpsNode.hpp"
-#include "ASTNodes/OneSideOpsNodes.hpp"
+#include "detail/ast/binary_ops_node.hpp"
+#include "detail/ast/one_side_ops_nodes.hpp"
 
 // ==================================================================
 // Libraries

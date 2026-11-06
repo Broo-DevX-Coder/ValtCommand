@@ -4,8 +4,8 @@
 // ==================================================================
 
 // == Locals ==
-#include "ASTNodes/OneSideOpsNodes.hpp"
-#include "Errors.hpp"
+#include "detail/ast/one_side_ops_nodes.hpp"
+#include "detail/errors.hpp"
 
 // == Libs ==
 #include <sstream>

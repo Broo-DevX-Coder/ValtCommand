@@ -7,7 +7,7 @@
 #include <string>
 
 // == Locals ==
-#include "ASTNodes/ASTNode.hpp"
+#include "detail/ast/ast_node.hpp"
 
 // ==================================================================
 // Runtime Tracker Helper

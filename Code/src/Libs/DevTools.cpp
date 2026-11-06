@@ -3,8 +3,8 @@
 // ==================================================================
 
 // == Locals ==
-#include "Libs/DevTools.hpp" 
-#include "API/DevTools/Inspectures.hpp"
+#include "detail/builtins/devtools.hpp" 
+#include "valtcommand/debugger/inspect.hpp"
 
 
 // ==================================================================

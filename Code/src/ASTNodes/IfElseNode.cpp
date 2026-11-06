@@ -3,8 +3,8 @@
 // ==================================================================
 
 // == Locals ==
-#include "ASTNodes/IfElseNode.hpp"
-#include "Errors.hpp"
+#include "detail/ast/if_else_node.hpp"
+#include "detail/errors.hpp"
 
 // == Libs ==
 #include <sstream>

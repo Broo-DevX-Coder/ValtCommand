@@ -3,10 +3,10 @@
 // ==================================================================
 
 // == Locals ==
-#include "Parser.hpp"
+#include "detail/parser.hpp"
 
 // Nodes
-#include "ASTNodes/ValueNode.hpp"
+#include "detail/ast/value_node.hpp"
 
 
 // ==================================================================

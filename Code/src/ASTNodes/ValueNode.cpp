@@ -3,8 +3,8 @@
 // ==================================================================
 
 // == Locals ==
-#include "ASTNodes/ValueNode.hpp"
-#include "Errors.hpp"
+#include "detail/ast/value_node.hpp"
+#include "detail/errors.hpp"
 
 // == Libs ==
 #include <sstream>

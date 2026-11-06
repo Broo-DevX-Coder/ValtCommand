@@ -1,56 +1,17 @@
+/**
+ * @file format.hpp
+ * @brief format declarations.
+ */
+
 #pragma once
 
-// ==================================================================
-// Macros
-// ==================================================================
+#include "detail/api_export.hpp"
 
-/**
- * @def API
- * @brief Controls symbol visibility for the ValtCommand shared library.
- *
- * This macro determines whether a function or class is exported from
- * the ValtCommand shared library or imported by a consuming application.
- *
- * Behavior:
- * - When BUILDING_COMPILER_DLL is defined:
- *   - Windows: expands to __declspec(dllexport).
- *   - Other platforms: expands to __attribute__((visibility("default"))).
- *
- * - When BUILDING_COMPILER_DLL is not defined:
- *   - Windows: expands to __declspec(dllimport).
- *   - Other platforms: expands to nothing.
- *
- * @note Define BUILDING_COMPILER_DLL when compiling the ValtCommand
- *       shared library itself.
- *
- * @note On non-Windows platforms, the macro explicitly exports symbols
- *       when building the library and has no effect for consumers.
- */
-#ifndef API
-    #ifdef BUILDING_COMPILER_DLL
-        #if defined(_WIN32)
-            #define API __declspec(dllexport)
-        #else
-            #define API __attribute__((visibility("default")))
-        #endif
-    #else
-        #if defined(_WIN32)
-            #define API __declspec(dllimport)
-        #else
-            #define API
-        #endif
-    #endif
-#endif
+/// Includes
 
-// ==================================================================
-// Includes
-// ==================================================================
+#include "valtcommand/runtime.hpp"
 
-#include "API/Runtime.hpp"
-
-// ==================================================================
-// Namespace: Lib::Format
-// ==================================================================
+/// Namespace: Lib::Format
 
 namespace Lib {
 
@@ -148,6 +109,6 @@ namespace Lib {
          */
         API ReturnResult<Value> format_fn(ExternalFunInType input);
 
-    } // namespace Format
+    } ///< namespace Format
 
-} // namespace Lib
+} ///< namespace Lib

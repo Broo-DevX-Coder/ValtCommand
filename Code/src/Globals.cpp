@@ -3,7 +3,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "API/globals.hpp"
+#include "detail/globals.hpp"
 
 // == Libs ==
 #include <algorithm>

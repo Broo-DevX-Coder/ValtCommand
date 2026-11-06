@@ -1,8 +1,10 @@
 function(create_module NAME FOLDER)
 
+    # Engine implementation and its internal/public declarations all remain
+    # under the project source tree and include/ respectively.
     file(GLOB_RECURSE SOURCES
         ${FOLDER}/*.cpp
-        ../include/${FOLDER}/*.hpp
+        ${PROJECT_SOURCE_DIR}/include/*.hpp
     )
 
     add_library(${NAME} SHARED ${SOURCES})
@@ -10,7 +12,7 @@ function(create_module NAME FOLDER)
     target_include_directories(
         ${NAME}
         PUBLIC
-        ../include
+        ${PROJECT_SOURCE_DIR}/include
     )
 
     target_compile_definitions(

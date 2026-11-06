@@ -3,8 +3,8 @@
 // ==================================================================
 
 // == Locals ==
-#include "Parser.hpp"
-#include "Errors.hpp"
+#include "detail/parser.hpp"
+#include "detail/errors.hpp"
 
 // ==================================================================
 // Parses's functions

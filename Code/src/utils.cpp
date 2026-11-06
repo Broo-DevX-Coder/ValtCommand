@@ -3,7 +3,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "utils.hpp"
+#include "detail/utils.hpp"
 
 // == Libs ==
 #include <sstream>
