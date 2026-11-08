@@ -160,8 +160,9 @@
 ### Documentation
 
 - ✅ Runtime debugger, event tracker, breakpoint, and inspector guide (`DOCs/DevTools/Runtime_Debugger_and_Inspectors.md`)
-- Language Reference
-- Standard Library Documentation (all built-in functions and mathematical constants)
+- ✅ Language Reference
+- ✅ Standard Library Documentation (all built-in functions and mathematical constants)
+- Create CLI tool and its DOCs 
 - Embedding Guide
 - Examples & Tutorials
 

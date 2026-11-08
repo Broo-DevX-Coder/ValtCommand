@@ -7,6 +7,7 @@ using namespace vltc;
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <CLI/CLI.hpp>
 
 int main(int argc, char* argv[]) {
    if (argc < 2) {
@@ -32,7 +33,6 @@ int main(int argc, char* argv[]) {
     auto result = r.run_file(fp);
     if (!result) {
         std::cout << Errors::formatter(result.error.info,source) << std::endl;
-        std::cout << result.error.message << std::endl;
         return 1;
     }
     return 0;

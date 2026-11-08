@@ -27,7 +27,7 @@ FUNCTION power (
 END
     
 // Ex: Calculate 2 power 3 `should be 8`
-CALL print 
+CALL println
     value<float>: CALL power 
         num<float>:2
         power<int>:3
