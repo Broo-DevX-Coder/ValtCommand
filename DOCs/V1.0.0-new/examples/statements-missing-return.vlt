@@ -1,0 +1,4 @@
+// Version: 1.0.0
+FUNCTION no_return()->int
+    CALL println value<str>:"body is not executed" END
+END

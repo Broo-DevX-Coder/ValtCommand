@@ -1,0 +1,8 @@
+// Version: 1.0.0
+SET value<int> = 7
+FUNCTION update()->int
+    SET value = GET value + 1
+    RETURN GET value
+END
+CALL println value<int>:CALL update END END
+CALL println value<int>:GET value END

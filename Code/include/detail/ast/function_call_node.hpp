@@ -15,6 +15,8 @@
 /// Function Call Argument Node
 
 /// Function Call Argument Node
+namespace vltc {
+
 class FunctionCallArgumentNode: public ASTNode
 {
     public:
@@ -55,3 +57,5 @@ class FunctionCallNode: public ASTNode
         ReturnResult<Value> exec(NodesContext Context) override; ///< Execute node
         ASTNode* clone() override; ///< Clone the class or get a new copy from them
 };
+
+} // namespace vltc

@@ -13,6 +13,8 @@
 
 /// Sign operation types
 
+namespace vltc {
+
 enum class SignOpsTypes {
     POSITIVE,
     NEGATIVE
@@ -101,3 +103,5 @@ public:
     /// Create a deep copy of the node
     ASTNode* clone() override;
 };
+
+} // namespace vltc

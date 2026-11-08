@@ -1,0 +1,11 @@
+// Version: 1.0.0
+FUNCTION twice(value<int>)->int
+    RETURN GET value * 2
+END
+FOR
+    SET i<int> = 1;
+    GET i < 4;
+    SET i = GET i + 1
+THEN
+    CALL println value<int>:CALL twice value<int>:GET i END END
+END

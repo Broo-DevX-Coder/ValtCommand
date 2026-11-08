@@ -1,0 +1,3 @@
+// Version: 1.0.0
+SET x<int> = 1
+SET x<float> = 2.5

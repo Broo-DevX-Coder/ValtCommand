@@ -1,0 +1,7 @@
+// Version: 1.0.0
+CALL println value<float>:1 + 2.5 END
+CALL println value<float>:1 / 2 END
+CALL println value<float>:7 %% 2 END
+CALL println value<float>:7 % 2 END
+CALL println value<float>:2 ** 3 END
+CALL println value<float>:GET INT_MAX + 1 END

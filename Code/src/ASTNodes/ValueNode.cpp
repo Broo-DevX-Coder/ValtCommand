@@ -15,6 +15,7 @@
 // Runtime Tracker Helper
 // ==================================================================
 
+namespace vltc {
 static void emit_event(
     NodesContext& Context,
     DevTools::EventsT type,
@@ -401,3 +402,5 @@ ASTNode*
 BooleanValueNode::clone() {
     return new BooleanValueNode(file, END_token, vToken);
 }
+
+} // namespace vltc

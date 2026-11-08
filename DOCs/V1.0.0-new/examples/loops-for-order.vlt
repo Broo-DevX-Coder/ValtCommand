@@ -1,0 +1,21 @@
+// Version: 1.0.0
+SET i<int> = -1
+FUNCTION init()->int
+    CALL println value<str>:"init" END
+    RETURN 0
+END
+FUNCTION test()->bool
+    CALL println value<str>:"condition" END
+    RETURN GET i < 2
+END
+FUNCTION step()->int
+    CALL println value<str>:"step" END
+    RETURN GET i + 1
+END
+FOR
+    SET i = CALL init END;
+    CALL test END;
+    SET i = CALL step END
+THEN
+    CALL println value<str>:"body" END
+END

@@ -1,0 +1,3 @@
+// Version: 1.0.0
+RETURN 5
+CALL println value<str>:"after top-level RETURN" END

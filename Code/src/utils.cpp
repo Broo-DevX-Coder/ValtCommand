@@ -13,6 +13,7 @@
 // ==================================================================
 
 // Create a random number
+namespace vltc {
 size_t
 Utils::random_num(
     size_t from,
@@ -42,3 +43,5 @@ Utils::split_lines(
 
     return lines;
 }
+
+} // namespace vltc

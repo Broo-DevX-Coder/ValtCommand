@@ -1,0 +1,10 @@
+ERROR
+
+NameError: 'missing' is not defined
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  CALL println value<int>:GET missing END
+--|                              ^^^^^^^
+------------------------------------------
+Unknown variable
+

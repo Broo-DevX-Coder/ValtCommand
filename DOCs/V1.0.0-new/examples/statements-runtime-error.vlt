@@ -1,0 +1,3 @@
+// Version: 1.0.0
+CALL println value<str>:"before runtime error" END
+CALL println value<float>:1 / 0 END

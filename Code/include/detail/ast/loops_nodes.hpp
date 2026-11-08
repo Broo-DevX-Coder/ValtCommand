@@ -15,6 +15,8 @@
 /// Classes of break and continue node
 
 /// Break loop
+namespace vltc {
+
 class BreakLoopNode: public ASTNode {
     private:
         Token BreakT;
@@ -92,3 +94,5 @@ class ForLoopsNode: public ASTNode {
         ReturnResult<Value> exec(NodesContext Context) override; ///< execute the loop
         ASTNode* clone() override; ///< Clone the class or get a new copy from them
 };
+
+} // namespace vltc

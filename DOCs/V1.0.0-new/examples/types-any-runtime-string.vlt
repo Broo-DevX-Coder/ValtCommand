@@ -1,0 +1,5 @@
+// Version: 1.0.0
+FUNCTION try_sqrt(value<any>)->float
+    RETURN CALL sqrt x<any>:GET value END
+END
+CALL try_sqrt value<str>:"bad" END

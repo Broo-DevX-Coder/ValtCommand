@@ -6,6 +6,8 @@
 
 #include "valtcommand/value.hpp"
 
+namespace vltc {
+
 namespace Runtime {
 
     /**
@@ -21,3 +23,5 @@ namespace Runtime {
 
 
 }
+
+} // namespace vltc

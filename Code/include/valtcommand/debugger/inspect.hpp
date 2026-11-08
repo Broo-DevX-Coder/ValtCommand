@@ -17,6 +17,8 @@
 
 /// Namespace
 
+namespace vltc {
+
 namespace DevTools {
 
     /// Inspect return
@@ -34,3 +36,5 @@ namespace DevTools {
     /// Get visible functions in entred scope
     InspecturesReturn FunctionsInspect(Scopes::Scope* scope);
 }
+
+} // namespace vltc

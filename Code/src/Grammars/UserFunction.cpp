@@ -13,6 +13,7 @@
 // ==================================================================
 
 // Get the node of user's function that put the function in symbol table
+namespace vltc {
 ReturnResult<Parser::Node>
 Parser::get_user_function_node(const std::string& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return result object
@@ -304,3 +305,5 @@ Parser::get_return_noode(const std::string& FilePath) {
         )
     };
 }
+
+} // namespace vltc

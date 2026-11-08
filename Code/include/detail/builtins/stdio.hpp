@@ -16,6 +16,8 @@
 #include <functional>
 
 /// Namespace
+namespace vltc {
+
 namespace Lib{
     
     /// All standard input output functions
@@ -32,3 +34,5 @@ namespace Lib{
  
     }
 }
+
+} // namespace vltc

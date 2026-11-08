@@ -1,0 +1,7 @@
+ERROR
+
+ValueError: invalid result in power operation
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  CALL println value<float>:GET NAN ** 2 END
+--|                            ^^^

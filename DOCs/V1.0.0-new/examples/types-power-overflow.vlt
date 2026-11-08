@@ -1,0 +1,2 @@
+// Version: 1.0.0
+CALL println value<float>:2 ** 20000 END

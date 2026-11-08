@@ -15,6 +15,8 @@
 /// Structs, enums and types
 
 /// All types of comparions types
+namespace vltc {
+
 enum class ComparitonOpsTypes {
     EQUAL,
     NOT_EQUAL,
@@ -105,3 +107,5 @@ public:
     ReturnResult<Value> exec(NodesContext Context) override; ///< Execute the power operation and return the result
     ASTNode* clone() override; ///< Create a deep copy of the node
 };
+
+} // namespace vltc

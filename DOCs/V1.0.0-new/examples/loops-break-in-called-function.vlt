@@ -1,0 +1,21 @@
+// Version: 1.0.0
+FUNCTION do_break()->void
+    BREAK
+    CALL println value<str>:"after function BREAK" END
+END
+FUNCTION do_continue()->void
+    CONTINUE
+    CALL println value<str>:"after function CONTINUE" END
+END
+FOR
+    SET i<int> = 0;
+    GET i < 2;
+    SET i = GET i + 1
+THEN
+    IF GET i == 0 THEN
+        CALL do_break END
+    ELSE THEN
+        CALL do_continue END
+    END
+    CALL println value<int>:GET i END
+END

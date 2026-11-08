@@ -15,6 +15,8 @@
 /// Class
 
 /// If satments's node class
+namespace vltc {
+
 class IfStatmentsNode: public ASTNode{
     public:
         using Node = std::unique_ptr<ASTNode>;
@@ -36,3 +38,5 @@ class IfStatmentsNode: public ASTNode{
         ReturnResult<Value> exec(NodesContext Context) override; ///< execute condition and execute rest if condition is true
         ASTNode* clone() override; ///< Clone the class or get a new copy from them
 };
+
+} // namespace vltc

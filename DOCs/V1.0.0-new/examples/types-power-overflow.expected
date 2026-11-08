@@ -1,0 +1,7 @@
+ERROR
+
+OverflowError: power operation result is out of range
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  CALL println value<float>:2 ** 20000 END
+--|                            ^

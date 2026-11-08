@@ -1,0 +1,7 @@
+ERROR
+
+SyntaxError: unexpected token 'IMPORT'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  IMPORT example
+--|  ^^^^^^

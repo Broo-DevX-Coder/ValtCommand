@@ -1,0 +1,3 @@
+// Version: 1.0.0
+SET_CONST limit<int> = 5
+CALL println value<int>:GET limit END

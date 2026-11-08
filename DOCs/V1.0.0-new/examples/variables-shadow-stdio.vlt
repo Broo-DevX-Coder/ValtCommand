@@ -1,0 +1,3 @@
+// Version: 1.0.0
+SET STDIO<int> = 1
+CALL println value<str>:"STDIO variable did not block println" END

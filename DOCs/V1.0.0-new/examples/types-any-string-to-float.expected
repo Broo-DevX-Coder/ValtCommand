@@ -1,0 +1,22 @@
+ERROR
+[stderr]
+/home/broodev/Desktop/PG/ValtCommand/Code/src/Globals.cpp:240:46: runtime error: load of null pointer of type 'int64_t'
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==6==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x73ce445c1677 bp 0x7ffd10b85cf0 sp 0x7ffd10b85c00 T0)
+==6==The signal is caused by a READ memory access.
+==6==Hint: address points to the zero page.
+    #0 0x73ce445c1677 in vltc::reconsiliation_int_float(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::variant<std::monostate, long, long double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, bool>&) /home/broodev/Desktop/PG/ValtCommand/Code/src/Globals.cpp:240
+    #1 0x73ce4455f262 in vltc::SetVariableNode::exec[abi:cxx11](vltc::NodesContext) /home/broodev/Desktop/PG/ValtCommand/Code/src/ASTNodes/VariableNode.cpp:272
+    #2 0x73ce444f5191 in vltc::ModuleNode::exec[abi:cxx11](vltc::NodesContext) /home/broodev/Desktop/PG/ValtCommand/Code/src/ASTNodes/ModuleNode.cpp:151
+    #3 0x73ce446b8047 in vltc::Runtime::RunTime::execute_code() /home/broodev/Desktop/PG/ValtCommand/Code/src/Runtime.cpp:332
+    #4 0x73ce446b9572 in vltc::Runtime::RunTime::execute_source(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, vltc::Runtime::ScopeMode, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) /home/broodev/Desktop/PG/ValtCommand/Code/src/Runtime.cpp:368
+    #5 0x73ce446bb05d in vltc::Runtime::RunTime::run_file(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, vltc::Runtime::ScopeMode) /home/broodev/Desktop/PG/ValtCommand/Code/src/Runtime.cpp:413
+    #6 0x641a6ac97315 in main /home/broodev/Desktop/PG/ValtCommand/Code/app/main.cpp:34
+    #7 0x73ce42629d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #8 0x73ce42629e3f in __libc_start_main_impl ../csu/libc-start.c:392
+    #9 0x641a6ac967e4 in _start (/home/broodev/Desktop/PG/ValtCommand/Code/build/bin/ValtCommand+0xe7e4)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /home/broodev/Desktop/PG/ValtCommand/Code/src/Globals.cpp:240 in vltc::reconsiliation_int_float(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::variant<std::monostate, long, long double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, bool>&)
+==6==ABORTING

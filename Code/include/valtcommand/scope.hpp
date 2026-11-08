@@ -10,9 +10,16 @@
 /// Include neccessary headers
 
 /// == Locals ==
-#include "detail/globals.hpp"
+#include "valtcommand/globals.hpp"
+
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 /** @namespace Scopes @brief Runtime scopes and their symbol tables. */
+namespace vltc {
+
 namespace Scopes {
 
     namespace SymbolTableTypes {
@@ -102,3 +109,5 @@ namespace Scopes {
             ReturnResult<SymbolTableTypes::RVar*> search_var(Token& NameToken);
     };
 }
+
+} // namespace vltc

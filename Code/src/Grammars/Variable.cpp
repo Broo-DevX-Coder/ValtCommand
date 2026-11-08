@@ -13,6 +13,7 @@
 // Get Set Variable Node
 // ==================================================================
 
+namespace vltc {
 ReturnResult<Parser::Node>
 Parser::get_set_variable_node(const std::string& FilePath,
     bool is_const
@@ -157,3 +158,5 @@ Parser::get_get_variable_node(const std::string& FilePath) {
         std::make_unique<GetVariableNode>(FilePath, END_token, var_name_t.value)
     };
 }
+
+} // namespace vltc

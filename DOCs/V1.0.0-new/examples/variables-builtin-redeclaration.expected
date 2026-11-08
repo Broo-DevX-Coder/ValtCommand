@@ -1,0 +1,7 @@
+ERROR
+
+VariableError: Variable 'PI' already defined in this scope
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  SET PI<float> = 4
+--|      ^^

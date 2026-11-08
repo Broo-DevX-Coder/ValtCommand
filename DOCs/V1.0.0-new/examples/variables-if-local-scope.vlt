@@ -1,0 +1,5 @@
+// Version: 1.0.0
+IF True THEN
+    SET local<int> = 12
+END
+CALL println value<int>:GET local END

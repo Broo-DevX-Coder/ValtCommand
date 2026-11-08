@@ -1,0 +1,6 @@
+// Version: 1.0.0
+FUNCTION echo(value<int>)->int
+    RETURN GET value
+END
+CALL println value<int>:CALL echo value<float>:2.9 END END
+CALL println value<int>:CALL echo value<float>:-2.9 END END

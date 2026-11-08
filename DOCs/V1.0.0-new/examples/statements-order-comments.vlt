@@ -1,0 +1,5 @@
+// Version: 1.0.0
+
+SET value<int> = 1 SET value = 2 // line comment after statements
+/* Block comment between statements. */
+CALL println value<int>:GET value END

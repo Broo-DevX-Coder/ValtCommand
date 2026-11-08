@@ -1,0 +1,12 @@
+// Version: 1.0.0
+SET body<int> = 0
+SET steps<int> = 0
+FOR
+    CALL println value<str>:"init" END;
+    False;
+    SET steps = GET steps + 1
+THEN
+    SET body = GET body + 1
+END
+CALL println value<int>:GET body END
+CALL println value<int>:GET steps END

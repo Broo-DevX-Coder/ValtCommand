@@ -14,6 +14,23 @@
 // ==================================================================
 
 // Get the node of `IF` keyword (if statment)
+namespace vltc {
+static ReturnResult<Parser::Node> missing_end_error(
+    const Token& previous,
+    const std::string& construct
+) {
+    auto err = Errors::SyntaxError(
+        "(end of code!)",
+        previous.line,
+        previous.column + previous.value.size(),
+        1,
+        "Expected `END` to close the " + construct
+    );
+    ReturnResult<Parser::Node> result = {err.msg, false, nullptr};
+    result.error_info = err.info;
+    return result;
+}
+
 ReturnResult<Parser::Node>
 Parser::get_if_statment_node(const std::string& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
@@ -97,7 +114,7 @@ Parser::get_if_statment_node(const std::string& FilePath) {
 
         // Raise error if code ended
         if (isAsEnd())
-            return {"SyntaxError: forgot to add END in after of ELSE Satament",false,nullptr};
+            return missing_end_error(tokens_list_[pos - 1], "ELSE statement.");
 
         // Jump on `END`
         consume_result = consume(TokenType::END_BLOCK);
@@ -112,7 +129,7 @@ Parser::get_if_statment_node(const std::string& FilePath) {
     } else {
         // Raise error if code ended
         if (isAsEnd())
-            return {"SyntaxError: forgot to add END in after of IF Satament",false,nullptr};
+            return missing_end_error(tokens_list_[pos - 1], "IF statement.");
 
         // Jump on `END`
         consume_result = consume(TokenType::END_BLOCK);
@@ -130,3 +147,5 @@ Parser::get_if_statment_node(const std::string& FilePath) {
         std::make_unique<IfStatmentsNode>(FilePath, END_token, condition_FT,condition_N_r.value,statments,else_statments)
     };
 };
+
+} // namespace vltc

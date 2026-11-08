@@ -1,0 +1,6 @@
+// Version: 1.0.0
+FUNCTION calculate()->int
+    RETURN 42
+END
+CALL calculate END
+CALL println value<str>:"after CALL statement" END

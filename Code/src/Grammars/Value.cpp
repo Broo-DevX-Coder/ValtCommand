@@ -13,6 +13,7 @@
 // Get the pure value's node
 // ==================================================================
 
+namespace vltc {
 ReturnResult<Parser::Node>
 Parser::get_value_node(const std::string& FilePath) {
     if (curent().Type == TokenType::STRING) {
@@ -39,3 +40,5 @@ Parser::get_value_node(const std::string& FilePath) {
     return {"",true,std::make_unique<BooleanValueNode>(FilePath, END_token, value_t.value)};
 
 }
+
+} // namespace vltc

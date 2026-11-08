@@ -14,6 +14,7 @@
 // ==================================================================
 // Private helpers (visible only in this file)
 // ==================================================================
+namespace vltc {
 namespace {
 
     using Fn = ReturnResult<Value>;
@@ -150,3 +151,5 @@ Lib::Format::format_fn(
 
     return ok(Value{std::move(result)});
 }
+
+} // namespace vltc

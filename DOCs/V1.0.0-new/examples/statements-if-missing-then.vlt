@@ -1,0 +1,4 @@
+// Version: 1.0.0
+IF True
+    CALL println value<str>:"body" END
+END

@@ -11,6 +11,7 @@
 // ==================================================================
 
 // Constructure
+namespace vltc {
 Parser::Parser(
     TList& tl_,
     const std::string& FilePath
@@ -65,12 +66,24 @@ Parser::check(TokenType type) {
 ReturnResult<Token>
 Parser::consume(TokenType type) {
     if (curent().Type != type){
-        auto err = Errors::SyntaxError(
-            isAsEnd()?"(end of code!)":curent_token_.value,
-            curent_token_.line,
-            curent_token_.column,
-            curent_token_.value.size()
-        );
+        const bool at_end = curent_token_.Type == TokenType::END_CODE || isAsEnd();
+        size_t error_line = curent_token_.line;
+        size_t error_column = curent_token_.column;
+        if (at_end && pos > 0) {
+            const Token& previous = tokens_list_[pos - 1];
+            error_line = previous.line;
+            error_column = previous.column + previous.value.size();
+        }
+        auto err = curent_token_.Type == TokenType::UNTERMINATED_STRING ||
+                   curent_token_.Type == TokenType::UNTERMINATED_COMMENT
+            ? Errors::SyntaxError(curent_token_)
+            : Errors::SyntaxError(
+                at_end ? "(end of code!)" : curent_token_.value,
+                error_line,
+                error_column,
+                at_end ? 1 : curent_token_.value.size(),
+                at_end ? "Unexpected end of input while parsing" : ""
+            );
 
         ReturnResult<Token> re = {err.msg, false, curent()};
         re.error_info = err.info;
@@ -123,3 +136,5 @@ Parser::get_module_node(const std::string& FilePath) {
         )
     };
 }
+
+} // namespace vltc

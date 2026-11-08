@@ -1,0 +1,21 @@
+// Version: 1.0.0
+FOR
+    SET i<int> = 0;
+    GET i < 2;
+    SET i = GET i + 1
+THEN
+    FOR
+        SET j<int> = 0;
+        GET j < 3;
+        SET j = GET j + 1
+    THEN
+        IF GET j == 0 THEN
+            CONTINUE
+        END
+        IF GET j == 2 THEN
+            BREAK
+        END
+        CALL println value<int>:GET j END
+    END
+    CALL println value<str>:"outer continues" END
+END

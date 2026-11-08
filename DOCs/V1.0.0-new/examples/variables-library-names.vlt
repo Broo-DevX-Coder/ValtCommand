@@ -1,0 +1,4 @@
+// Version: 1.0.0
+SET Math<int> = 4
+SET STDIO<int> = 6
+CALL println value<int>:GET Math + GET STDIO END

@@ -1,0 +1,7 @@
+// Version: 1.0.0
+FOR
+    SET i<int> = 0;
+    1;
+    SET i = GET i + 1
+THEN
+END

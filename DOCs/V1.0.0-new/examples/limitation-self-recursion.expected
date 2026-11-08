@@ -1,0 +1,10 @@
+ERROR
+
+NameError: 'recurse' is not defined
+------------------------------------------
+2-|  FUNCTION recurse()->int
+3-|      RETURN CALL recurse END
+--|                  ^^^^^^^
+------------------------------------------
+Unknown function
+

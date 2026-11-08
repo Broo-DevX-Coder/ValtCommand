@@ -1,0 +1,10 @@
+ERROR
+
+TypeError: expected 'int | float', got 'any'
+------------------------------------------
+2-|  SET value<any> = 5
+3-|  SET result<int> = GET value + 1
+--|                    ^^^
+------------------------------------------
+This operation does not support types other than int or float
+

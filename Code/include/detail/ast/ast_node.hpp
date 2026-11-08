@@ -17,11 +17,13 @@
 #include <nlohmann/json.hpp>
 
 /// == Locals ==
-#include "detail/globals.hpp"
+#include "valtcommand/globals.hpp"
 #include "valtcommand/scope.hpp"
 #include "valtcommand/debugger/debugger.hpp"
 
 /// ASTNodes Types
+namespace vltc {
+
 enum ASTNodesTypes {
     NT__ModuleNode,
     NT__FunctionCallNode,
@@ -108,3 +110,5 @@ class ModuleNode : public ASTNode
         ReturnResult<Value> exec(NodesContext Context) override; ///< Execute node
         ASTNode* clone() override; ///< Clone the class or get a new copy from them
 };
+
+} // namespace vltc

@@ -15,6 +15,7 @@
 // Runtime Tracker helper
 // ==================================================================
 
+namespace vltc {
 static void emit_event(
     NodesContext& Context,
     DevTools::EventsT type,
@@ -478,7 +479,7 @@ ResetVariableNode::accept(
             NameToken.line
         );
 
-        return {
+        ReturnResult<bool> re = {
             err.reset_var_value_by_other_type(
                 type,
                 VNode->return_type
@@ -486,6 +487,8 @@ ResetVariableNode::accept(
             false,
             false
         };
+        re.error_info = err.info;
+        return re;
     }
 
     emit_event(
@@ -727,3 +730,5 @@ ASTNode*
 GetVariableNode::clone() {
     return new GetVariableNode(file, END_token, NameToken);
 }
+
+} // namespace vltc

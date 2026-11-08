@@ -1,0 +1,5 @@
+// Version: 1.0.0
+CALL println value<int>:GET INT_MAX END
+CALL println value<int>:GET INT_MIN END
+CALL println value<int>:9223372036854775807 END
+CALL println value<int>:-9223372036854775808 END

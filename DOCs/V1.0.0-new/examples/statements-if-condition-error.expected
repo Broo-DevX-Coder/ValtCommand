@@ -1,0 +1,7 @@
+ERROR
+
+TypeError: expected 'bool', got 'int'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  IF 1 THEN
+--|     ^

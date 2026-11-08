@@ -1,0 +1,2 @@
+// Version: 1.0.0
+WHILE True CALL println value<str>:"missing THEN" END END

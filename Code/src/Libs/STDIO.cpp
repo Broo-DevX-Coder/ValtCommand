@@ -8,6 +8,7 @@
 // ==================================================================
 // Private helpers (visible only in this file)
 // ==================================================================
+namespace vltc {
 namespace {
 
     using Fn = ReturnResult<Value>;
@@ -132,3 +133,5 @@ Lib::STDIO::input_fn(
     if (!line.empty() && line.back() == '\r') line.pop_back(); // Windows line ending
     return ok(line);
 }
+
+} // namespace vltc

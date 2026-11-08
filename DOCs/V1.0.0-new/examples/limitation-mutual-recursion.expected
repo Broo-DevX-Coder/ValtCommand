@@ -1,0 +1,10 @@
+ERROR
+
+NameError: 'second' is not defined
+------------------------------------------
+2-|  FUNCTION first()->int
+3-|      RETURN CALL second END
+--|                  ^^^^^^
+------------------------------------------
+Unknown function
+

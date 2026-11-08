@@ -1,0 +1,8 @@
+// Version: 1.0.0
+FUNCTION rhs()->bool
+    CALL println value<str>:"SIDE_EFFECT" END
+    RETURN True
+END
+CALL println value<bool>:False && (1 / 0 > 1) END
+CALL println value<bool>:True || (1 / 0 > 1) END
+CALL println value<bool>:True || (CALL rhs END) END

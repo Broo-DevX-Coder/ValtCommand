@@ -1,0 +1,5 @@
+// Version: 1.0.0
+FUNCTION nothing()->void
+END
+CALL nothing END
+CALL println value<str>:"after" END

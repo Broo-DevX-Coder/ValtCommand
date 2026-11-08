@@ -1,0 +1,13 @@
+// Version: 1.0.0
+SET i<int> = 0
+WHILE GET i < 5 THEN
+    SET i = GET i + 1
+    IF GET i == 2 THEN
+        CONTINUE
+    END
+    IF GET i == 4 THEN
+        BREAK
+    END
+    CALL println value<int>:GET i END
+END
+CALL println value<str>:"after" END

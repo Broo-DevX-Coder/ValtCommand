@@ -1,0 +1,9 @@
+ERROR
+
+SyntaxError: unexpected token '(end of code!)'
+------------------------------------------
+2-|  WHILE True THEN
+3-|      CALL println value<str>:"inside" END
+--|                                          ^
+------------------------------------------
+Expected `END` to close the WHILE loop.

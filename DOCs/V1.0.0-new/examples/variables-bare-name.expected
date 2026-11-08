@@ -1,0 +1,7 @@
+ERROR
+
+SyntaxError: unexpected token 'x'
+------------------------------------------
+2-|  SET x<int> = 5
+3-|  CALL println value<int>:x END
+--|                          ^

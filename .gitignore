@@ -1,18 +1,19 @@
 # ==========================
 # Build directories
 # ==========================
-build/
-build-perf/
-cmake-build-debug/
-cmake-build-release/
-out/
-dist/
+**/build/
+**/build-perf/
+**/cmake-build-debug/
+**/cmake-build-release/
+**/out/
+**/dist/
 
 # ==========================
 # tesy files
 # ==========================
 **/test/
 **/tests/
+**/qa
 
 # ==========================
 # CMake generated files

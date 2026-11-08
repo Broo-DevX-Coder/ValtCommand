@@ -1,0 +1,7 @@
+// Version: 1.0.0
+SET value<int> = 7
+IF True THEN
+    SET value<int> = 50
+    SET vars_snapshot<str> = CALL __INSPECT_VARS__ END
+    CALL println value<int>:GET value END
+END

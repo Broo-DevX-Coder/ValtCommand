@@ -1,0 +1,10 @@
+ERROR
+
+NameError: 'i' is not defined
+------------------------------------------
+8-|  END
+9-|  CALL println value<int>:GET i END
+--|                              ^
+------------------------------------------
+Unknown variable
+

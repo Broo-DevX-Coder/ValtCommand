@@ -1,0 +1,8 @@
+ERROR
+before runtime error
+
+RuntimeError: division by zero
+------------------------------------------
+2-|  CALL println value<str>:"before runtime error" END
+3-|  CALL println value<float>:1 / 0 END
+--|                                ^

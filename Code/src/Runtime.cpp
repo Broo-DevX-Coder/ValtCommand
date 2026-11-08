@@ -27,6 +27,7 @@
 // ==================================================================
 // Private helpers (this file only)
 // ==================================================================
+namespace vltc {
 namespace Runtime {
 namespace {
 
@@ -399,11 +400,11 @@ Runtime::RunTime::run(const std::string& code, ScopeMode mode) {
 // Run code from a file
 Runtime::RunResult
 Runtime::RunTime::run_file(const std::string& path, ScopeMode mode) {
-    std::ifstream in(path, std::ios::binary);
-    if (!in) return make_error(ErrorStage::IO, "Cannot open file: " + path);
+    std::ifstream file(path);
+    if (!file) make_error(ErrorStage::IO, "Cannot open file: " + path);
 
-    std::ostringstream buffer;
-    buffer << in.rdbuf();
+    std::stringstream buffer;
+    buffer << file.rdbuf();
     std::string code = buffer.str();
 
     // Skip the UTF-8 BOM if the file has one
@@ -522,3 +523,5 @@ Runtime::RunTime::add_external_constant(const std::string& name, const Value& va
 
 // Destructor of Runtime
 Runtime::RunTime::~RunTime(){}
+
+} // namespace vltc

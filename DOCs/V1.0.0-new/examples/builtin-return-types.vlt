@@ -1,0 +1,9 @@
+// Version: 1.0.0
+SET a<float> = CALL abs x<int>:-5 END
+SET b<int> = CALL abs x<float>:-5.7 END
+SET c<int> = CALL floor x<float>:2.7 END
+SET d<float> = CALL floor x<float>:2.7 END
+CALL println value<float>:GET a END
+CALL println value<int>:GET b END
+CALL println value<int>:GET c END
+CALL println value<float>:GET d END

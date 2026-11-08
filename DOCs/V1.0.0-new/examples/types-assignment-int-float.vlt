@@ -1,0 +1,5 @@
+// Version: 1.0.0
+SET whole<int> = 2.5
+CALL println value<int>:GET whole END
+SET decimal<float> = 2
+CALL println value<float>:GET decimal END

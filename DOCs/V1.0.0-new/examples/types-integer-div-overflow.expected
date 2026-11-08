@@ -1,0 +1,7 @@
+ERROR
+
+OverflowError: integer operation result is out of range
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  CALL println value<float>:1 %% 0.00000000000000000001 END
+--|                                 ^^^^^^^^^^^^^^^^^^^^^^

@@ -16,6 +16,7 @@
 // Runtime Tracker helper
 // ==================================================================
 
+namespace vltc {
 static void emit_event(
     NodesContext& Context,
     DevTools::EventsT type,
@@ -1141,3 +1142,5 @@ UserFunctionNode::clone() {
         is_function_any
     );
 }
+
+} // namespace vltc

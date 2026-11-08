@@ -1,0 +1,11 @@
+// Version: 1.0.0
+FOR
+    SET i<int> = 0;
+    GET i < 1;
+    SET i = GET i + 1
+THEN
+    FUNCTION inside_loop()->int
+        RETURN 8
+    END
+    CALL println value<int>:CALL inside_loop END END
+END

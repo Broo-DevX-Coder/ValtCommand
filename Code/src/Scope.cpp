@@ -12,6 +12,7 @@
 // ==================================================================
 
 // Constructure
+namespace vltc {
 Scopes::Scope::Scope(
     Scope* parent_
 ): Parent(parent_) {
@@ -176,3 +177,5 @@ Scopes::Scope::search_var(
 Scopes::SymbolTableTypes::Function::~Function() {
     delete user_function;
 };
+
+} // namespace vltc

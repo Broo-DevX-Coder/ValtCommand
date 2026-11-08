@@ -11,9 +11,11 @@
 
 /// == Locals ==
 #include "detail/ast/ast_node.hpp"
-#include "detail/globals.hpp"
+#include "valtcommand/globals.hpp"
 
 /// Parser
+
+namespace vltc {
 
 class API Parser {
     public:
@@ -97,3 +99,5 @@ class API Parser {
         ReturnResult<Node> get_break_loop_node(const std::string& FilePath); ///< Get the node of break a loop `BREAK`
         ReturnResult<Node> get_continue_loop_node(const std::string& FilePath); ///< Get the node of continue a loop `CONTINUE`
 };
+
+} // namespace vltc

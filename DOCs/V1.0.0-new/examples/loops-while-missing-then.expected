@@ -1,0 +1,10 @@
+ERROR
+
+SyntaxError: unexpected token 'CALL'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  WHILE True CALL println value<str>:"missing THEN" END END
+--|             ^^^^
+------------------------------------------
+Forgot to add `THEN` after the condition
+

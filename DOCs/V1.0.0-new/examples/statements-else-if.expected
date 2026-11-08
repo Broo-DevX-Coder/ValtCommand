@@ -1,0 +1,10 @@
+ERROR
+
+SyntaxError: unexpected token 'IF'
+------------------------------------------
+3-|      CALL println value<str>:"first" END
+4-|  ELSE IF True THEN
+--|       ^^
+------------------------------------------
+Forgot to add `THEN` after the condition
+

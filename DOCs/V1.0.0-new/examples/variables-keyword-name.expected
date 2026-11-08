@@ -1,0 +1,7 @@
+ERROR
+
+SyntaxError: unexpected token 'IF'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  SET IF<int> = 1
+--|      ^^

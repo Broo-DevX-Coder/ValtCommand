@@ -12,6 +12,7 @@
 // Helper: Variant's value to nlohmann::json obj
 // ==================================================================
 
+namespace vltc {
 nlohmann::json 
 value_to_json(
     const Value& value
@@ -627,3 +628,5 @@ DevTools::FunctionsInspect(
     // Return table and JSON
     return {ss.str(), JSON};
 }
+
+} // namespace vltc

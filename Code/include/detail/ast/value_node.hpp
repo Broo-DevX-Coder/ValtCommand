@@ -15,6 +15,8 @@
 /// Main Value Node
 
 /// Value Node
+namespace vltc {
+
 class ValueNode: public ASTNode
 {
     public:
@@ -59,3 +61,5 @@ class BooleanValueNode: public ValueNode {
         ASTNodesTypes NType() override; ///< Get the type of node
         ASTNode* clone() override; ///< Clone the class or get a new copy from them
 };
+
+} // namespace vltc

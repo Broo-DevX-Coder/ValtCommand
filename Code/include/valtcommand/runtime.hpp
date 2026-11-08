@@ -2,13 +2,13 @@
  * @file runtime.hpp
  * @brief The ValtCommand runtime: runs scripts and exposes the embedding API.
  *
- * This header declares Runtime::RunTime, the class a C++ host uses to run
+ * This header declares vltc::Runtime::RunTime, the class a C++ host uses to run
  * ValtCommand code from a string or a file, to register native C++ functions,
  * and to read or write script variables.
  *
  * @par Quick example
  * @code{.cpp}
- * Runtime::RunTime rt;
+ * vltc::Runtime::RunTime rt;
  *
  * auto r = rt.run("<script code>");
  * if (!r) {
@@ -17,7 +17,7 @@
  * }
  *
  * rt.run("<more code>");                              // state is kept between calls
- * rt.run("<temporary>", Runtime::ScopeMode::Fresh);   // state is not touched
+ * rt.run("<temporary>", vltc::Runtime::ScopeMode::Fresh);   // state is not touched
  * rt.reset();                                         // clear all script state
  * @endcode
  */
@@ -29,12 +29,20 @@
 /// Include necessary headers
 
 /// == Locals ==
-#include "detail/globals.hpp"
+#include "valtcommand/globals.hpp"
 #include "valtcommand/result.hpp"
 #include "valtcommand/native_function.hpp"
 #include "valtcommand/debugger/debugger.hpp"
 
+#include <memory>
+#include <ostream>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 /// Forward Declarations
+namespace vltc {
+
 class ModuleNode;
 
 /// Runtime namespace
@@ -373,3 +381,5 @@ namespace Runtime {
             ReturnResult<bool> execute_code();
     };
 }
+
+} // namespace vltc

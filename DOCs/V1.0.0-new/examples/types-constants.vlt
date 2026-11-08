@@ -1,0 +1,8 @@
+// Version: 1.0.0
+CALL println value<float>:GET PI END
+CALL println value<float>:GET E END
+CALL println value<float>:GET TAU END
+CALL println value<float>:GET INF END
+CALL println value<float>:GET NAN END
+CALL println value<bool>:CALL isnan x<float>:GET NAN END END
+CALL println value<bool>:CALL isinf x<float>:GET INF END END

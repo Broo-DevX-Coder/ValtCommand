@@ -1,0 +1,15 @@
+// Version: 1.0.0
+FOR
+    SET i<int> = 0;
+    GET i < 5;
+    SET i = GET i + 1
+THEN
+    IF GET i == 1 THEN
+        CONTINUE
+    END
+    IF GET i == 4 THEN
+        BREAK
+    END
+    CALL println value<int>:GET i END
+END
+CALL println value<str>:"after" END

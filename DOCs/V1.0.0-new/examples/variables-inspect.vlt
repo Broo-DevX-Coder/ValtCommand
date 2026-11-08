@@ -1,0 +1,5 @@
+// Version: 1.0.0
+SET probe<int> = 9
+SET vars_snapshot<str> = CALL __INSPECT_VARS__ END
+CALL println value<int>:GET probe END
+CALL println value<str>:CALL __INSPECT_SCOPE__ END END

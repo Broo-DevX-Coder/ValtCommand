@@ -19,6 +19,7 @@
 // Helper: create a parser error result from another result
 // ==================================================================
 
+namespace vltc {
 template <typename T>
 static ReturnResult<Parser::Node> propagate_error(
     const ReturnResult<T>& result
@@ -39,12 +40,24 @@ Parser::get_primary(const std::string& FilePath) {
     auto cu = curent(); // Get curent token
 
     // Create error object
-    auto err = Errors::SyntaxError(
-        curent().value,
-        curent().line,
-        curent().column,
-        curent().value.size()
-    );
+    const bool at_end = curent().Type == TokenType::END_CODE;
+    size_t error_line = curent().line;
+    size_t error_column = curent().column;
+    if (at_end && pos > 0) {
+        const Token& previous = tokens_list_[pos - 1];
+        error_line = previous.line;
+        error_column = previous.column + previous.value.size();
+    }
+    auto err = curent().Type == TokenType::UNTERMINATED_STRING ||
+               curent().Type == TokenType::UNTERMINATED_COMMENT
+        ? Errors::SyntaxError(curent())
+        : Errors::SyntaxError(
+            at_end ? "(end of code!)" : curent().value,
+            error_line,
+            error_column,
+            at_end ? 1 : curent().value.size(),
+            at_end ? "Expected an expression before end of input" : ""
+        );
 
     // Set result var
     ReturnResult<Parser::Node> result = {err.msg, false, nullptr};
@@ -542,7 +555,7 @@ Parser::get_multiplicative(const std::string& FilePath) {
 }
 
 // ==================================================================
-// Unary operations: +x, -x, !x, NOT x
+// Unary operations: +x, -x, !x
 // Right-associative
 // ==================================================================
 
@@ -552,16 +565,11 @@ Parser::get_unary(const std::string& FilePath) {
     const bool is_minus = check(TokenType::MINUS);
     const bool is_not_symbol = check(TokenType::EXCLAMATION);
 
-    const bool is_not_keyword =
-        curent().Type == TokenType::KEY_WORD &&
-        curent().value == "NOT";
-
     // No unary operator: parse exponentiation
     if (
         !is_plus &&
         !is_minus &&
-        !is_not_symbol &&
-        !is_not_keyword
+        !is_not_symbol
     ) {
         return get_power(FilePath);
     }
@@ -583,7 +591,7 @@ Parser::get_unary(const std::string& FilePath) {
     if (!operand.success)
         return operand;
 
-    if (is_not_symbol || is_not_keyword) {
+    if (is_not_symbol) {
         const Token END_token = tokens_list_[pos - 1];
     return {
             "",
@@ -665,3 +673,5 @@ Parser::get_power(const std::string& FilePath) {
         )
     };
 }
+
+} // namespace vltc

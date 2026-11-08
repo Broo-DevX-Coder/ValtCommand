@@ -1,0 +1,3 @@
+// Version: 1.0.0
+SET x<int> = 5
+CALL println value<int>:x END

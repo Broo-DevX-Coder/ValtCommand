@@ -15,6 +15,8 @@
 /// User Function argument node
 
 /// User Function argument node
+namespace vltc {
+
 class UserFunctionArgumentNode: public ASTNode {
     public:
         Token name_token; ///< argument's name token
@@ -95,3 +97,5 @@ class UserFunctionNode: public ASTNode {
         ReturnResult<Value> exec(NodesContext Context) override; ///< Execute node
         ASTNode* clone() override; ///< Clone the class or get a new copy from them
 };
+
+} // namespace vltc

@@ -16,6 +16,7 @@
 // Runtime Tracker Helpers
 // ==================================================================
 
+namespace vltc {
 static void emit_event(
     NodesContext& Context,
     DevTools::EventsT type,
@@ -693,3 +694,5 @@ IfStatmentsNode::exec(
         std::monostate()
     };
 }
+
+} // namespace vltc

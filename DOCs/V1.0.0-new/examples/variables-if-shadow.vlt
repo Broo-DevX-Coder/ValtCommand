@@ -1,0 +1,7 @@
+// Version: 1.0.0
+SET value<int> = 7
+IF True THEN
+    SET value<int> = 50
+    CALL println value<int>:GET value END
+END
+CALL println value<int>:GET value END

@@ -1,0 +1,7 @@
+ERROR
+
+MissingReturnError: Function 'no_return' has no RETURN statement
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  FUNCTION no_return()->int
+--|           ^^^^^^^^^

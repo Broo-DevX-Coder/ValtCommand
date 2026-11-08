@@ -13,6 +13,7 @@
 // ==================================================================
 
 // Call a function with its arguments
+namespace vltc {
 ReturnResult<Parser::Node>
 Parser::get_functioncall_node(const std::string& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
@@ -78,7 +79,11 @@ Parser::get_functioncall_node(const std::string& FilePath) {
 
         // Get arg value node
         auto arg_value = get_expretion(FilePath);
-        if (!arg_value.success) return {arg_value.Message,false,nullptr};
+        if (!arg_value.success) {
+            ReturnResult<Node> re = {arg_value.Message, false, nullptr};
+            re.error_info = arg_value.error_info;
+            return re;
+        }
 
         // Add the argument to args list
         const Token END_token = tokens_list_[pos - 1];
@@ -104,3 +109,5 @@ Parser::get_functioncall_node(const std::string& FilePath) {
     )};
 
 }
+
+} // namespace vltc

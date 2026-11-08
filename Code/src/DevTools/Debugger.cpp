@@ -13,6 +13,7 @@
 // Helper: Turn event type to string
 // ==================================================================
 
+namespace vltc {
 std::string 
 DevTools::event_type_to_string(
     DevTools::EventsT category
@@ -263,3 +264,5 @@ DevTools::Debugger::set_stop_slot(
 ) {
     stopCodeSlot = slot;
 }
+
+} // namespace vltc

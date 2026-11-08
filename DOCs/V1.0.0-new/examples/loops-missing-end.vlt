@@ -1,0 +1,3 @@
+// Version: 1.0.0
+WHILE True THEN
+    CALL println value<str>:"inside" END

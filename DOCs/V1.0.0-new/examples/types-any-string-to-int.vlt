@@ -1,0 +1,4 @@
+// Version: 1.0.0
+SET value<any> = "bad"
+SET result<int> = GET value
+CALL println value<int>:GET result END

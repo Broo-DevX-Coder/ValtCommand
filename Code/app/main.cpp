@@ -1,20 +1,24 @@
 #include "valtcommand/runtime.hpp"
 #include "detail/errors.hpp"
 
+using namespace vltc;
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        std::cerr << "Usage: valtcommand <file.vc>\n";
-        return 1;
-    }
+   if (argc < 2) {
+       std::cerr << "Usage: valtcommand <file.vc>\n";
+       return 1;
+   }
 
-    std::ifstream file(argv[1]);
+    const char* fp = argv[1];
+
+    std::ifstream file(fp);
     if (!file) {
-        std::cerr << "Cannot open file: " << argv[1] << "\n";
+        std::cerr << "Cannot open file: " << fp << "\n";
         return 1;
     }
 
@@ -24,17 +28,43 @@ int main(int argc, char* argv[]) {
 
     Runtime::RunTime r(false);
 
-    if (r.GetDebugger())
-        r.GetDebugger()->add_break_points({{7}},"");
-
     r.set_ostream(std::clog);
-
-    auto result = r.run_file(argv[1]);
+    auto result = r.run_file(fp);
     if (!result) {
         std::cout << Errors::formatter(result.error.info,source) << std::endl;
+        std::cout << result.error.message << std::endl;
         return 1;
     }
     return 0;
+}
 
+/*
+
+// ===========================
+
+#include "detail/lexer.hpp"
+
+int main1() {
+    std::string code = R"t(
+// Version: 1.0.0
+SET result<str> = CALL format
+    text<str>:"Name: {name}, Age: {age}, Active: {active}"
+    name<str>:"Developer"
+    age<int>:18
+    active<bool>:true
+END
+CALL println value<str>:GET result END
+    )t";
+
+    auto l = Lexar(code);
+
+    auto all_tokens = l.get_all_tokens();
+
+    for (auto& t: all_tokens) {
+        t.print();
+    }
+    
     return 0;
 }
+    
+*/

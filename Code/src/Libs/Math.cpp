@@ -20,6 +20,7 @@
 // ==================================================================
 // Private helpers (visible only in this file)
 // ==================================================================
+namespace vltc {
 namespace {
 
     using Fn = ReturnResult<Value>;
@@ -592,3 +593,4 @@ Lib::Math::__init__(
     reg(runtime, seed_random_fn, "seed_random", "int",   {"seed"});
 }
 
+} // namespace vltc

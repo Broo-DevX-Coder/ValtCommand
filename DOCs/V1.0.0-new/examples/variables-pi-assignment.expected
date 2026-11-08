@@ -1,0 +1,7 @@
+ERROR
+
+ImmutableError: Cannot modify constant variable 'PI'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  SET PI = 3
+--|      ^^

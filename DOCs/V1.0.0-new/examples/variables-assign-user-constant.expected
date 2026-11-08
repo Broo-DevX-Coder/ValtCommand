@@ -1,0 +1,7 @@
+ERROR
+
+ImmutableError: Cannot modify constant variable 'limit'
+------------------------------------------
+2-|  SET_CONST limit<int> = 10
+3-|  SET limit = 11
+--|      ^^^^^

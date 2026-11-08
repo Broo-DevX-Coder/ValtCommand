@@ -1,0 +1,4 @@
+// Version: 1.0.0
+IF True THEN
+END
+CALL println value<str>:"after empty IF" END

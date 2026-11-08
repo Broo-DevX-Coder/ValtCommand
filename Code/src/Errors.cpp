@@ -4,6 +4,7 @@
 
 // == Libs ==
 #include <fmt/format.h>
+#include <optional>
 #include <sstream>
 
 // == Local ==
@@ -15,6 +16,7 @@
 // ==================================================================
 
 // Errors formatter
+namespace vltc {
 std::string 
 Errors::formatter(
     Errors::ErrorInfo info,
@@ -25,32 +27,38 @@ Errors::formatter(
     // Put the type and the message of error
     ss << std::endl << info.type << ": " << info.message << "\n------------------------------------------\n";
     
-    std::string line1;
-    std::string line2;
+    std::optional<std::string> line1;
+    std::optional<std::string> line2;
 
     {
         auto lines = Utils::split_lines(code);
-        line1 = (info.line-1 < lines.size() && info.line > 0) ? lines[info.line-1] : std::string((char)0x5f, 1);
-        line2 = (info.line < lines.size() && info.line >= 0) ? lines[info.line] : std::string((char)0x5f, 1);
+        if (info.line > 0 && info.line - 1 < lines.size()) line1 = lines[info.line - 1];
+        if (info.line < lines.size()) line2 = lines[info.line];
     }
 
-    if (line1 != std::string((char)0x5f, 1)) {
-        ss << info.line-1 << "-" << "|  " << line1 << '\n';
-    } 
-    if (line2 != std::string((char)0x5f, 1)) {
-        ss << info.line << "-" << "|  " << line2 << "\n";
+    const auto trim_cr = [](std::optional<std::string>& line) {
+        if (line && !line->empty() && line->back() == '\r') line->pop_back();
+    };
+    trim_cr(line1);
+    trim_cr(line2);
+    const size_t display_line = info.line + 1;
 
-        for (size_t i=0; i < std::to_string(info.line).length(); i++) ss << "-";
+    if (line1) {
+        ss << info.line << "-|  " << *line1 << '\n';
+    } 
+    if (line2) {
+        ss << display_line << "-|  " << *line2 << "\n";
+
+        for (size_t i=0; i < std::to_string(display_line).length(); i++) ss << "-";
         ss << "-|  ";
 
-        for (size_t i=1; i<info.column; i++) 
+        for (size_t i=0; i<info.column; i++)
             ss << ' ';
         for (size_t i=0; i<info.length; i++)
             ss << '^';
-
-        if (!info.comment.empty()) {
-            ss << "\n------------------------------------------\n" << info.comment << '\n';
-        }
+    }
+    if (!info.comment.empty()) {
+        ss << "\n------------------------------------------\n" << info.comment << '\n';
     }
 
     return ss.str();
@@ -76,7 +84,6 @@ Errors::SyntaxError::SyntaxError(
         column,
         lenth
     };
-
     msg = fmt::format(
         "{}: {} at line:{} ,column:{}",
         info.type, info.message, info.line, info.column
@@ -84,6 +91,22 @@ Errors::SyntaxError::SyntaxError(
 
     if (!info.comment.empty())
         msg+=fmt::format("\n{}",info.comment);
+}
+
+Errors::SyntaxError::SyntaxError(const Token& token, std::string comment)
+: SyntaxError(token.value, token.line, token.column, token.value.size(), comment) {
+    if (token.Type == TokenType::UNTERMINATED_STRING) {
+        info.message = "unterminated string literal";
+        info.length = 1;
+    } else if (token.Type == TokenType::UNTERMINATED_COMMENT) {
+        info.message = "unterminated block comment";
+        info.length = 1;
+    } else {
+        return;
+    }
+
+    msg = fmt::format("{}: {} at line:{} ,column:{}", info.type, info.message, info.line, info.column);
+    if (!info.comment.empty()) msg += fmt::format("\n{}", info.comment);
 }
 
 // ============== TypeError class constructure ==============
@@ -181,7 +204,7 @@ std::string
 Errors::ArgumentError::unexpected_argument(
     std::string arg_name
 ) {
-    info.message = fmt::format("Unexpected argument '{}' in function '{}' arguments.", arg_name, function_name);
+    info.message = fmt::format("Unexpected argument '{}' in function '{}' arguments", arg_name, function_name);
 
     msg = fmt::format(
         "{}: {} at line:{} ,column:{}",
@@ -200,7 +223,7 @@ Errors::ArgumentError::unexpected_argument_type(
     std::string expected_type, 
     std::string placed_type
 ) {
-    info.message = fmt::format("Unexpected argument '{}' in function '{}' arguments. Type expected:{} but got:{}", arg_name, function_name, expected_type, placed_type);
+    info.message = fmt::format("Argument '{}' in function '{}' has type '{}'; expected '{}'", arg_name, function_name, placed_type, expected_type);
 
     msg = fmt::format(
         "{}: {} at line:{} ,column:{}",
@@ -218,7 +241,7 @@ std::string
 Errors::ArgumentError::unplaced_arg(
     std::string arg_name
 ) {
-    info.message = fmt::format("Missing required argument '{}' with function '{}' arguments", arg_name, function_name);
+    info.message = fmt::format("Function '{}' is missing required argument '{}'", function_name, arg_name);
 
     msg = fmt::format(
         "{}: {} at line:{} ,column:{}",
@@ -290,7 +313,7 @@ Errors::VariableError::reset_var_value_by_other_type(
 std::string 
 Errors::VariableError::reset_const_var() {
     info.type = "ImmutableError";
-    info.message = fmt::format("ImmutableError: Cannot modify constant variable '{}'",var_name);
+    info.message = fmt::format("Cannot modify constant variable '{}'",var_name);
 
     msg = fmt::format(
         "{}: {} at line:{} ,column:{}",
@@ -345,7 +368,7 @@ Errors::UserFunctionError::return_type_error(
 std::string
 Errors::UserFunctionError::missing_return_error() {
     info.type = "MissingReturnError";
-    info.message = fmt::format("Not all code paths return a value in function '{}'",function_name);
+    info.message = fmt::format("Function '{}' has no RETURN statement", function_name);
 
     msg = fmt::format(
         "{}: {} at line:{} ,column:{}",
@@ -407,3 +430,5 @@ Errors::RuntimeError::division_by_zero() {
         
     return msg;
 }
+
+} // namespace vltc

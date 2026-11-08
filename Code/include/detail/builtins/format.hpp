@@ -13,6 +13,8 @@
 
 /// Namespace: Lib::Format
 
+namespace vltc {
+
 namespace Lib {
 
     /**
@@ -112,3 +114,5 @@ namespace Lib {
     } ///< namespace Format
 
 } ///< namespace Lib
+
+} // namespace vltc

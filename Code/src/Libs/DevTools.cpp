@@ -3,7 +3,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "detail/builtins/devtools.hpp" 
+#include "detail/builtins/devtools.hpp"
 #include "valtcommand/debugger/inspect.hpp"
 
 
@@ -11,6 +11,7 @@
 // Function: Initailyze runtime
 // ==================================================================
 
+namespace vltc {
 void
 Lib::DevFunctions::__init__(
     Runtime::RunTime& runtime
@@ -42,7 +43,7 @@ Lib::DevFunctions::__init__(
 // Function: Inspect scope
 // ==================================================================
 
-ReturnResult<Value> 
+ReturnResult<Value>
 Lib::DevFunctions::scope_inspect(
     ExternalFunInType input
 ) {
@@ -50,7 +51,7 @@ Lib::DevFunctions::scope_inspect(
         return {
             "",true,DevTools::ScopeInspect(input.ParentScope).printable
         };
-    } 
+    }
     return {"",true,""};
 }
 
@@ -58,7 +59,7 @@ Lib::DevFunctions::scope_inspect(
 // Function: Inspect variables
 // ==================================================================
 
-ReturnResult<Value> 
+ReturnResult<Value>
 Lib::DevFunctions::vars_inspect(
     ExternalFunInType input
 ) {
@@ -66,7 +67,7 @@ Lib::DevFunctions::vars_inspect(
         return {
             "",true,DevTools::VariablesInspect(input.ParentScope).printable
         };
-    } 
+    }
     return {"",true,""};
 }
 
@@ -74,7 +75,7 @@ Lib::DevFunctions::vars_inspect(
 // Function: Inspect Functions
 // ==================================================================
 
-ReturnResult<Value> 
+ReturnResult<Value>
 Lib::DevFunctions::funcs_inspect(
     ExternalFunInType input
 ) {
@@ -82,6 +83,8 @@ Lib::DevFunctions::funcs_inspect(
         return {
             "",true,DevTools::FunctionsInspect(input.ParentScope).printable
         };
-    } 
+    }
     return {"",true,""};
 }
+
+} // namespace vltc

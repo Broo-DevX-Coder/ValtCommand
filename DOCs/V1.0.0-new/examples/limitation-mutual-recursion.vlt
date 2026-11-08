@@ -1,0 +1,7 @@
+// Version: 1.0.0
+FUNCTION first()->int
+    RETURN CALL second END
+END
+FUNCTION second()->int
+    RETURN CALL first END
+END

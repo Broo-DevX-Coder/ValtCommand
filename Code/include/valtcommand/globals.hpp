@@ -27,6 +27,7 @@
  * @brief Standard and third-party dependencies required by this file.
  */
 
+#include <cstddef>
 #include <iostream>
 #include <functional>
 #include <string>
@@ -40,6 +41,8 @@
 /**
  * @brief Base AST node.
  */
+namespace vltc {
+
 class ASTNode;
 
 /**
@@ -308,7 +311,13 @@ enum class TokenType {
     MOD,
 
     /** @brief Unknown or unsupported token. */
-    UNKNOWN
+    UNKNOWN,
+
+    /** @brief Unterminated string literal. */
+    UNTERMINATED_STRING,
+
+    /** @brief Unterminated block comment. */
+    UNTERMINATED_COMMENT
 };
 
 /// Global variables
@@ -363,7 +372,7 @@ struct Token {
     void print() {
 
         std::cout << fmt::format(
-            "[ T:{} | V:{} | L:{} | C:{} ]",
+            "[ T:{} | V:\"{}\" | L:{} | C:{} ]",
             TokenTypesStr[Type],
             value,
             line,
@@ -480,3 +489,5 @@ Value reconsiliation_int_float(
  *         or error information if conversion fails.
  */
 ReturnResult<long double> turn_value_to_float(Value& input);
+
+} // namespace vltc

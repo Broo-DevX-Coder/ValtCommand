@@ -1,0 +1,5 @@
+// Version: 1.0.0
+SET value<any> = 5
+CALL println value<any>:GET value END
+SET result<int> = GET value
+CALL println value<int>:GET result END

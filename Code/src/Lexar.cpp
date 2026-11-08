@@ -1,218 +1,164 @@
-// ==================================================================
-// Include neccessary headers
-// ==================================================================
-
-// == Locals ==
 #include "detail/lexer.hpp"
 
-// ==================================================================
-// Lexar functions
-// ==================================================================
-
-// Constructure
-Lexar::Lexar(
-    std::string& c_
-): code(c_) {
-    if (!c_.empty()) {
-        curent_c = code[pos];
-    } else 
-        code_ended = true;
+namespace vltc {
+namespace {
+bool is_digit(char c) { return c >= '0' && c <= '9'; }
+bool is_alpha(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); }
+bool is_space(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r';
+}
 }
 
-// advence
-void
-Lexar::advence() {
-    pos++;
-    if (pos < code.size()) {
-        curent_c = code[pos];
-        if (curent_c != '\n') 
-            curent_column++;
-    } else 
-        code_ended = true;
+Lexar::Lexar(const std::string& c_): code(c_) {
+    if (!code.empty()) curent_c = code.front();
+    else code_ended = true;
 }
 
-// Get the next <offset> char in code
-char 
-Lexar::peek(
-    size_t offset
-) {
-    if (pos+offset < code.size()){
-        return code[pos+offset];
+void Lexar::advence() {
+    if (code_ended) return;
+    if (curent_c == '\n') {
+        ++curent_line;
+        curent_column = 0;
     } else {
+        ++curent_column;
+    }
+    ++pos;
+    if (pos < code.size()) curent_c = code[pos];
+    else {
+        curent_c = '\0';
         code_ended = true;
     }
-    return '\0';
 }
 
-// Jump on all spaces
-void 
-Lexar::escape_spaces() {
-    
-    if (code_ended == true) 
-        return;
-    
-    while ((std::isspace(curent_c) || curent_c == '\n' || curent_c == '\t') && !code_ended) {
-        if (curent_c == '\n') {
-            curent_line++;
-            curent_column = 0;
-        }
-        advence();
-    }
+char Lexar::peek(size_t offset) const {
+    return pos < code.size() && offset < code.size() - pos ? code[pos + offset] : '\0';
 }
 
-// Jump on comments
-void 
-Lexar::escape_comments() {
+void Lexar::escape_spaces() {
+    while (!code_ended && is_space(curent_c)) advence();
+}
+
+void Lexar::escape_comments() {
     escape_spaces();
-
-    do {
-        if (curent_c == '/' && peek(1) == '/') {
-            while (curent_c != '\n' && !code_ended) {
+    while (!code_ended && curent_c == '/') {
+        const char next = peek();
+        if (next == '/') {
+            while (!code_ended && curent_c != '\n') advence();
+        } else if (next == '*') {
+            const size_t start_line = curent_line;
+            const size_t start_column = curent_column;
+            advence(); advence();
+            bool closed = false;
+            while (!code_ended) {
+                if (curent_c == '*' && peek() == '/') {
+                    advence(); advence();
+                    closed = true;
+                    break;
+                }
                 advence();
             }
-
-        } else if (curent_c == '/' && peek(1) == '*') {
-            bool done = false;
-            while (!done) {
-                advence();
-                if (curent_c == '*' && peek(1) == '/' && !code_ended) 
-                    done = true;
+            if (!closed) {
+                unterminated_block_comment = true;
+                curent_line = start_line;
+                curent_column = start_column;
+                return;
             }
-            advence();
-            advence();
-        }
+        } else break;
         escape_spaces();
-
-    } while ((curent_c == '/' && peek(1) == '/') || (curent_c == '/' && peek(1) == '*'));
-
+    }
 }
 
-// get the next token function
-Token
-Lexar::get_the_next_token() {
+Token Lexar::get_the_next_token() {
     escape_comments();
+    if (unterminated_block_comment) {
+        unterminated_block_comment = false;
+        return {TokenType::UNTERMINATED_COMMENT, "unterminated block comment", curent_line, curent_column, curent_column};
+    }
+    if (code_ended) return {TokenType::END_CODE, "", curent_line, curent_column, curent_column};
 
-    // If there is not any char
-    if (code_ended == true) {
-        return {TokenType::END_CODE, "", curent_line, curent_column, curent_column};
-
-    // If char+char is a comparition
-    } else if (__complex_2_symbols__.contains( std::string(1, curent_c) + std::string(1, peek(1)) )) {
-        auto t = __complex_2_symbols__[std::string(1, curent_c) + std::string(1, peek(1))];
-        t.line = curent_line;
-        t.column = curent_column;
+    const size_t start_line = curent_line;
+    const size_t start_column = curent_column;
+    if (peek() != '\0') {
+        const std::string pair{curent_c, peek()};
+        if (__complex_2_symbols__.contains(pair)) {
+            Token token = __complex_2_symbols__.at(pair);
+            token.line = start_line; token.column = start_column; token.last_column = start_column + 1;
+            advence(); advence();
+            return token;
+        }
+    }
+    if (__symbols__.contains(curent_c)) {
+        Token token = __symbols__.at(curent_c);
+        token.line = start_line; token.column = start_column; token.last_column = start_column;
         advence();
-        t.last_column = curent_column;
-        advence();
-        return t;
-
-    // If char is symbol
-    } else if (__symbols__.contains(curent_c)) {
-        auto t = __symbols__[curent_c];
-        t.line = curent_line;
-        t.column = curent_column;
-        t.last_column = curent_column;
-        advence();
-        return t;
-
-    // If the curent char is digit
-    } else if (std::isdigit(curent_c)) {
+        return token;
+    }
+    if (is_digit(curent_c)) {
+        std::string value;
         bool dot = false;
-        std::string tk;
-
-        tk += curent_c;
-        auto f_column = curent_column;
+        size_t last_column = start_column;
+        while (!code_ended && (is_digit(curent_c) || (!dot && curent_c == '.'))) {
+            if (curent_c == '.') dot = true;
+            value += curent_c; last_column = curent_column; advence();
+        }
+        return {dot ? TokenType::FLOAT : TokenType::INTEGER, value, start_line, start_column, last_column};
+    }
+    if (is_alpha(curent_c) || curent_c == '_') {
+        std::string value;
+        size_t last_column = start_column;
+        while (!code_ended && (is_digit(curent_c) || is_alpha(curent_c) || curent_c == '_')) {
+            value += curent_c; last_column = curent_column; advence();
+        }
+        TokenType type = TokenType::IDENTIFIER;
+        if (is_token_type_(value)) type = TokenType::TYPE;
+        if (value == "END") type = TokenType::END_BLOCK;
+        if (is_token_key_word_(value)) type = TokenType::KEY_WORD;
+        if (value == "True" || value == "False") type = TokenType::BOOLEAN;
+        return {type, value, start_line, start_column, last_column};
+    }
+    if (curent_c == '"' || curent_c == '\'') {
+        const char quote = curent_c;
+        std::string value;
         advence();
-
-        while ((std::isdigit(curent_c) || (!dot && curent_c == '.')) && !code_ended) {
-            if (curent_c == '.') 
-                dot = true;
-            tk += curent_c;
+        while (!code_ended && curent_c != quote && curent_c != '\n') {
+            if (curent_c == '\\') {
+                advence();
+                if (code_ended || curent_c == '\n') break;
+                const auto escaped = __backslashed_symbols__.find(curent_c);
+                if (escaped != __backslashed_symbols__.end()) value += escaped->second;
+                else { value += '\\'; value += curent_c; }
+            } else value += curent_c;
             advence();
         }
-
-        auto l_column = curent_column-1;
-
-        if (dot)
-            return {TokenType::FLOAT, tk, curent_line, f_column,l_column};
-        else 
-            return {TokenType::INTEGER, tk, curent_line, f_column,l_column};
-
-    // If curent char is letter
-    } else if (std::isalpha(curent_c) || curent_c == '_') {
-        std::string tk;
-        auto f_column = curent_column;
-
-        do {
-            tk += curent_c;
-            advence(); 
-        } while ((std::isdigit(curent_c) || std::isalpha(curent_c) || curent_c == '_') && !code_ended);
-
-        auto l_column = curent_column-1;
-
-        TokenType tk_t = TokenType::IDENTIFIER;
-
-        if (is_token_type_(tk))
-            tk_t = TokenType::TYPE;
-
-        if (tk == "END") 
-            tk_t = TokenType::END_BLOCK;
-
-        if (is_token_key_word_(tk))
-            tk_t = TokenType::KEY_WORD;
-
-        if (
-            tk == "True" ||
-            tk == "False"
-        ) 
-            tk_t = TokenType::BOOLEAN;
-        
-        return {tk_t, tk, curent_line, f_column,l_column};
-
-    // If curent type is string
-    } else if (curent_c == '"' || curent_c == '\'') {
-        std::string tk;
-        char c = curent_c;
-        auto f_column = curent_column;
-
+        if (curent_c != quote)
+            return {TokenType::UNTERMINATED_STRING, "unterminated string", start_line, start_column, start_column};
+        const size_t end_column = curent_column;
         advence();
-
-        while ((curent_c != c) && !code_ended) {
-            if (curent_c == '\\' && peek(1) != '\0' && !std::isspace(peek(1))) {
-                // Jump on `\`
-                advence(); 
-
-                // Is the next char after `\` in map
-                if (__backslashed_symbols__.contains(curent_c))
-                    tk += __backslashed_symbols__[curent_c];
-
-            } else
-                tk += curent_c;
-
-            advence(); 
-        }
-        auto l_column = curent_column;
-        advence();
-
-        return {TokenType::STRING, tk, curent_line, f_column,l_column};
-    } else {
-        Token t = {TokenType::UNKNOWN, std::string(1,curent_c), curent_line, curent_column};
-        advence();
-        return t;
+        return {TokenType::STRING, value, start_line, start_column, end_column};
     }
+    const char unknown = curent_c;
+    std::string unknown_value(1, unknown);
+    const auto first_byte = static_cast<unsigned char>(unknown);
+    size_t sequence_length = first_byte >= 0xF0 ? 4 : first_byte >= 0xE0 ? 3 : first_byte >= 0xC2 ? 2 : 1;
+    advence();
+    for (size_t i = 1; i < sequence_length && !code_ended; ++i) {
+        const auto next_byte = static_cast<unsigned char>(curent_c);
+        if ((next_byte & 0xC0) != 0x80) break;
+        unknown_value += curent_c;
+        advence();
+    }
+    return {TokenType::UNKNOWN, unknown_value, start_line, start_column, start_column + unknown_value.size() - 1};
 }
 
-// Get all tokens
-std::vector<Token>
-Lexar::get_all_tokens() {
-    std::vector<Token> r;
-    auto tk = get_the_next_token();
-    r.push_back(tk);
-
-    while (tk.Type != TokenType::END_CODE) {
-        tk = get_the_next_token();
-        r.push_back(tk);
+std::vector<Token> Lexar::get_all_tokens() {
+    std::vector<Token> tokens;
+    Token token = get_the_next_token();
+    tokens.push_back(token);
+    while (token.Type != TokenType::END_CODE) {
+        token = get_the_next_token();
+        tokens.push_back(token);
     }
-
-    return r;
+    return tokens;
 }
+
+} // namespace vltc

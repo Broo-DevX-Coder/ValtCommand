@@ -9,11 +9,14 @@
 // == Libs ==
 #include <sstream>
 #include <string>
+#include <cmath>
+#include <cstdint>
 
 // ==================================================================
 // Comparison symbols to operations
 // ==================================================================
 
+namespace vltc {
 std::unordered_map<TokenType, ComparitonOpsTypes> ComparitonSymbols_ToOps = {
     {TokenType::EQUAL_EQUAL,    ComparitonOpsTypes::EQUAL},
     {TokenType::NOT_EQUAL,      ComparitonOpsTypes::NOT_EQUAL},
@@ -42,6 +45,28 @@ static void emit_event(
             Context.FilePath
         });
     }
+}
+
+template <typename T>
+static ReturnResult<T> make_error_result(
+    const std::string& type,
+    const std::string& message,
+    const std::string& comment,
+    T failure_value,
+    std::size_t line,
+    std::size_t column,
+    std::size_t length
+) {
+    ReturnResult<T> result{message, false, std::move(failure_value)};
+    result.error_info = {
+        type,
+        message,
+        comment,
+        line,
+        column,
+        length == 0 ? 1 : length
+    };
+    return result;
 }
 
 // ==================================================================
@@ -283,7 +308,7 @@ BinOpsNode::push_to_result(
     } else if (op == TokenType::MOD) {
         int64_t i1 = result;
         int64_t i2 = input;
-        result = i1 % i2;
+        result = (i1 == INT64_MIN && i2 == -1) ? 0 : i1 % i2;
     }
 }
 
@@ -304,7 +329,15 @@ BinOpsNode::exec(NodesContext Context) {
             0
         );
 
-        return {"Binary operation contains no operands", false, 0};
+        return make_error_result<Value>(
+            "RuntimeError",
+            "Binary operation contains no operands",
+            "",
+            std::monostate{},
+            0,
+            0,
+            1
+        );
     }
 
     emit_event(
@@ -343,7 +376,7 @@ BinOpsNode::exec(NodesContext Context) {
         auto val = turn_value_to_float(exec_result.value);
 
         // Division by zero
-        if ((part.op == TokenType::SLASH || part.op == TokenType::DIV || part.op == TokenType::MOD) && val.value == 0) {
+        if ((part.op == TokenType::SLASH || part.op == TokenType::DIV) && val.value == 0) {
             Errors::RuntimeError error(
                 part.token.line,
                 part.token.column,
@@ -365,6 +398,53 @@ BinOpsNode::exec(NodesContext Context) {
 
             re.error_info = error.info;
             return re;
+        }
+
+        if (i > 0 && (part.op == TokenType::DIV || part.op == TokenType::MOD)) {
+            constexpr long double INT64_MIN_VALUE = -9223372036854775808.0L;
+            constexpr long double INT64_UPPER_BOUND = 9223372036854775808.0L;
+            const auto fits_int64 = [=](long double value) {
+                return std::isfinite(value) &&
+                    value >= INT64_MIN_VALUE && value < INT64_UPPER_BOUND;
+            };
+
+            const long double integer_result = part.op == TokenType::DIV
+                ? std::trunc(result / val.value)
+                : std::trunc(result);
+            const long double integer_input = part.op == TokenType::MOD
+                ? std::trunc(val.value)
+                : val.value;
+
+            if (!fits_int64(integer_result) ||
+                (part.op == TokenType::MOD && !fits_int64(integer_input))) {
+                Errors::ErrorInfo info = {
+                    "OverflowError",
+                    "integer operation result is out of range",
+                    "",
+                    part.token.line,
+                    part.token.column,
+                    part.token.value.size()
+                };
+                ReturnResult<Value> re = {"", false, std::monostate{}};
+                re.error_info = std::move(info);
+                return re;
+            }
+
+            if (part.op == TokenType::MOD &&
+                static_cast<int64_t>(integer_input) == 0) {
+                Errors::RuntimeError error(
+                    part.token.line,
+                    part.token.column,
+                    part.token.value.size()
+                );
+                ReturnResult<Value> re = {
+                    error.division_by_zero(),
+                    false,
+                    0
+                };
+                re.error_info = error.info;
+                return re;
+            }
         }
 
         // Apply operation
@@ -583,17 +663,20 @@ CompOpsNode::accept(NodesContext Context) {
             second_part.token.line
         );
 
-        return {
-            fmt::format(
-                "UncompatibleTypesError: can't compare `{}` with `{}` at line:{} ,column:{}",
-                first_type,
-                second_type,
-                second_part.token.line,
-                second_part.token.column
-            ),
+        const std::string message = fmt::format(
+            "can't compare `{}` with `{}`",
+            first_type,
+            second_type
+        );
+        return make_error_result<bool>(
+            "IncompatibleTypesError",
+            message,
+            "",
             false,
-            false
-        };
+            second_part.token.line,
+            second_part.token.column,
+            second_part.token.value.size()
+        );
     }
 
     // Ordered comparisons require compatible numeric types
@@ -611,26 +694,26 @@ CompOpsNode::accept(NodesContext Context) {
         is_ordered_comparison &&
         !both_numeric
     ) {
-        emit_event(
-            Context,
-            DevTools::EventsT::Analysis,
-            "Ordered comparison '" + op +
-                "' requires numeric operands; received '" +
-                first_type + "' and '" + second_type + "'",
-            second_part.token.line
-        );
-
-        return {
-            fmt::format(
-                "UncompatibleTypesError: can't compare `{}` with `{}` at line:{} ,column:{}\nThese types don't support this comparison operation",
-                first_type,
-                second_type,
+        const std::string message =
+                "Invalid operand types for ordered comparison between `" +
+                first_type + "` and `" + second_type + "`";
+    
+            emit_event(
+                Context,
+                DevTools::EventsT::Analysis,
+                "Cannot analyze ordered comparison with non-numeric operands",
+                second_part.token.line
+            );
+    
+            return make_error_result<bool>(
+                "IncompatibleTypesError",
+                message,
+                "Ordered comparisons require numeric operands",
+                false,
                 second_part.token.line,
-                second_part.token.column
-            ),
-            false,
-            false
-        };
+                second_part.token.column,
+                second_part.token.value.size()
+            );
     }
 
     emit_event(
@@ -738,11 +821,18 @@ CompOpsNode::exec(NodesContext Context) {
             second_part.token.line
         );
 
-        return {
-            "Invalid operand types for ordered comparison",
-            false,
-            false
-        };
+        const std::string message =
+            "Invalid operand types for ordered comparison between `" +
+            FN_return_t + "` and `" + SN_return_t + "`";
+        return make_error_result<Value>(
+            "IncompatibleTypesError",
+            message,
+            "Ordered comparisons require numeric operands",
+            std::monostate{},
+            second_part.token.line,
+            second_part.token.column,
+            second_part.token.value.size()
+        );
     }
 
     // Report comparison result
@@ -864,7 +954,15 @@ LogicOpsNode::accept(NodesContext Context) {
             0
         );
 
-        return {"Logical operation contains no operands", false, false};
+        return make_error_result<bool>(
+            "SyntaxError",
+            "Logical operation contains no operands",
+            "",
+            false,
+            0,
+            0,
+            1
+        );
     }
 
     emit_event(
@@ -947,7 +1045,15 @@ LogicOpsNode::exec(NodesContext Context) {
             0
         );
 
-        return {"Logical operation contains no operands", false, false};
+        return make_error_result<Value>(
+            "RuntimeError",
+            "Logical operation contains no operands",
+            "",
+            std::monostate{},
+            0,
+            0,
+            1
+        );
     }
 
     emit_event(
@@ -981,7 +1087,22 @@ LogicOpsNode::exec(NodesContext Context) {
             Parts[0].token.line
         );
 
-        return {"Expected bool from logical operand", false, false};
+        auto err = Errors::TypeError(
+            "bool",
+            Get_ValueT(r.value),
+            Parts[0].token.line,
+            Parts[0].token.column,
+            Parts[0].token.value.size()
+        );
+        return make_error_result<Value>(
+            err.info.type,
+            err.info.message,
+            err.info.comment,
+            std::monostate{},
+            err.info.line,
+            err.info.column,
+            err.info.length
+        );
     }
 
     bool result = *first_value;
@@ -989,6 +1110,31 @@ LogicOpsNode::exec(NodesContext Context) {
     // Execute remaining operands
     for (size_t i = 1; i < Parts.size(); i++) {
         auto& part = Parts[i];
+
+        // Apply short-circuit on and and or operations
+        if ((part.op == TokenType::LOGICAL_OR && result) || (part.op == TokenType::LOGICAL_AND && !result)) {
+
+            emit_event(
+                Context,
+                DevTools::EventsT::Runtime,
+                "Applying short-circuit on logical operation '" +
+                std::string(
+                    part.op == TokenType::LOGICAL_AND ? "&&" :
+                    part.op == TokenType::LOGICAL_OR ? "||" : "?"
+                ) + "'",
+                Parts[0].token.line
+            );
+
+            emit_event(
+                Context,
+                DevTools::EventsT::Runtime,
+                "Logical operation completed successfully",
+                Parts[0].token.line
+            );
+
+            return {"", true, result};
+        }
+
 
         emit_event(
             Context,
@@ -1024,7 +1170,22 @@ LogicOpsNode::exec(NodesContext Context) {
                 part.token.line
             );
 
-            return {"Expected bool from logical operand", false, false};
+            auto err = Errors::TypeError(
+                "bool",
+                Get_ValueT(part_result.value),
+                part.token.line,
+                part.token.column,
+                part.token.value.size()
+            );
+            return make_error_result<Value>(
+                err.info.type,
+                err.info.message,
+                err.info.comment,
+                std::monostate{},
+                err.info.line,
+                err.info.column,
+                err.info.length
+            );
         }
 
         const bool part_r = *part_value;
@@ -1061,7 +1222,9 @@ PowerNode::PowerNode(const std::string& FilePath,
     : token(token),
       left(std::move(left)),
       right(std::move(right)),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(FilePath, END_token) {
+        return_type = "float";
+    }
 
 // Get string representation
 std::string
@@ -1245,3 +1408,5 @@ ASTNode* PowerNode::clone() {
 
     return new PowerNode(file, END_token, token, left_copy, right_copy);
 }
+
+} // namespace vltc

@@ -1,0 +1,13 @@
+// Version: 1.0.0
+SET item<int> = 1
+SET Item<int> = 2
+SET if<int> = 8
+SET Math<int> = 3
+SET STDIO<int> = 4
+SET long_name_abcdefghijklmnopqrstuvwxyz_abcdefghijklmnopqrstuvwxyz_abcdefghijklmnopqrstuvwxyz<int> = 5
+CALL println value<int>:GET item END
+CALL println value<int>:GET Item END
+CALL println value<int>:GET if END
+CALL println value<int>:GET Math END
+CALL println value<int>:GET STDIO END
+CALL println value<int>:GET long_name_abcdefghijklmnopqrstuvwxyz_abcdefghijklmnopqrstuvwxyz_abcdefghijklmnopqrstuvwxyz END

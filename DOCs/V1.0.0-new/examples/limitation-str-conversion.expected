@@ -1,0 +1,7 @@
+ERROR
+
+SyntaxError: unexpected token 'str'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  CALL str value<int>:2 END
+--|       ^^^

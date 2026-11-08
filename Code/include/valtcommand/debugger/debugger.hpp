@@ -17,6 +17,8 @@
 
 /// Namespace
 
+namespace vltc {
+
 namespace DevTools {
 
     /// All levels of evens
@@ -138,3 +140,5 @@ namespace DevTools {
             void exit(); ///< Exit the program
     };
 }
+
+} // namespace vltc

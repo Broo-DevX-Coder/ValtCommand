@@ -1,0 +1,7 @@
+// Version: 1.0.0
+FUNCTION rhs()->bool
+    CALL println value<str>:"RHS" END
+    RETURN True
+END
+CALL println value<bool>:True && (CALL rhs END) END
+CALL println value<bool>:False || (CALL rhs END) END

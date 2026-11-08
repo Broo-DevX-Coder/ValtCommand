@@ -13,11 +13,13 @@
 #include <fmt/format.h>
 
 /// == Locals ==
-#include "detail/globals.hpp"
+#include "valtcommand/globals.hpp"
 
 /// Namespace
 
 /// Namespace of All errors classes
+namespace vltc {
+
 namespace Errors {
 
     /// Errors formatter
@@ -34,6 +36,7 @@ namespace Errors {
     class SyntaxError: public Error {
         public:
             SyntaxError(std::string token, size_t line, size_t column, size_t lenth, std::string comment=""); ///< Constructure
+            explicit SyntaxError(const Token& token, std::string comment=""); ///< Constructure for lexical errors
     };
 
     /// The type that got is not compatible with expected type
@@ -81,7 +84,7 @@ namespace Errors {
         public:
             UserFunctionError(std::string function_name,size_t line,size_t column, size_t lenth,std::string comment = ""); ///< Constructure
             std::string return_type_error(std::string expected_type,std::string got_type); ///< When user returns uncompatible type data with function return type
-            std::string missing_return_error(); ///< Not all paths return a value
+            std::string missing_return_error(); ///< When a non-void function has no RETURN statement
             std::string function_already_defined(); ///< When user redifine a function by same name in same scope
     };
 
@@ -98,3 +101,5 @@ namespace Errors {
             std::string division_by_zero(); ///< When user devide on zero
     };
 }
+
+} // namespace vltc

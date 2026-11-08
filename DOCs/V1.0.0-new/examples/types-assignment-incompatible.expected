@@ -1,0 +1,7 @@
+ERROR
+
+TypeError: expected 'int', got 'str'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  SET value<int> = "bad"
+--|            ^^^

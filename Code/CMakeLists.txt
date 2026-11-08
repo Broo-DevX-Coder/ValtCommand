@@ -18,8 +18,12 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 # Enable compile commands for IDEs
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+
+# ASann and UBSan in Debug mode
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined)
+endif()
 
 # Get Libraries
 find_package(fmt REQUIRED)
@@ -31,3 +35,4 @@ add_subdirectory(app)
 
 # Enable testing
 enable_testing()
+add_subdirectory(qa)

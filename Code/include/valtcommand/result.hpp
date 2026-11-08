@@ -11,6 +11,8 @@
  * @namespace Errors
  * @brief Error data shared by the runtime and its host.
  */
+namespace vltc {
+
 namespace Errors {
 
 /**
@@ -85,3 +87,5 @@ namespace Runtime {
 
 
 }
+
+} // namespace vltc

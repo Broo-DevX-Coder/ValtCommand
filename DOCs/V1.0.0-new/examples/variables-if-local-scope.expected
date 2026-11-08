@@ -1,0 +1,10 @@
+ERROR
+
+NameError: 'local' is not defined
+------------------------------------------
+4-|  END
+5-|  CALL println value<int>:GET local END
+--|                              ^^^^^
+------------------------------------------
+Unknown variable
+

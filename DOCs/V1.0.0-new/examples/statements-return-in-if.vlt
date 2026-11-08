@@ -1,0 +1,9 @@
+// Version: 1.0.0
+FUNCTION choose()->int
+    IF True THEN
+        RETURN 7
+    ELSE THEN
+        RETURN 8
+    END
+END
+CALL println value<int>:CALL choose END END

@@ -1,0 +1,3 @@
+// Version: 1.0.0
+SET PI = 3
+CALL println value<float>:GET PI END

@@ -1,0 +1,8 @@
+// Version: 1.0.0
+IF True THEN
+    IF False THEN
+        CALL println value<str>:"wrong inner branch" END
+    ELSE THEN
+        CALL println value<str>:"inner else" END
+    END
+END

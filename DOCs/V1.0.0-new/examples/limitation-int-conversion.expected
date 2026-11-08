@@ -1,0 +1,7 @@
+ERROR
+
+SyntaxError: unexpected token 'int'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  CALL int value<float>:2.5 END
+--|       ^^^

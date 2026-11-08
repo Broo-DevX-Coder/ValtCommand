@@ -1,0 +1,7 @@
+// Version: 1.0.0
+SET x<int> = 5
+CALL println value<int>:GET x END
+SET x = 2.5
+CALL println value<int>:GET x END
+SET x = -2.9
+CALL println value<int>:GET x END

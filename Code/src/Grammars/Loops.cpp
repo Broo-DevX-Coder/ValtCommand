@@ -14,6 +14,23 @@
 // ==================================================================
 
 // Get the node of While loop `WHILE`
+namespace vltc {
+static ReturnResult<Parser::Node> missing_end_error(
+    const Token& previous,
+    const std::string& construct
+) {
+    auto err = Errors::SyntaxError(
+        "(end of code!)",
+        previous.line,
+        previous.column + previous.value.size(),
+        1,
+        "Expected `END` to close the " + construct
+    );
+    ReturnResult<Parser::Node> result = {err.msg, false, nullptr};
+    result.error_info = err.info;
+    return result;
+}
+
 ReturnResult<Parser::Node>
 Parser::get_while_loop_node(const std::string& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
@@ -97,11 +114,7 @@ Parser::get_while_loop_node(const std::string& FilePath) {
 
     // Raise error if code ended
     if (isAsEnd()) {
-        return {
-            "SyntaxError: forgot to add END in after of IF Satament",
-            false,
-            nullptr
-        };
+        return missing_end_error(tokens_list_[pos - 1], "WHILE loop.");
     }
 
     // Jump on `END`
@@ -268,11 +281,7 @@ Parser::get_for_loop_node(const std::string& FilePath) {
 
     // Raise error if code ended
     if (isAsEnd()) {
-        return {
-            "SyntaxError: forgot to add END in after of IF Satament",
-            false,
-            nullptr
-        };
+        return missing_end_error(tokens_list_[pos - 1], "FOR loop.");
     }
 
     // Jump on `END`
@@ -368,3 +377,5 @@ Parser::get_continue_loop_node(const std::string& FilePath) {
         std::make_unique<ContinueLoopNode>(FilePath, END_token, consume_result.value)
     };
 }
+
+} // namespace vltc

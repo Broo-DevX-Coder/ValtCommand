@@ -1,0 +1,8 @@
+// Version: 1.0.0
+FUNCTION make()->int
+    SET local<int> = 12
+    RETURN GET local
+END
+SET result<int> = CALL make END
+CALL println value<int>:GET result END
+CALL println value<int>:GET local END

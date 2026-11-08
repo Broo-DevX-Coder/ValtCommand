@@ -1,0 +1,5 @@
+// Version: 1.0.0
+CALL println value<float>:GET INF + 1 END
+CALL println value<float>:GET INF - GET INF END
+CALL println value<float>:GET NAN + 1 END
+CALL println value<float>:GET INF / GET INF END

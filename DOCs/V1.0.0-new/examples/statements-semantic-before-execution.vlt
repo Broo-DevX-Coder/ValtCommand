@@ -1,0 +1,4 @@
+// Version: 1.0.0
+CALL println value<str>:"must not print" END
+IF 1 THEN
+END

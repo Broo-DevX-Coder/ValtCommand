@@ -13,6 +13,7 @@
 // Runtime Tracker Helper
 // ==================================================================
 
+namespace vltc {
 static void emit_event(
     NodesContext& Context,
     DevTools::EventsT type,
@@ -162,22 +163,6 @@ ModuleNode::exec(
             return r;
         }
 
-        if (
-            r.state == ExecState::Return ||
-            r.state == ExecState::Break ||
-            r.state == ExecState::Continue
-        ) {
-            emit_event(
-                Context,
-                DevTools::EventsT::Runtime,
-                "Control-flow state propagated from program statement #" +
-                    std::to_string(statement_index),
-                FToken.line
-            );
-
-            return r;
-        }
-
         // Preserve the original ownership behavior.
         stmt.node = nullptr;
     }
@@ -280,3 +265,5 @@ ModuleNode::clone() {
 
     return new ModuleNode(file, END_token, new_statments, FToken);
 }
+
+} // namespace vltc

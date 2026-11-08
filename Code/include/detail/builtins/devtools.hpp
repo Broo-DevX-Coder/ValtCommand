@@ -16,6 +16,8 @@
 #include <functional>
 
 /// Namespace
+namespace vltc {
+
 namespace Lib{
     
     /// All devtools embeded functions
@@ -30,3 +32,5 @@ namespace Lib{
  
     }
 }
+
+} // namespace vltc

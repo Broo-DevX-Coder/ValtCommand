@@ -3,7 +3,7 @@
 // ==================================================================
 
 // == Locals ==
-#include "detail/globals.hpp"
+#include "valtcommand/globals.hpp"
 
 // == Libs ==
 #include <algorithm>
@@ -14,6 +14,7 @@
 // ==================================================================
 
 // All Tokens Types by string
+namespace vltc {
 std::unordered_map<TokenType,std::string> TokenTypesStr = {
     {TokenType::IDENTIFIER,"IDENTIFIER"},
     {TokenType::TYPE,"TYPE"},
@@ -52,7 +53,9 @@ std::unordered_map<TokenType,std::string> TokenTypesStr = {
     {TokenType::DIV,"DIV"},
     {TokenType::MOD,"MOD"},
     {TokenType::POWER,"POWER"},
-    {TokenType::UNKNOWN,"UNKNOWN"}
+    {TokenType::UNKNOWN,"UNKNOWN"},
+    {TokenType::UNTERMINATED_STRING,"UNTERMINATED_STRING"},
+    {TokenType::UNTERMINATED_COMMENT,"UNTERMINATED_COMMENT"}
 };
 
 
@@ -131,7 +134,10 @@ std::unordered_map<TokenType,std::string> TokenTypes_to_StringType = {
 std::unordered_map<char,char> 
 __backslashed_symbols__ = {
     {'n', '\n'},
-    {'t', '\t'}
+    {'t', '\t'},
+    {'\\', '\\'},
+    {'"', '"'},
+    {'\'', '\''}
 };
 
 // ==================================================================
@@ -261,3 +267,5 @@ turn_value_to_float(
 
     return {"",true,value};
 }
+
+} // namespace vltc

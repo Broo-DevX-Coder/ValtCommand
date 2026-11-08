@@ -1,0 +1,8 @@
+// Version: 1.0.0
+FUNCTION outer()->int
+    FUNCTION inside_function()->int
+        RETURN 9
+    END
+    RETURN CALL inside_function END
+END
+CALL println value<int>:CALL outer END END

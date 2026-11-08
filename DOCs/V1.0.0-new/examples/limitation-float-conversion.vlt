@@ -1,0 +1,2 @@
+// Version: 1.0.0
+CALL float value<int>:2 END

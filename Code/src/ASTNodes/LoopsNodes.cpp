@@ -14,6 +14,7 @@
 // Runtime Tracker Helper
 // ==================================================================
 
+namespace vltc {
 static void emit_event(
     NodesContext& Context,
     DevTools::EventsT type,
@@ -40,14 +41,18 @@ BreakLoopNode::BreakLoopNode(const std::string& FilePath,
     const Token& END_token,
     Token& t_
 ): BreakT(t_),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(FilePath, END_token) {
+        return_type = "void";
+    }
 
 // Constructor
 ContinueLoopNode::ContinueLoopNode(const std::string& FilePath,
     const Token& END_token,
     Token& t_
 ): ContinueT(t_),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(FilePath, END_token) {
+        return_type = "void";
+    }
 
 // Get the string to print
 std::string
@@ -1282,3 +1287,5 @@ ForLoopsNode::exec(
         std::monostate{}
     };
 }
+
+} // namespace vltc

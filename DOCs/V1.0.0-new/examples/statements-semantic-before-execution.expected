@@ -1,0 +1,7 @@
+ERROR
+
+TypeError: expected 'bool', got 'int'
+------------------------------------------
+2-|  CALL println value<str>:"must not print" END
+3-|  IF 1 THEN
+--|     ^

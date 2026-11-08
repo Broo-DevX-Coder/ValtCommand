@@ -1,0 +1,11 @@
+// Version: 1.0.0
+IF True THEN
+    CALL println value<str>:"if branch" END
+ELSE THEN
+    CALL println value<str>:"wrong branch" END
+END
+IF False THEN
+    CALL println value<str>:"wrong branch" END
+ELSE THEN
+    CALL println value<str>:"else branch" END
+END

@@ -1,0 +1,6 @@
+// Version: 1.0.0
+CALL println value<bool>:GET NAN == GET NAN END
+CALL println value<bool>:GET NAN != GET NAN END
+CALL println value<bool>:GET NAN < 1 END
+CALL println value<bool>:GET INF == GET INF END
+CALL println value<bool>:GET INF > 1 END

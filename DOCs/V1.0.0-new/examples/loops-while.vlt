@@ -1,0 +1,7 @@
+// Version: 1.0.0
+SET n<int> = 0
+WHILE GET n < 3 THEN
+    CALL println value<int>:GET n END
+    SET n = GET n + 1
+END
+CALL println value<str>:"done" END

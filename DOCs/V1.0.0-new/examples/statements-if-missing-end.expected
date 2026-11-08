@@ -1,0 +1,10 @@
+ERROR
+
+SyntaxError: unexpected token '(end of code!)'
+------------------------------------------
+2-|  IF True THEN
+3-|      CALL println value<str>:"body" END
+--|                                        ^
+------------------------------------------
+Expected `END` to close the IF statement.
+

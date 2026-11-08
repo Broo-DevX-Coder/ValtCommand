@@ -1,0 +1,8 @@
+// Version: 1.0.0
+FUNCTION maybe(flag<bool>)->int
+    IF GET flag THEN
+        RETURN 1
+    END
+END
+CALL println value<any>:CALL maybe flag<bool>:False END END
+CALL println value<str>:"continued" END

@@ -14,4 +14,8 @@
  * The alternatives represent void, integer, floating-point, string, and
  * boolean values respectively.
  */
+namespace vltc {
+
 using Value = std::variant<std::monostate, int64_t, long double, std::string, bool>;
+
+} // namespace vltc

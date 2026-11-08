@@ -1,0 +1,10 @@
+ERROR
+
+SyntaxError: unexpected token '(end of code!)'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  SET x<int>
+--|            ^
+------------------------------------------
+Unexpected end of input while parsing
+

@@ -15,6 +15,8 @@
 /// Set variable nodes
 
 /// Set varuable node: the node that create the variable and execute its value, after that it put the var in symbols table in parent scope
+namespace vltc {
+
 class SetVariableNode: public ASTNode {
     private:
         Token NameToken; ///< Token of Name of variable
@@ -67,3 +69,5 @@ class GetVariableNode: public ASTNode {
         ReturnResult<Value> exec(NodesContext Context) override; ///< execute and get the value from symbols table
         ASTNode* clone() override; ///< Clone the class or get a new copy from them
 };
+
+} // namespace vltc

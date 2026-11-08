@@ -1,0 +1,6 @@
+// Version: 1.0.0
+SET i<int> = 0
+WHILE GET i < 1 THEN
+    SET i = GET i + 1
+    CALL println value<int>:GET i END
+END

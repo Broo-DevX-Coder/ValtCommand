@@ -1,0 +1,11 @@
+// Version: 1.0.0
+SET x<int> = 7
+FOR
+    SET i<int> = 0;
+    GET i < 2;
+    SET i = GET i + 1
+THEN
+    SET x<int> = 50
+    CALL println value<int>:GET x END
+END
+CALL println value<int>:GET x END

@@ -1,0 +1,5 @@
+// Version: 1.0.0
+SET value<int> = 4
+GET value
+1 + 2
+CALL println value<str>:"after expression" END

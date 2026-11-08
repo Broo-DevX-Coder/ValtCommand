@@ -14,6 +14,7 @@
 // Helper: emit a Runtime Tracker event
 // ==================================================================
 
+namespace vltc {
 static void emit_sign_event(
     NodesContext& Context,
     DevTools::EventsT type,
@@ -450,3 +451,5 @@ ASTNode* LogicalNotNode::clone() {
         new_node
     );
 }
+
+} // namespace vltc

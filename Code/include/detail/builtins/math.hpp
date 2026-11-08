@@ -16,6 +16,8 @@
 #include <functional>
 
 /// Namespace
+namespace vltc {
+
 namespace Lib{
     
     /// All mathimatical embeded functions
@@ -84,3 +86,5 @@ namespace Lib{
  
     }
 }
+
+} // namespace vltc

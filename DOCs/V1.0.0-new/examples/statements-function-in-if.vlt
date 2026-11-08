@@ -1,0 +1,7 @@
+// Version: 1.0.0
+IF True THEN
+    FUNCTION inside_if()->int
+        RETURN 7
+    END
+    CALL println value<int>:CALL inside_if END END
+END
