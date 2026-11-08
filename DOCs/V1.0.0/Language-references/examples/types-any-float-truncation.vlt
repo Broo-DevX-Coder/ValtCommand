@@ -1,0 +1,7 @@
+// Version: 1.0.0
+SET source<any> = 2.5
+SET positive<int> = GET source
+SET source = -2.9
+SET negative<int> = GET source
+CALL println value<int>:GET positive END
+CALL println value<int>:GET negative END

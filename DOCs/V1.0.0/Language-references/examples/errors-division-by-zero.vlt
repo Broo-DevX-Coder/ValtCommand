@@ -1,0 +1,2 @@
+// Version: 1.0.0
+SET quotient<float> = 1 / 0

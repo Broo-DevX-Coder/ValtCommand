@@ -1,6 +1,0 @@
-ERROR
-
-TypeError: sqrt(): argument 'x' must be int or float, got string
-------------------------------------------
-1-|  // Version: 1.0.0
---|  ^

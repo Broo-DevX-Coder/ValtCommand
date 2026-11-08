@@ -1,0 +1,7 @@
+ERROR
+
+TypeError: Cannot assign value of type 'str' to variable 'value' of type 'int'
+------------------------------------------
+2-|  SET value<int> = 1
+3-|  SET value = "x"
+--|      ^^^^^

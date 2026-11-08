@@ -1,0 +1,3 @@
+// Version: 1.0.0
+SET value<int> = 1
+SET value = "x"

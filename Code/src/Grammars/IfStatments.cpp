@@ -62,7 +62,7 @@ Parser::get_if_statment_node(const std::string& FilePath) {
             consume_result.value.line,
             consume_result.value.column,
             consume_result.value.value.size(),
-            "Forgot to add `THEN` after the condition"
+            "Use `ELSE THEN IF ... END` for an else-if branch."
         );
         ReturnResult<Node> re = {err.msg,false,nullptr};
         re.error_info = err.info;
@@ -99,7 +99,7 @@ Parser::get_if_statment_node(const std::string& FilePath) {
                 consume_result.value.line,
                 consume_result.value.column,
                 consume_result.value.value.size(),
-                "Forgot to add `THEN` after the condition"
+                "Use `ELSE THEN IF ... END` for an else-if branch."
             );
             ReturnResult<Node> re = {err.msg,false,nullptr};
             re.error_info = err.info;

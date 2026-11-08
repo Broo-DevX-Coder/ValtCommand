@@ -1,0 +1,6 @@
+ERROR
+
+ArgumentError: format(): missing argument 'name' referenced by placeholder '{name}'
+------------------------------------------
+1-|  // Version: 1.0.0
+--|  ^

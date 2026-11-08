@@ -1,0 +1,10 @@
+ERROR
+
+SyntaxError: unexpected token 'CALL'
+------------------------------------------
+2-|  IF True
+3-|      CALL println value<str>:"body" END
+--|      ^^^^
+------------------------------------------
+Use `ELSE THEN IF ... END` for an else-if branch.
+

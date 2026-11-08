@@ -1,9 +1,0 @@
-ERROR
-
-SyntaxError: unexpected token '(end of code!)'
-------------------------------------------
-6-|  THEN
-7-|      CALL println value<int>:GET i END
---|                                       ^
-------------------------------------------
-Expected `END` to close the FOR loop.

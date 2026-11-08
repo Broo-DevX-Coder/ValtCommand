@@ -1,0 +1,7 @@
+ERROR
+
+IncompatibleTypesError: can't compare `str` with `int`
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  CALL println value<bool>:"1" == 1 END
+--|                                  ^

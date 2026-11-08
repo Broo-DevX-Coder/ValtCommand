@@ -1,0 +1,7 @@
+ERROR
+
+IncompatibleTypesError: can't compare `bool` with `int`
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  CALL println value<bool>:True == 1 END
+--|                                   ^

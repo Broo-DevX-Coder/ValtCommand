@@ -258,7 +258,12 @@ FunctionCallArgumentNode::exec(
         TypeToken.line
     );
 
-    value = reconsiliation_int_float(type, vnode_r.value);
+    auto reconciled = reconsiliation_int_float(type, vnode_r.value, TypeToken);
+    if (!reconciled.success) {
+        VNode = nullptr;
+        return reconciled;
+    }
+    value = std::move(reconciled.value);
 
     emit_event(
         Context,

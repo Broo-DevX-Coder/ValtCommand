@@ -1,0 +1,7 @@
+ERROR
+
+TypeError: cannot convert 'str' to 'int'
+------------------------------------------
+2-|  SET value<any> = "bad"
+3-|  SET result<int> = GET value
+--|      ^^^^^^

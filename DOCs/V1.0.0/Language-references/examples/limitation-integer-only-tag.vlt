@@ -1,0 +1,7 @@
+// Version: 1.0.0
+CALL println value<float>:CALL root x<float>:16 n<int>:2.5 END END
+CALL println value<int>:CALL randint lo<int>:2.5 hi<int>:2 END END
+CALL seed_random seed<int>:2.5 END
+CALL println value<int>:CALL randint lo<int>:0 hi<int>:100 END END
+CALL seed_random seed<int>:2 END
+CALL println value<int>:CALL randint lo<int>:0 hi<int>:100 END END

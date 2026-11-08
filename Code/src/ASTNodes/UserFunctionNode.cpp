@@ -229,10 +229,14 @@ UserFunctionArgumentNode::exec(
             return vnode_r;
         }
 
-        default_value = reconsiliation_int_float(
+        auto reconciled = reconsiliation_int_float(
             type_token.value,
-            vnode_r.value
+            vnode_r.value,
+            default_value_ftoekn
         );
+        if (!reconciled.success)
+            return reconciled;
+        default_value = std::move(reconciled.value);
 
         default_value_node = nullptr;
 
@@ -627,14 +631,17 @@ UserProxyFunctionNode::exec(
                 0
             );
 
-            return {
-                "",
-                true,
-                reconsiliation_int_float(
-                    return_type,
-                    r.return_data
-                )
-            };
+            const Token& return_token = r.return_nodes.empty()
+                ? END_token
+                : r.return_nodes.back()->END_token;
+            auto reconciled = reconsiliation_int_float(
+                return_type,
+                r.return_data,
+                return_token
+            );
+            if (!reconciled.success)
+                return reconciled;
+            return {"", true, std::move(reconciled.value)};
         }
 
         statement = nullptr;

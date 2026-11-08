@@ -1,0 +1,7 @@
+ERROR
+
+TypeError: cannot convert 'void' to 'int'
+------------------------------------------
+4-|  SET value<any> = CALL noop END
+5-|  SET result<int> = GET value
+--|      ^^^^^^

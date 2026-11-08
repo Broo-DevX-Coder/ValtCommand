@@ -1,0 +1,17 @@
+// Version: 1.0.0
+FUNCTION echo_int(value<int>)->int
+    RETURN GET value
+END
+FUNCTION echo_float(value<float>)->float
+    RETURN GET value
+END
+CALL println value<int>:CALL trunc x<int>:2.5 END END
+CALL println value<int>:CALL trunc x<int>:2.6 END END
+CALL println value<float>:CALL trunc x<float>:5 END END
+CALL println value<int>:CALL trunc x<int>:-2.9 END END
+CALL println value<float>:CALL trunc x<float>:16 END END
+CALL println value<int>:CALL echo_int value<int>:2.5 END END
+CALL println value<int>:CALL echo_int value<int>:2.6 END END
+CALL println value<float>:CALL echo_float value<float>:5 END END
+CALL println value<int>:CALL echo_int value<int>:-2.9 END END
+CALL println value<float>:CALL echo_float value<float>:16 END END

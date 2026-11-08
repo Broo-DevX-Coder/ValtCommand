@@ -9,6 +9,7 @@
 
 // == Libs ==
 #include <sstream>
+#include <limits>
 
 // ==================================================================
 // Helper: emit a Runtime Tracker event
@@ -275,6 +276,12 @@ SignOpNode::exec(NodesContext Context) {
         token.line
     );
 
+    if (type == SignOpsTypes::NEGATIVE &&
+        Operand_FT.Type == TokenType::INTEGER &&
+        Operand_FT.value == "9223372036854775808") {
+        return {"", true, std::numeric_limits<int64_t>::min()};
+    }
+
     // Execute operand
     auto result = node->exec(Context);
 
@@ -326,7 +333,12 @@ SignOpNode::exec(NodesContext Context) {
         );
 
         auto v = Value(value_r.value);
-        return {"", true, reconsiliation_int_float(node->return_type,v)};
+        auto reconciled = reconsiliation_int_float(
+            node->return_type, v, Operand_FT
+        );
+        if (!reconciled.success)
+            return reconciled;
+        return {"", true, std::move(reconciled.value)};
 
     }
 
@@ -340,7 +352,12 @@ SignOpNode::exec(NodesContext Context) {
         token.line
     );
 
-    return {"", true, reconsiliation_int_float(node->return_type,negative)};
+    auto reconciled = reconsiliation_int_float(
+        node->return_type, negative, Operand_FT
+    );
+    if (!reconciled.success)
+        return reconciled;
+    return {"", true, std::move(reconciled.value)};
 }
 
 

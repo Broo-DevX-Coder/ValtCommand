@@ -1,0 +1,5 @@
+// Version: 1.0.0
+FUNCTION noop()->void
+END
+SET value<any> = CALL noop END
+SET result<int> = GET value

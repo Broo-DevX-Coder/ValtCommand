@@ -388,7 +388,8 @@ WhileLoopsNode::accept(
             condition_node->return_type,
             FirstToken.line,
             FirstToken.column,
-            FirstToken.value.size()
+            FirstToken.value.size(),
+            "Condition of while loop must be boolean"
         );
 
         ReturnResult<bool> re = {
@@ -899,7 +900,7 @@ ForLoopsNode::accept(
             Condition.first_token.line,
             Condition.first_token.column,
             Condition.first_token.value.size(),
-            "Condition of for loop need to be bolean !!"
+            "Condition of for loop must be boolean"
         );
 
         ReturnResult<bool> re = {

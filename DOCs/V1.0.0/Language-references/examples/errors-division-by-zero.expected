@@ -1,0 +1,7 @@
+ERROR
+
+RuntimeError: division by zero
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  SET quotient<float> = 1 / 0
+--|                            ^

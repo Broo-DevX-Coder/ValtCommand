@@ -266,15 +266,18 @@ SetVariableNode::exec(
         return vnode_ar;
     }
 
-    auto value = reconsiliation_int_float(
+    auto reconciled = reconsiliation_int_float(
         type,
-        vnode_ar.value
+        vnode_ar.value,
+        NameToken
     );
+    if (!reconciled.success)
+        return reconciled;
 
     Context.ParentScope->add_var(
         name,
         type,
-        value,
+        std::move(reconciled.value),
         is_const
     );
 
@@ -555,10 +558,14 @@ ResetVariableNode::exec(
         return re;
     }
 
-    search_r.value->value = reconsiliation_int_float(
+    auto reconciled = reconsiliation_int_float(
         type,
-        value
+        value,
+        NameToken
     );
+    if (!reconciled.success)
+        return reconciled;
+    search_r.value->value = std::move(reconciled.value);
 
     emit_event(
         Context,

@@ -1,0 +1,10 @@
+ERROR
+
+TypeError: expected 'bool', got 'int'
+------------------------------------------
+3-|      SET i<int> = 0;
+4-|      1;
+--|      ^
+------------------------------------------
+Condition of for loop must be boolean
+

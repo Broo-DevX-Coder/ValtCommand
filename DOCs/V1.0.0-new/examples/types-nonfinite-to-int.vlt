@@ -1,7 +1,0 @@
-// Version: 1.0.0
-SET from_nan<int> = GET NAN
-CALL println value<int>:GET from_nan END
-SET from_inf<int> = GET INF
-CALL println value<int>:GET from_inf END
-SET from_float_max<int> = GET FLOAT_MAX
-CALL println value<int>:GET from_float_max END

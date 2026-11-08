@@ -1,0 +1,7 @@
+ERROR
+
+TypeError: cannot convert 'bool' to 'int'
+------------------------------------------
+2-|  SET value<any> = True
+3-|  SET result<int> = GET value
+--|      ^^^^^^

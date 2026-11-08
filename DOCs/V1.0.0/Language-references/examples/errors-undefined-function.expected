@@ -1,0 +1,10 @@
+ERROR
+
+NameError: 'foo' is not defined
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  CALL foo END
+--|       ^^^
+------------------------------------------
+Unknown function
+

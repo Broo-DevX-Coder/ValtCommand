@@ -7,6 +7,7 @@
 
 // == Libs ==
 #include <algorithm>
+#include <cmath>
 #include <sstream>
 
 // ==================================================================
@@ -190,7 +191,7 @@ Get_ValueT(
         return "float";
 
     if (std::holds_alternative<std::string>(value))
-        return "string";
+        return "str";
 
     if (std::holds_alternative<bool>(value))
         return "bool";
@@ -213,36 +214,60 @@ are_types_compatible(
 }
 
 // Reconsiliation between intiger and float
-Value 
+ReturnResult<Value>
 reconsiliation_int_float(
     const std::string& type, 
-    Value& input
+    Value& input,
+    const Token& source_token
 ) {
-    Value value;
+    auto failure = [&](const std::string& error_type,
+                       const std::string& message) {
+        ReturnResult<Value> result{message, false, std::monostate{}};
+        result.error_info = {
+            error_type,
+            message,
+            "",
+            source_token.line,
+            source_token.column,
+            source_token.value.size()
+        };
+        return result;
+    };
 
-    if (type=="int") {
-        int64_t* v = std::get_if<int64_t>(&input);
-    
-        if (v!=nullptr) {
-            value = *v;
-        } else {
-            long double* v = std::get_if<long double>(&input);
-            value = static_cast<int64_t>(*v);
-        }
-    
-    }else if (type == "float") {
-        long double* v = std::get_if<long double>(&input);
-    
-        if (v!=nullptr) {
-            value = *v;
-        } else {
-            int64_t* v = std::get_if<int64_t>(&input);
-            value = static_cast<long double>(*v);
-        }
-    
-    } else value=input;
+    if (type != "int" && type != "float")
+        return {"", true, input};
 
-    return value;
+    const auto* integer = std::get_if<int64_t>(&input);
+    const auto* floating = std::get_if<long double>(&input);
+
+    if (integer == nullptr && floating == nullptr) {
+        return failure(
+            "TypeError",
+            "cannot convert '" + Get_ValueT(input) + "' to '" + type + "'"
+        );
+    }
+
+    if (type == "float") {
+        if (floating != nullptr)
+            return {"", true, *floating};
+        return {"", true, static_cast<long double>(*integer)};
+    }
+
+    if (integer != nullptr)
+        return {"", true, *integer};
+
+    constexpr long double INT64_UPPER_BOUND = 9223372036854775808.0L;
+    constexpr long double INT64_LOWER_BOUND = -INT64_UPPER_BOUND;
+    if (!std::isfinite(*floating) ||
+        *floating < INT64_LOWER_BOUND ||
+        *floating >= INT64_UPPER_BOUND) {
+        return failure(
+            "OverflowError",
+            "cannot convert non-finite or out-of-range float to int"
+        );
+    }
+
+    return {"", true, static_cast<int64_t>(*floating)};
 }
 
 // Turn a Value type to float

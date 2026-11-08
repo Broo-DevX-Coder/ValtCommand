@@ -1,0 +1,10 @@
+ERROR
+
+TypeError: expected 'bool', got 'int'
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  WHILE 1 THEN
+--|  ^^^^^
+------------------------------------------
+Condition of while loop must be boolean
+

@@ -1,0 +1,7 @@
+ERROR
+
+OverflowError: cannot convert non-finite or out-of-range float to int
+------------------------------------------
+1-|  // Version: 1.0.0
+2-|  SET from_nan<int> = GET NAN
+--|      ^^^^^^^^

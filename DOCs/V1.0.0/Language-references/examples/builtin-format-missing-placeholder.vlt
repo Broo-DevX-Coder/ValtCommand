@@ -1,0 +1,4 @@
+// Version: 1.0.0
+CALL format
+    text<str>:"Hello {name}!"
+END

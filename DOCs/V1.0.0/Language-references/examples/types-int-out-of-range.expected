@@ -1,0 +1,8 @@
+ERROR
+-9223372036854775808
+
+OverflowError: cannot convert non-finite or out-of-range float to int
+------------------------------------------
+2-|  CALL println value<int>:9223372036854775808 END
+3-|  CALL println value<int>:-9223372036854775809 END
+--|                           ^^^^^^^^^^^^^^^^^^^

@@ -474,9 +474,10 @@ bool are_types_compatible(
  * @param input Value to convert.
  * @return Converted runtime value.
  */
-Value reconsiliation_int_float(
+ReturnResult<Value> reconsiliation_int_float(
     const std::string& type,
-    Value& input
+    Value& input,
+    const Token& source_token
 );
 
 /**
