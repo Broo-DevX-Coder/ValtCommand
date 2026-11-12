@@ -76,6 +76,10 @@ namespace {
         }
         return commands_map[command];
     }
+
+    fs::path AbsPath(fs::path path) {
+        return fs::absolute(path).lexically_normal();
+    }
 }
 }
 
@@ -87,9 +91,10 @@ namespace {
 // Print event 
 void 
 DevTools::Debugger::print_event(
-    event event
+    event event,
+    std::ostream& ostrm
 ){
-    std::cout << event.get_str();
+    ostrm << event.get_str() << std::flush;
 }
 
 // Emit event
@@ -97,13 +102,13 @@ void
 DevTools::Debugger::emit(
     event event
 ) {
-    curent_file = event.file;
-    if (event.type != DevTools::EventsT::Analysis && event.line != curent_line) {
+    if (event.type == DevTools::EventsT::Runtime && (event.line != curent_line || curent_file != event.file)) {
         curent_line = event.line;
+        curent_file = event.file;
         check_break_point(event.line, event.curent_scope, event.file);
     }
     events_list.push_back(event);
-    emit_slot(event);
+    emit_slot(event,*output_stream);
 }
 
 // Set the slot of
@@ -140,10 +145,12 @@ DevTools::Debugger::get_all_events_strs() {
 void 
 DevTools::Debugger::add_break_points(
     const std::vector<size_t>& points_buffer,
-    const std::string& FilePath
+    const fs::path& FilePath
 ) {
     for (auto& p: points_buffer) {
-        breakpoints.push_back(breakPointType(p, FilePath));
+        auto it = std::find_if(breakpoints.begin(),breakpoints.end(),[&](breakPointType bp){return size_t(bp) == p && AbsPath(FilePath) == AbsPath(bp.get_file());});
+        if (it == breakpoints.end())
+            breakpoints.push_back(breakPointType(p, FilePath));
     }
 }
 
@@ -152,13 +159,13 @@ void
 DevTools::Debugger::check_break_point(
     size_t line,
     Scopes::Scope* scope,
-    const std::string& FilePath
+    const fs::path& FilePath
 ) {
     for (size_t i = 0; i < breakpoints.size(); ++i) {
 
         const bool matched =
-            line == static_cast<size_t>(breakpoints[i]) &&
-            (breakpoints[i].get_file().empty() || breakpoints[i].get_file() == FilePath) &&
+            line == size_t(breakpoints[i]) &&
+            (breakpoints[i].get_file().empty() || AbsPath(breakpoints[i].get_file()) == AbsPath(FilePath)) &&
             static_cast<bool>(breakpoints[i]);
 
         if (matched) {
@@ -198,7 +205,6 @@ DevTools::Debugger::stop_slot(
 
         if (!std::getline(std::cin, command)) {
             debuger.exit();
-
             break;
         }
 
@@ -243,7 +249,9 @@ DevTools::Debugger::stop_slot(
 // Move to the next line
 void 
 DevTools::Debugger::next_line() {
-    breakpoints.push_back(breakPointType(curent_line + 1, curent_file, true));
+    auto it = std::find_if(breakpoints.begin(),breakpoints.end(),[&](breakPointType bp){return size_t(bp) == curent_line + 1 && curent_file == bp.get_file();});
+    if (it == breakpoints.end())
+        breakpoints.push_back(breakPointType(curent_line + 1, curent_file, true));
 }
 
 // Continue executing
@@ -253,7 +261,7 @@ DevTools::Debugger::continue_exec() {}
 // Exit the program
 void 
 DevTools::Debugger::exit() {
-    std::cout << "Code exited successfuly\n";
+    std::cout << "Code killed successfully\n";
     std::exit(0);
 }
 
