@@ -15,7 +15,7 @@
 // Call a function with its arguments
 namespace vltc {
 ReturnResult<Parser::Node>
-Parser::get_functioncall_node(const std::string& FilePath) {
+Parser::get_functioncall_node(const fs::path& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
 
     // Jump on `CALL`
@@ -87,7 +87,7 @@ Parser::get_functioncall_node(const std::string& FilePath) {
 
         // Add the argument to args list
         const Token END_token = tokens_list_[pos - 1];
-        arg_list.push_back(std::make_unique<FunctionCallArgumentNode>(FilePath, END_token, arg_name_t.value.value,
+        arg_list.push_back(std::make_unique<FunctionCallArgumentNode>(END_token, arg_name_t.value.value,
             arg_type_t.value,
             std::move(arg_value.value)
         ));
@@ -103,7 +103,7 @@ Parser::get_functioncall_node(const std::string& FilePath) {
     const Token END_token = consume_result.value;
 
     // Create FunctionCallNode and get the value
-    return {"",true,std::make_unique<FunctionCallNode>(FilePath, END_token, func_name_t.value.value,
+    return {"",true,std::make_unique<FunctionCallNode>(END_token, func_name_t.value.value,
         arg_list,
         func_name_t.value
     )};

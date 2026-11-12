@@ -35,7 +35,7 @@ static ReturnResult<Parser::Node> propagate_error(
 }
 
 ReturnResult<Parser::Node>
-Parser::get_primary(const std::string& FilePath) {
+Parser::get_primary(const fs::path& FilePath) {
 
     auto cu = curent(); // Get curent token
 
@@ -62,6 +62,9 @@ Parser::get_primary(const std::string& FilePath) {
     // Set result var
     ReturnResult<Parser::Node> result = {err.msg, false, nullptr};
     result.error_info = err.info;
+    result.error_info.file = at_end && pos > 0
+        ? tokens_list_[pos - 1].FilePath
+        : curent().FilePath;
 
     // Set match result var
     ReturnResult<bool> mt;
@@ -168,7 +171,7 @@ Parser::get_primary(const std::string& FilePath) {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_expretion(const std::string& FilePath) {
+Parser::get_expretion(const fs::path& FilePath) {
     return get_logical_or(FilePath);
 }
 
@@ -177,7 +180,7 @@ Parser::get_expretion(const std::string& FilePath) {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_logical_or(const std::string& FilePath) {
+Parser::get_logical_or(const fs::path& FilePath) {
     OperationPartsList parts;
 
     auto first_token = curent();
@@ -218,7 +221,7 @@ Parser::get_logical_or(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<LogicOpsNode>(FilePath, END_token, parts)
+        std::make_unique<LogicOpsNode>(END_token, parts)
     };
 }
 
@@ -227,7 +230,7 @@ Parser::get_logical_or(const std::string& FilePath) {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_logical_and(const std::string& FilePath) {
+Parser::get_logical_and(const fs::path& FilePath) {
     OperationPartsList parts;
 
     auto first_token = curent();
@@ -268,7 +271,7 @@ Parser::get_logical_and(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<LogicOpsNode>(FilePath, END_token, parts)
+        std::make_unique<LogicOpsNode>(END_token, parts)
     };
 }
 
@@ -278,7 +281,7 @@ Parser::get_logical_and(const std::string& FilePath) {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_equality(const std::string& FilePath) {
+Parser::get_equality(const fs::path& FilePath) {
     auto first_token = curent();
     auto first = get_comparison(FilePath);
 
@@ -324,6 +327,7 @@ Parser::get_equality(const std::string& FilePath) {
         };
 
         result.error_info = error.info;
+        result.error_info.file = curent().FilePath;
         return result;
     }
 
@@ -345,7 +349,7 @@ Parser::get_equality(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<CompOpsNode>(FilePath, END_token, left,
+        std::make_unique<CompOpsNode>(END_token, left,
             right,
             comparison_type
         )
@@ -358,7 +362,7 @@ Parser::get_equality(const std::string& FilePath) {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_comparison(const std::string& FilePath) {
+Parser::get_comparison(const fs::path& FilePath) {
     auto first_token = curent();
     auto first = get_additive(FilePath);
 
@@ -405,6 +409,7 @@ Parser::get_comparison(const std::string& FilePath) {
         };
 
         result.error_info = error.info;
+        result.error_info.file = curent().FilePath;
         return result;
     }
 
@@ -426,7 +431,7 @@ Parser::get_comparison(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<CompOpsNode>(FilePath, END_token, left,
+        std::make_unique<CompOpsNode>(END_token, left,
             right,
             comparison_type
         )
@@ -439,7 +444,7 @@ Parser::get_comparison(const std::string& FilePath) {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_additive(const std::string& FilePath) {
+Parser::get_additive(const fs::path& FilePath) {
     OperationPartsList parts;
 
     auto first_token = curent();
@@ -489,7 +494,7 @@ Parser::get_additive(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<BinOpsNode>(FilePath, END_token, parts)
+        std::make_unique<BinOpsNode>(END_token, parts)
     };
 }
 
@@ -499,7 +504,7 @@ Parser::get_additive(const std::string& FilePath) {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_multiplicative(const std::string& FilePath) {
+Parser::get_multiplicative(const fs::path& FilePath) {
     OperationPartsList parts;
 
     auto first_token = curent();
@@ -550,7 +555,7 @@ Parser::get_multiplicative(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<BinOpsNode>(FilePath, END_token, parts)
+        std::make_unique<BinOpsNode>(END_token, parts)
     };
 }
 
@@ -560,7 +565,7 @@ Parser::get_multiplicative(const std::string& FilePath) {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_unary(const std::string& FilePath) {
+Parser::get_unary(const fs::path& FilePath) {
     const bool is_plus = check(TokenType::PLUS);
     const bool is_minus = check(TokenType::MINUS);
     const bool is_not_symbol = check(TokenType::EXCLAMATION);
@@ -596,7 +601,7 @@ Parser::get_unary(const std::string& FilePath) {
     return {
             "",
             true,
-            std::make_unique<LogicalNotNode>(FilePath, END_token, op_token,
+            std::make_unique<LogicalNotNode>(END_token, op_token,
                 operand_token,
                 operand.value
             )
@@ -611,7 +616,7 @@ Parser::get_unary(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<SignOpNode>(FilePath, END_token, sign_type,
+        std::make_unique<SignOpNode>(END_token, sign_type,
             op_token,
             operand_token,
             operand.value
@@ -625,7 +630,7 @@ Parser::get_unary(const std::string& FilePath) {
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_power(const std::string& FilePath) {
+Parser::get_power(const fs::path& FilePath) {
     auto first_token = curent();
     auto first = get_primary(FilePath);
 
@@ -667,7 +672,7 @@ Parser::get_power(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<PowerNode>(FilePath, END_token, op_token,
+        std::make_unique<PowerNode>(END_token, op_token,
             left,
             right
         )

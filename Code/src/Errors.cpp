@@ -25,7 +25,7 @@ Errors::formatter(
     std::stringstream ss;
 
     // Put the type and the message of error
-    ss << std::endl << info.type << ": " << info.message << "\n------------------------------------------\n";
+    ss << info.type << ": " << info.message << "\n------------------------------------------\n";
     
     std::optional<std::string> line1;
     std::optional<std::string> line2;
@@ -78,6 +78,7 @@ Errors::SyntaxError::SyntaxError(
 ) {
     info = {
         "SyntaxError",
+        {},
         fmt::format("unexpected token '{}'", token),
         comment, 
         line,
@@ -95,6 +96,7 @@ Errors::SyntaxError::SyntaxError(
 
 Errors::SyntaxError::SyntaxError(const Token& token, std::string comment)
 : SyntaxError(token.value, token.line, token.column, token.value.size(), comment) {
+    info.file = token.FilePath;
     if (token.Type == TokenType::UNTERMINATED_STRING) {
         info.message = "unterminated string literal";
         info.length = 1;
@@ -121,6 +123,7 @@ Errors::TypeError::TypeError(
 
     info = {
         "TypeError",
+        {},
         fmt::format("expected '{}', got '{}'", expected, got),
         comment,
         line,
@@ -147,6 +150,7 @@ Errors::NameError::NameError(
 ) {    
     info = {
         "NameError",
+        {},
         fmt::format("'{}' is not defined", name),
         comment, 
         line,

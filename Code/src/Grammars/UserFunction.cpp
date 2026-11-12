@@ -15,7 +15,7 @@
 // Get the node of user's function that put the function in symbol table
 namespace vltc {
 ReturnResult<Parser::Node>
-Parser::get_user_function_node(const std::string& FilePath) {
+Parser::get_user_function_node(const fs::path& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return result object
 
     std::vector<std::unique_ptr<UserFunctionArgumentNode>> arguments_list; // arguments list of function
@@ -148,7 +148,7 @@ Parser::get_user_function_node(const std::string& FilePath) {
         // Put the argument in arguments list
         const Token END_token = tokens_list_[pos - 1];
         arguments_list.push_back(
-            std::make_unique<UserFunctionArgumentNode>(FilePath, END_token, argument_name_TR.value,
+            std::make_unique<UserFunctionArgumentNode>(END_token, argument_name_TR.value,
                 argument_type_TR.value,
                 default_value_ftoken,
                 std::move(default_value_node)
@@ -240,7 +240,7 @@ Parser::get_user_function_node(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<UserFunctionNode>(FilePath, END_token, func_name_TR.value,
+        std::make_unique<UserFunctionNode>(END_token, func_name_TR.value,
             func_return_type_TR.value,
             std::move(arguments_list),
             std::move(statements),
@@ -255,7 +255,7 @@ Parser::get_user_function_node(const std::string& FilePath) {
 
 // Get the node of returning value in function
 ReturnResult<Parser::Node>
-Parser::get_return_noode(const std::string& FilePath) {
+Parser::get_return_noode(const fs::path& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return result object
 
     // Get 'RETURN'
@@ -300,7 +300,7 @@ Parser::get_return_noode(const std::string& FilePath) {
     return {
         "",
         true,
-        std::make_unique<UserFunctionReturnNode>(FilePath, END_token, return_token.value,
+        std::make_unique<UserFunctionReturnNode>(END_token, return_token.value,
             std::move(value_node)
         )
     };

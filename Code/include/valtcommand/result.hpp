@@ -6,6 +6,9 @@
 
 #include <cstddef>
 #include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem; // Definition of filesystem namespace as fs
 
 /**
  * @namespace Errors
@@ -21,6 +24,7 @@ namespace Errors {
  */
 struct ErrorInfo {
     std::string type;     ///< Error category.
+    fs::path file; ///< Error file path
     std::string message;  ///< Main error message.
     std::string comment;  ///< Additional diagnostic detail.
     std::size_t line = 0; ///< Source line, or zero when unknown.

@@ -365,6 +365,11 @@ struct Token {
     size_t last_column;
 
     /**
+     * @brief The FilePath of where the token founded
+     */
+    fs::path FilePath;
+
+    /**
      * @brief Prints the token information to standard output.
      *
      * Displays the token type, value, line, and column.
@@ -372,11 +377,12 @@ struct Token {
     void print() {
 
         std::cout << fmt::format(
-            "[ T:{} | V:\"{}\" | L:{} | C:{} ]",
+            "[ T:{} | V:\"{}\" | L:{} | C:{} | F:\"{}\" ]",
             TokenTypesStr[Type],
             value,
             line,
-            column
+            column,
+            FilePath.string()
         ) << std::endl << std::flush;
     }
 };

@@ -15,7 +15,7 @@
 
 namespace vltc {
 ReturnResult<Parser::Node>
-Parser::get_set_variable_node(const std::string& FilePath,
+Parser::get_set_variable_node(const fs::path& FilePath,
     bool is_const
 ) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
@@ -81,7 +81,7 @@ Parser::get_set_variable_node(const std::string& FilePath,
         const Token END_token = tokens_list_[pos - 1];
         return {
             "", true,
-            std::make_unique<SetVariableNode>(FilePath, END_token, var_name_t.value,
+            std::make_unique<SetVariableNode>(END_token, var_name_t.value,
                 var_type_t.value,
                 std::move(var_value.value),
                 is_const
@@ -109,7 +109,7 @@ Parser::get_set_variable_node(const std::string& FilePath,
         const Token END_token = tokens_list_[pos - 1];
         return {
             "", true,
-            std::make_unique<ResetVariableNode>(FilePath, END_token, var_name_t.value,
+            std::make_unique<ResetVariableNode>(END_token, var_name_t.value,
                 std::move(var_value.value)
             )
         };
@@ -125,6 +125,7 @@ Parser::get_set_variable_node(const std::string& FilePath,
 
     ReturnResult<Node> re = {err.msg, false, nullptr};
     re.error_info = err.info;
+    re.error_info.file = var_name_t.value.FilePath;
     return re;
 }
 
@@ -133,7 +134,7 @@ Parser::get_set_variable_node(const std::string& FilePath,
 // ==================================================================
 
 ReturnResult<Parser::Node>
-Parser::get_get_variable_node(const std::string& FilePath) {
+Parser::get_get_variable_node(const fs::path& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
 
     // Jump on `GET`
@@ -155,7 +156,7 @@ Parser::get_get_variable_node(const std::string& FilePath) {
     const Token END_token = var_name_t.value;
     return {
         "", true,
-        std::make_unique<GetVariableNode>(FilePath, END_token, var_name_t.value)
+        std::make_unique<GetVariableNode>(END_token, var_name_t.value)
     };
 }
 

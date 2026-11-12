@@ -28,11 +28,12 @@ static ReturnResult<Parser::Node> missing_end_error(
     );
     ReturnResult<Parser::Node> result = {err.msg, false, nullptr};
     result.error_info = err.info;
+    result.error_info.file = previous.FilePath;
     return result;
 }
 
 ReturnResult<Parser::Node>
-Parser::get_if_statment_node(const std::string& FilePath) {
+Parser::get_if_statment_node(const fs::path& FilePath) {
     ReturnResult<Token> consume_result; // The global cunsum return resut object
     Token END_token;
 
@@ -66,6 +67,7 @@ Parser::get_if_statment_node(const std::string& FilePath) {
         );
         ReturnResult<Node> re = {err.msg,false,nullptr};
         re.error_info = err.info;
+        re.error_info.file = consume_result.value.FilePath;
         return re;
     }
 
@@ -103,6 +105,7 @@ Parser::get_if_statment_node(const std::string& FilePath) {
             );
             ReturnResult<Node> re = {err.msg,false,nullptr};
             re.error_info = err.info;
+            re.error_info.file = consume_result.value.FilePath;
             return re;
         }
 
@@ -144,7 +147,7 @@ Parser::get_if_statment_node(const std::string& FilePath) {
     // Creat the IF statment node
     return {
         "",true,
-        std::make_unique<IfStatmentsNode>(FilePath, END_token, condition_FT,condition_N_r.value,statments,else_statments)
+        std::make_unique<IfStatmentsNode>(END_token, condition_FT,condition_N_r.value,statments,else_statments)
     };
 };
 

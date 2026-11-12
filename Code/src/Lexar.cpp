@@ -9,7 +9,7 @@ bool is_space(char c) {
 }
 }
 
-Lexar::Lexar(const std::string& c_): code(c_) {
+Lexar::Lexar(const std::string& c_ , fs::path FilePath): code(c_), FilePath(FilePath) {
     if (!code.empty()) curent_c = code.front();
     else code_ended = true;
 }
@@ -72,9 +72,9 @@ Token Lexar::get_the_next_token() {
     escape_comments();
     if (unterminated_block_comment) {
         unterminated_block_comment = false;
-        return {TokenType::UNTERMINATED_COMMENT, "unterminated block comment", curent_line, curent_column, curent_column};
+        return {TokenType::UNTERMINATED_COMMENT, "unterminated block comment", curent_line, curent_column, curent_column, FilePath};
     }
-    if (code_ended) return {TokenType::END_CODE, "", curent_line, curent_column, curent_column};
+    if (code_ended) return {TokenType::END_CODE, "", curent_line, curent_column, curent_column, FilePath};
 
     const size_t start_line = curent_line;
     const size_t start_column = curent_column;
@@ -82,14 +82,14 @@ Token Lexar::get_the_next_token() {
         const std::string pair{curent_c, peek()};
         if (__complex_2_symbols__.contains(pair)) {
             Token token = __complex_2_symbols__.at(pair);
-            token.line = start_line; token.column = start_column; token.last_column = start_column + 1;
+            token.line = start_line; token.column = start_column; token.last_column = start_column + 1; token.FilePath = FilePath;
             advence(); advence();
             return token;
         }
     }
     if (__symbols__.contains(curent_c)) {
         Token token = __symbols__.at(curent_c);
-        token.line = start_line; token.column = start_column; token.last_column = start_column;
+        token.line = start_line; token.column = start_column; token.last_column = start_column; token.FilePath = FilePath;
         advence();
         return token;
     }
@@ -101,7 +101,7 @@ Token Lexar::get_the_next_token() {
             if (curent_c == '.') dot = true;
             value += curent_c; last_column = curent_column; advence();
         }
-        return {dot ? TokenType::FLOAT : TokenType::INTEGER, value, start_line, start_column, last_column};
+        return {dot ? TokenType::FLOAT : TokenType::INTEGER, value, start_line, start_column, last_column, FilePath};
     }
     if (is_alpha(curent_c) || curent_c == '_') {
         std::string value;
@@ -114,7 +114,7 @@ Token Lexar::get_the_next_token() {
         if (value == "END") type = TokenType::END_BLOCK;
         if (is_token_key_word_(value)) type = TokenType::KEY_WORD;
         if (value == "True" || value == "False") type = TokenType::BOOLEAN;
-        return {type, value, start_line, start_column, last_column};
+        return {type, value, start_line, start_column, last_column, FilePath};
     }
     if (curent_c == '"' || curent_c == '\'') {
         const char quote = curent_c;
@@ -131,10 +131,10 @@ Token Lexar::get_the_next_token() {
             advence();
         }
         if (curent_c != quote)
-            return {TokenType::UNTERMINATED_STRING, "unterminated string", start_line, start_column, start_column};
+            return {TokenType::UNTERMINATED_STRING, "unterminated string", start_line, start_column, start_column, FilePath};
         const size_t end_column = curent_column;
         advence();
-        return {TokenType::STRING, value, start_line, start_column, end_column};
+        return {TokenType::STRING, value, start_line, start_column, end_column, FilePath};
     }
     const char unknown = curent_c;
     std::string unknown_value(1, unknown);
@@ -147,7 +147,7 @@ Token Lexar::get_the_next_token() {
         unknown_value += curent_c;
         advence();
     }
-    return {TokenType::UNKNOWN, unknown_value, start_line, start_column, start_column + unknown_value.size() - 1};
+    return {TokenType::UNKNOWN, unknown_value, start_line, start_column, start_column + unknown_value.size() - 1, FilePath};
 }
 
 std::vector<Token> Lexar::get_all_tokens() {

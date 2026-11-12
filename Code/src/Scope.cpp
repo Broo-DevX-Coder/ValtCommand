@@ -50,7 +50,9 @@ Scopes::Scope::get_functions_table() {
     // Add parent's functions table if exists
     if (Parent) {
         auto parent_func_table = Parent->get_functions_table();
-        result.insert(result.end(),parent_func_table.begin(),parent_func_table.end());
+        for (auto& pf: parent_func_table)
+            if (!variables.contains(pf.name))
+                result.push_back(pf);
     }
 
     // Add this scope's functions
@@ -68,8 +70,10 @@ Scopes::Scope::get_variables_table() {
 
     // Add parent's variablles table if exists
     if (Parent) {
-        auto parent_func_table = Parent->get_variables_table();
-        result.insert(result.end(),parent_func_table.begin(),parent_func_table.end());
+        auto parent_vars_table = Parent->get_variables_table();
+        for (auto& pv: parent_vars_table)
+            if (!variables.contains(pv.name))
+                result.push_back(pv);
     }
 
     // Add this scope's variablles
@@ -140,6 +144,7 @@ Scopes::Scope::search_function(
 
         ReturnResult<Scopes::SymbolTableTypes::Function*> re = {err.msg,false,nullptr}; 
         re.error_info = err.info;
+        re.error_info.file = nToken.FilePath;
         return re;
     }
     
@@ -166,6 +171,7 @@ Scopes::Scope::search_var(
 
         ReturnResult<Scopes::SymbolTableTypes::RVar*> re = {err.msg,false,nullptr}; 
         re.error_info = err.info;
+        re.error_info.file = nToken.FilePath;
         return re;
     }
 

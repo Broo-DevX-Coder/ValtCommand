@@ -5,20 +5,21 @@ file(GLOB_RECURSE APP_SOURCES
 
 # Create the target
 add_executable(
-    ValtCommand
+    valtc
     ${APP_SOURCES}
 )
 
 # Add include files to executable
 target_include_directories(
-    ValtCommand
-    PUBLIC
+    valtc
+    PRIVATE
     ../include
+    ../libraries
 )
 
 # Link the Main app with Endine
 target_link_libraries(
-    ValtCommand
+    valtc
     PRIVATE
     engine
 )

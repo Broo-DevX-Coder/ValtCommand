@@ -14,8 +14,9 @@
 namespace vltc {
 Parser::Parser(
     TList& tl_,
-    const std::string& FilePath
-): tokens_list_(std::move(tl_)) {
+    const fs::path& FilePath
+): tokens_list_(std::move(tl_)),
+   FilePath(FilePath) {
 
     if (tokens_list_.empty()) {
         is_code_ended_ = true;
@@ -87,6 +88,9 @@ Parser::consume(TokenType type) {
 
         ReturnResult<Token> re = {err.msg, false, curent()};
         re.error_info = err.info;
+        re.error_info.file = at_end && pos > 0
+            ? tokens_list_[pos - 1].FilePath
+            : curent_token_.FilePath;
         return re;
     }
 
@@ -104,7 +108,7 @@ Parser::isAsEnd() {
 
 // Get clear module node ==================================================
 ReturnResult<Parser::PNode>
-Parser::get_module_node(const std::string& FilePath) {
+Parser::get_module_node(const fs::path& FilePath) {
 
     ModuleNode::StatmentsT s_list;
     ReturnResult<Parser::Node> nt;
@@ -129,7 +133,6 @@ Parser::get_module_node(const std::string& FilePath) {
         "",
         true,
         std::make_unique<ModuleNode>(
-            FilePath,
             END_token,
             s_list,
             FirstT

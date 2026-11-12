@@ -23,14 +23,15 @@ namespace vltc {
 class API Lexar {
     private:
         size_t pos = 0; ///< The curent position in code
-        size_t curent_line = 0; ///< The line that the cursor is on.
+        size_t curent_line = 1; ///< The line that the cursor is on.
         size_t curent_column = 0; ///< The number letter in current line that the cursor is on.
         std::string code; ///< The code's program
+        fs::path FilePath; ///< The file where the code is
         char curent_c = '\0'; ///< The curent byte in code
         bool code_ended = false; ///< Is the code done or no, used to stop all whileloops and return END_CODE type
         bool unterminated_block_comment = false; ///< Whether lexing found a block comment without a closing delimiter
     public:
-        Lexar(const std::string& code); ///< Constructure
+        Lexar(const std::string& code, fs::path FilePath = {}); ///< Constructure
         void advence(); ///< Move to the next byte in code; pos++
         void escape_spaces(); ///< Jump on all spaces and escape chaines
         void escape_comments(); ///< Jump on all coments 

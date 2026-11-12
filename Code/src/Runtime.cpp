@@ -196,11 +196,11 @@ std::string Runtime::RunTime::get_all_events_strs() {
     return Debugger ? Debugger->get_all_events_strs() : std::string{};
 }
 
-void Runtime::RunTime::set_ostream(std::ostream& output) {
+void Runtime::RunTime::set_debugger_ostream(std::ostream& output) {
     if (Debugger) Debugger->set_ostream(output);
 }
 
-const std::ostream* Runtime::RunTime::get_ostream() const {
+const std::ostream* Runtime::RunTime::get_debugger_ostream() const {
     return Debugger ? Debugger->get_ostream() : nullptr;
 }
 
@@ -284,7 +284,7 @@ Runtime::RunTime::analyze(Scopes::Scope* Scope, const std::string& FilePath) {
 
     last_stage = ErrorStage::Parse;
 
-    Lexar l(Code);
+    Lexar l(Code,FilePath);
     auto tokens_list = l.get_all_tokens();
 
     Parser p(tokens_list, FilePath);
@@ -401,7 +401,7 @@ Runtime::RunTime::run(const std::string& code, ScopeMode mode) {
 Runtime::RunResult
 Runtime::RunTime::run_file(const std::string& path, ScopeMode mode) {
     std::ifstream file(path);
-    if (!file) make_error(ErrorStage::IO, "Cannot open file: " + path);
+    if (!file) return make_error(ErrorStage::IO, "Cannot open file: " + path);
 
     std::stringstream buffer;
     buffer << file.rdbuf();

@@ -208,13 +208,13 @@ namespace Runtime {
              * @param output The output stream. It must outlive the debugger's use of it.
              * @note Does nothing when debugging is disabled.
              */
-            void set_ostream(std::ostream& output);
+            void set_debugger_ostream(std::ostream& output);
 
             /**
              * @brief Gets the debugger output stream.
              * @return A pointer to the stream, or @c nullptr when debugging is disabled.
              */
-            const std::ostream* get_ostream() const;
+            const std::ostream* get_debugger_ostream() const;
 
             /**
              * @brief Adds breakpoints at the requested source lines.

@@ -225,6 +225,7 @@ reconsiliation_int_float(
         ReturnResult<Value> result{message, false, std::monostate{}};
         result.error_info = {
             error_type,
+            source_token.FilePath,
             message,
             "",
             source_token.line,

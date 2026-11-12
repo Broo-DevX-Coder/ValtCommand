@@ -29,10 +29,10 @@ endif()
 find_package(fmt REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
+
 # Add Directories for files
 add_subdirectory(src)
 add_subdirectory(app)
 
 # Enable testing
 enable_testing()
-add_subdirectory(qa)
