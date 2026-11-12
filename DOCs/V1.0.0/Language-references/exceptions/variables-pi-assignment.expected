@@ -1,0 +1,9 @@
+ERROR
+
+ImmutableError: Cannot modify constant variable 'PI'
+------------------------------------------
+2-|  SET PI = 3
+3-|  CALL println value<float>:GET PI END
+--|      ^^
+File: "<exemples_path>/variables-pi-assignment.vlt"
+

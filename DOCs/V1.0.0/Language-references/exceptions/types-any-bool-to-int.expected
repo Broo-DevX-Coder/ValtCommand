@@ -1,0 +1,8 @@
+ERROR
+
+TypeError: cannot convert 'bool' to 'int'
+------------------------------------------
+3-|  SET result<int> = GET value
+
+File: "<exemples_path>/types-any-bool-to-int.vlt"
+

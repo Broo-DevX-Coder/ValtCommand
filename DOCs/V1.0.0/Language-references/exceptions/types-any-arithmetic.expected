@@ -1,0 +1,11 @@
+ERROR
+
+TypeError: expected 'int | float', got 'any'
+------------------------------------------
+3-|  SET result<int> = GET value + 1
+
+------------------------------------------
+This operation does not support types other than int or float
+
+File: "<exemples_path>/types-any-arithmetic.vlt"
+

@@ -1,0 +1,9 @@
+ERROR
+
+TypeError: expected 'bool', got 'int'
+------------------------------------------
+2-|  IF 1 THEN
+3-|      CALL println value<str>:"unreachable" END
+--|     ^
+File: "<exemples_path>/statements-if-condition-error.vlt"
+

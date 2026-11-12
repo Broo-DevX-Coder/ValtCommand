@@ -1,0 +1,11 @@
+ERROR
+
+NameError: 'local' is not defined
+------------------------------------------
+5-|  CALL println value<int>:GET local END
+
+------------------------------------------
+Unknown variable
+
+File: "<exemples_path>/variables-if-local-scope.vlt"
+

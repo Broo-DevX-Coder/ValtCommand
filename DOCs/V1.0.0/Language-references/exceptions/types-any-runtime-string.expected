@@ -1,0 +1,8 @@
+ERROR
+
+TypeError: sqrt(): argument 'x' must be int or float, got str
+------------------------------------------
+1-|  // Version: 1.0.0
+--|  ^
+File: "<exemples_path>/types-any-runtime-string.vlt"
+

@@ -1,0 +1,8 @@
+ERROR
+
+TypeError: Cannot assign value of type 'str' to variable 'value' of type 'int'
+------------------------------------------
+3-|  SET value = "x"
+
+File: "<exemples_path>/errors-incompatible-assignment.vlt"
+

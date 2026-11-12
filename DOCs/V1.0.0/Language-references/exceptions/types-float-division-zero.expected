@@ -1,0 +1,8 @@
+ERROR
+
+RuntimeError: division by zero
+------------------------------------------
+2-|  CALL println value<float>:1.0 / 0.0 END
+
+File: "<exemples_path>/types-float-division-zero.vlt"
+

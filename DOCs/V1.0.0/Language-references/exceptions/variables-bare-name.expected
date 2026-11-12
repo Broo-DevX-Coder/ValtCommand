@@ -1,0 +1,8 @@
+ERROR
+
+SyntaxError: unexpected token 'x'
+------------------------------------------
+3-|  CALL println value<int>:x END
+
+File: "<exemples_path>/variables-bare-name.vlt"
+

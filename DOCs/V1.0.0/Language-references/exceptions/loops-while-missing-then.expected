@@ -1,0 +1,11 @@
+ERROR
+
+SyntaxError: unexpected token 'CALL'
+------------------------------------------
+2-|  WHILE True CALL println value<str>:"missing THEN" END END
+
+------------------------------------------
+Forgot to add `THEN` after the condition
+
+File: "<exemples_path>/loops-while-missing-then.vlt"
+

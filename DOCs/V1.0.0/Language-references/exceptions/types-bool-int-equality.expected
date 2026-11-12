@@ -1,0 +1,8 @@
+ERROR
+
+IncompatibleTypesError: can't compare `bool` with `int`
+------------------------------------------
+2-|  CALL println value<bool>:True == 1 END
+
+File: "<exemples_path>/types-bool-int-equality.vlt"
+

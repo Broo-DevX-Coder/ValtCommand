@@ -1,0 +1,8 @@
+ERROR
+
+RuntimeError: division by zero
+------------------------------------------
+2-|  SET quotient<float> = 1 / 0
+
+File: "<exemples_path>/errors-division-by-zero.vlt"
+

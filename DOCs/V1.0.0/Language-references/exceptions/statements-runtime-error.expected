@@ -1,0 +1,9 @@
+ERROR
+before runtime error
+
+RuntimeError: division by zero
+------------------------------------------
+3-|  CALL println value<float>:1 / 0 END
+
+File: "<exemples_path>/statements-runtime-error.vlt"
+

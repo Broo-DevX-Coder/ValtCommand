@@ -1,0 +1,8 @@
+ERROR
+
+ImmutableError: Cannot modify constant variable 'limit'
+------------------------------------------
+3-|  SET limit = 11
+
+File: "<exemples_path>/variables-assign-user-constant.vlt"
+

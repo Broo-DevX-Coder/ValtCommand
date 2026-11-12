@@ -1,0 +1,12 @@
+ERROR
+
+SyntaxError: unexpected token 'IF'
+------------------------------------------
+4-|  ELSE IF True THEN
+5-|      CALL println value<str>:"second" END
+--|       ^^
+------------------------------------------
+Use `ELSE THEN IF ... END` for an else-if branch.
+
+File: "<exemples_path>/statements-else-if.vlt"
+

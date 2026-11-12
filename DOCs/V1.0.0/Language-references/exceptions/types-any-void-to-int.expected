@@ -1,0 +1,8 @@
+ERROR
+
+TypeError: cannot convert 'void' to 'int'
+------------------------------------------
+5-|  SET result<int> = GET value
+
+File: "<exemples_path>/types-any-void-to-int.vlt"
+

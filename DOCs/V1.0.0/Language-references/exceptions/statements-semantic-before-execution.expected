@@ -1,0 +1,9 @@
+ERROR
+
+TypeError: expected 'bool', got 'int'
+------------------------------------------
+3-|  IF 1 THEN
+4-|  END
+--|     ^
+File: "<exemples_path>/statements-semantic-before-execution.vlt"
+

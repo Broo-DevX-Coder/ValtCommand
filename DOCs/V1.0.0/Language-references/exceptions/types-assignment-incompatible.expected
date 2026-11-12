@@ -1,0 +1,8 @@
+ERROR
+
+TypeError: expected 'int', got 'str'
+------------------------------------------
+2-|  SET value<int> = "bad"
+
+File: "<exemples_path>/types-assignment-incompatible.vlt"
+

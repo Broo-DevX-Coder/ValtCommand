@@ -1,0 +1,8 @@
+ERROR
+
+SyntaxError: unexpected token 'float'
+------------------------------------------
+2-|  CALL float value<int>:2 END
+
+File: "<exemples_path>/limitation-float-conversion.vlt"
+

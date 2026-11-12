@@ -1,0 +1,8 @@
+ERROR
+
+IncompatibleTypesError: can't compare `str` with `int`
+------------------------------------------
+2-|  CALL println value<bool>:"1" == 1 END
+
+File: "<exemples_path>/types-string-int-equality.vlt"
+

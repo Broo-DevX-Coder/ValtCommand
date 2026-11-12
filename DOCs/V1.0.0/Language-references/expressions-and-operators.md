@@ -133,7 +133,7 @@ Logical operators require `bool` operands and return `bool`.
 
 Logical expressions always return a `bool`; they do not return one of their operands. A skipped operand cannot raise a runtime error (for example, division by zero) and its function calls do not run, so their side effects do not occur. Type checking still analyzes the right operand, including when runtime short-circuiting would skip it.
 
-The skipped divisions do not raise an error, and the skipped call prints no `SIDE_EFFECT`; the evaluated right operands run and print `RHS`. See the [skipped evaluation example](examples/logical-short-circuit-skipped.vlt) and [its output](examples/logical-short-circuit-skipped.expected), and the [evaluated example](examples/logical-short-circuit-evaluated.vlt) with [its output](examples/logical-short-circuit-evaluated.expected).
+The skipped divisions do not raise an error, and the skipped call prints no `SIDE_EFFECT`; the evaluated right operands run and print `RHS`. See the [skipped evaluation example](examples/logical-short-circuit-skipped.vlt) and [its output](exceptions/logical-short-circuit-skipped.expected), and the [evaluated example](examples/logical-short-circuit-evaluated.vlt) with [its output](exceptions/logical-short-circuit-evaluated.expected).
 
 ## Type checking and evaluation
 

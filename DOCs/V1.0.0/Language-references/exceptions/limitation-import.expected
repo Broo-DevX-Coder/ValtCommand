@@ -1,0 +1,8 @@
+ERROR
+
+SyntaxError: unexpected token 'IMPORT'
+------------------------------------------
+2-|  IMPORT example
+
+File: "<exemples_path>/limitation-import.vlt"
+

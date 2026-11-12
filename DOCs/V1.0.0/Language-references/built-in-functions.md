@@ -175,7 +175,7 @@ Error type: `TypeError`
 
 Every placeholder must reference an argument supplied to the function.
 
-See the [missing placeholder example](examples/builtin-format-missing-placeholder.vlt) and [its expected error](examples/builtin-format-missing-placeholder.expected).
+See the [missing placeholder example](examples/builtin-format-missing-placeholder.vlt) and [its expected error](exceptions/builtin-format-missing-placeholder.expected).
 
 Error type: `ArgumentError`
 
@@ -185,7 +185,7 @@ The error identifies the missing argument `name`.
 
 Every opening `{` used to start a placeholder must have a corresponding closing `}`.
 
-See the [unmatched brace example](examples/builtin-format-unmatched-brace.vlt) and [its expected error](examples/builtin-format-unmatched-brace.expected).
+See the [unmatched brace example](examples/builtin-format-unmatched-brace.vlt) and [its expected error](exceptions/builtin-format-unmatched-brace.expected).
 
 Error type: `FormatError`
 
@@ -330,7 +330,7 @@ CALL pow base<float>:2 exp<int>:10 END    // floating-point arithmetic
 
 Functions that require whole numbers (`root` for `n`, and `randint`, `seed_random`) need the `<int>` tag. Passing a float value with an `<int>` tag truncates it toward zero before the function receives it; `n<int>:2.5`, for example, supplies `2` to `root`.
 
-The built-in `trunc` produced `2`, `5`, `-2`, and `16` for `x<int>:2.5`, `x<float>:5`, `x<int>:-2.9`, and `x<float>:16`, respectively. `root` with `n<int>:2.5` returned `4`; `randint` with `lo<int>:2.5 hi<int>:2` returned `2`. Seeding with `seed<int>:2.5` produced the same next random integer as `seed<int>:2`. See the [numeric-tag example](examples/limitation-numeric-tag-conversion.vlt) and [its output](examples/limitation-numeric-tag-conversion.expected), and the [integer-only function example](examples/limitation-integer-only-tag.vlt) with [its output](examples/limitation-integer-only-tag.expected).
+The built-in `trunc` produced `2`, `5`, `-2`, and `16` for `x<int>:2.5`, `x<float>:5`, `x<int>:-2.9`, and `x<float>:16`, respectively. `root` with `n<int>:2.5` returned `4`; `randint` with `lo<int>:2.5 hi<int>:2` returned `2`. Seeding with `seed<int>:2.5` produced the same next random integer as `seed<int>:2`. See the [numeric-tag example](examples/limitation-numeric-tag-conversion.vlt) and [its output](exceptions/limitation-numeric-tag-conversion.expected), and the [integer-only function example](examples/limitation-integer-only-tag.vlt) with [its output](exceptions/limitation-integer-only-tag.expected).
 
 #### 2.3 Return types are fixed
 
@@ -350,7 +350,7 @@ Every function always returns the same type, whatever its input. This is require
 
 The declared return type is checked by the analyzer, but assigning a numeric result to the other numeric variable type converts it. A `float` assigned to `int` is converted with `static_cast<int64_t>`; on the tested build this discards the fractional part toward zero. The example below prints the declared return values and the converted values.
 
-See the runnable [return-type and conversion example](examples/builtin-return-types.vlt) and its [captured output](examples/builtin-return-types.expected): `abs(-5)` is stored as `float`, `abs(-5.7)` is stored as `int` and prints `5`, and `floor(2.7)` is stored as either `int` or `float`.
+See the runnable [return-type and conversion example](examples/builtin-return-types.vlt) and its [captured output](exceptions/builtin-return-types.expected): `abs(-5)` is stored as `float`, `abs(-5.7)` is stored as `int` and prints `5`, and `floor(2.7)` is stored as either `int` or `float`.
 
 #### 2.4 Mistakes caught before the program runs
 
@@ -1038,7 +1038,7 @@ int main() {
 }
 ```
 
-The runtime API and result type are documented in `include/valtcommand/runtime.hpp` and `include/valtcommand/result.hpp`.
+Debugger host integrations can set the log stream with `set_debugger_ostream()` and read it with `get_debugger_ostream()`; these names replace the former `set_ostream()` and `get_ostream()` methods on `RunTime`. `Debugger::EmitSlotType` callbacks receive both the event and an `std::ostream&`. Errors include `result.error.info.file`; it is empty for `run(source)` and contains the source path for file-backed errors. See `include/valtcommand/runtime.hpp` and `include/valtcommand/result.hpp` for the current API.
 
 ### 19. Known limitations
 

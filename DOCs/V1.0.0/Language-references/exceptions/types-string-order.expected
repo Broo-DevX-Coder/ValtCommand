@@ -1,0 +1,11 @@
+ERROR
+
+IncompatibleTypesError: Invalid operand types for ordered comparison between `str` and `str`
+------------------------------------------
+2-|  CALL println value<bool>:"a" < "b" END
+
+------------------------------------------
+Ordered comparisons require numeric operands
+
+File: "<exemples_path>/types-string-order.vlt"
+

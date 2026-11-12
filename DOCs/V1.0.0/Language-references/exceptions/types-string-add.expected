@@ -1,0 +1,11 @@
+ERROR
+
+TypeError: expected 'int | float', got 'str'
+------------------------------------------
+2-|  CALL println value<str>:"a" + "b" END
+
+------------------------------------------
+This operation does not support types other than int or float
+
+File: "<exemples_path>/types-string-add.vlt"
+

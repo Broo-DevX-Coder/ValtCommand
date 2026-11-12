@@ -188,7 +188,7 @@ Token is declared in `include/valtcommand/globals.hpp`.
 | column | Lexer column counter at token creation; starts at 0 for the first source character. |
 | last_column | An ending-column field; there is no separate token-length field. |
 
-Tokens carry zero-based starting lines and byte columns and an inclusive `last_column`. `vltc::Token::print` prints the type, value, line, and starting column, but not `last_column`. `vltc::Errors::ErrorInfo` and `vltc::Runtime::RunResult` retain zero-based positions; the diagnostic formatter displays line numbers starting at one and aligns the caret with the byte column.
+Tokens carry zero-based starting lines and byte columns and an inclusive `last_column`. `vltc::Token::print` prints the type, value, line, starting column, and `FilePath`, but not `last_column`. `vltc::Errors::ErrorInfo` and `vltc::Runtime::RunResult` retain zero-based positions; the formatter may show the preceding source line and marks the failing line with a caret when the error has a nonzero length.
 
 ## 12. End of input
 
@@ -202,7 +202,7 @@ The lexer emits `UNKNOWN` tokens for unsupported characters and dedicated `UNTER
 
 ## 14. Known limitations
 
-- The lexer is byte-oriented and does not decode UTF-8; visual caret alignment for wide glyphs depends on the terminal.
+- The lexer is byte-oriented and does not decode UTF-8; caret alignment for wide glyphs depends on the terminal.
 - Strings cannot span a line; a missing closing quote is a lexical error.
 - A leading dot is not part of a number, and exponent notation is not recognized.
 - -> is two tokens, not one.

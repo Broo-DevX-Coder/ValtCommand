@@ -1,0 +1,8 @@
+ERROR
+
+OverflowError: power operation result is out of range
+------------------------------------------
+2-|  CALL println value<float>:GET INF ** 2 END
+
+File: "<exemples_path>/types-inf-power.vlt"
+

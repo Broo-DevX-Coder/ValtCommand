@@ -1,6 +1,0 @@
-ERROR
-
-FormatError: format(): unmatched '{' at position 6
-------------------------------------------
-1-|  // Version: 1.0.0
---|  ^

@@ -93,7 +93,7 @@ SET result<int> = CALL to_int value<float>:2.9 END  // result is 2
 
 The compatible tag `value<int>:2.9` truncates the float literal to `2`. The same numeric compatibility applies to built-in function arguments; see [Built-in Functions](built-in-functions.md#2-how-calls-work). For expression type rules, see [Expressions and Operators](expressions-and-operators.md#type-checking-and-evaluation).
 
-The four numeric-tag cases were run for a built-in (`trunc`) and a user-defined function. Both produced `2`, `5`, `-2`, and `16` for `x<int>:2.5`, `x<float>:5`, `x<int>:-2.9`, and `x<float>:16`, respectively; see the [test](examples/limitation-numeric-tag-conversion.vlt) and [captured output](examples/limitation-numeric-tag-conversion.expected).
+The four numeric-tag cases were run for a built-in (`trunc`) and a user-defined function. Both produced `2`, `5`, `-2`, and `16` for `x<int>:2.5`, `x<float>:5`, `x<int>:-2.9`, and `x<float>:16`, respectively; see the [test](examples/limitation-numeric-tag-conversion.vlt) and [captured output](exceptions/limitation-numeric-tag-conversion.expected).
 
 > **Current behavior:** Passing a float to an `int` user-defined parameter silently truncates it toward zero. This behavior may change; see [Known limitations](limitations.md#known-limitations).
 
@@ -167,7 +167,7 @@ See [Errors](errors.md) for messages, stages, and formatted diagnostics.
 
 ### Example: calling a function before its definition
 
-This fails during semantic analysis because `later` has not yet been registered. See the [forward-call example](examples/limitation-forward-call.vlt) and [its error output](examples/limitation-forward-call.expected).
+This fails during semantic analysis because `later` has not yet been registered. See the [forward-call example](examples/limitation-forward-call.vlt) and [its error output](exceptions/limitation-forward-call.expected).
 
 ## Current limitations
 

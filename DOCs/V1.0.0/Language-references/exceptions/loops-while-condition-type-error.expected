@@ -1,0 +1,12 @@
+ERROR
+
+TypeError: expected 'bool', got 'int'
+------------------------------------------
+2-|  WHILE 1 THEN
+3-|  END
+--|  ^^^^^
+------------------------------------------
+Condition of while loop must be boolean
+
+File: "<exemples_path>/loops-while-condition-type-error.vlt"
+

@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 
-These pages provide a ValtCommand language reference, a Host API section in [Errors](errors.md#host-api), and a C++ library usage section in [Built-in Functions](built-in-functions.md#18-using-the-libraries-from-c).
+These pages provide a ValtCommand language reference, the [CLI reference](../cli.md), a Host API section in [Errors](errors.md#host-api), and a C++ library usage section in [Built-in Functions](built-in-functions.md#18-using-the-libraries-from-c).
 
 ## Language reference
 
@@ -16,9 +16,10 @@ These pages provide a ValtCommand language reference, a Host API section in [Err
 - [Loops](loops.md)
 - [Built-in functions](built-in-functions.md)
 - [Errors](errors.md)
+- [Debugger and tracer events](tracer-debugger.md)
 - [Known limitations](limitations.md)
 
 
 ## Example output files
 
-Each `.expected` file records one example's interpreter result. Its first line is `OK` for a successful run or `ERROR` for a failed run; the remaining lines contain the captured output.
+Each `.expected` file in `exceptions/` records one example's interpreter result. Its first line is `OK` for a successful run or `ERROR` for a failed run; the remaining lines contain captured output. The matching runnable `.vlt` source remains in `examples/`.

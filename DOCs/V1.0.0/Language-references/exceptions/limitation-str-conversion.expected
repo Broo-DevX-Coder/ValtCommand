@@ -1,0 +1,8 @@
+ERROR
+
+SyntaxError: unexpected token 'str'
+------------------------------------------
+2-|  CALL str value<int>:2 END
+
+File: "<exemples_path>/limitation-str-conversion.vlt"
+

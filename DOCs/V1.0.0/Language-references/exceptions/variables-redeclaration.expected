@@ -1,0 +1,8 @@
+ERROR
+
+VariableError: Variable 'x' already defined in this scope
+------------------------------------------
+3-|  SET x<float> = 2.5
+
+File: "<exemples_path>/variables-redeclaration.vlt"
+

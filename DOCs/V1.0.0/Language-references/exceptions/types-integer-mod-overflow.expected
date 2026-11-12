@@ -1,0 +1,8 @@
+ERROR
+
+OverflowError: integer operation result is out of range
+------------------------------------------
+2-|  CALL println value<float>:1 % 9223372036854775808.0 END
+
+File: "<exemples_path>/types-integer-mod-overflow.vlt"
+

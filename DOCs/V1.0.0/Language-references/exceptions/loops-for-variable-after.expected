@@ -1,0 +1,11 @@
+ERROR
+
+NameError: 'i' is not defined
+------------------------------------------
+9-|  CALL println value<int>:GET i END
+
+------------------------------------------
+Unknown variable
+
+File: "<exemples_path>/loops-for-variable-after.vlt"
+

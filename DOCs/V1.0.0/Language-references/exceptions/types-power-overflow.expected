@@ -1,0 +1,8 @@
+ERROR
+
+OverflowError: power operation result is out of range
+------------------------------------------
+2-|  CALL println value<float>:2 ** 20000 END
+
+File: "<exemples_path>/types-power-overflow.vlt"
+

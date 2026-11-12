@@ -1,0 +1,8 @@
+ERROR
+
+SyntaxError: unexpected token 'IF'
+------------------------------------------
+2-|  SET IF<int> = 1
+
+File: "<exemples_path>/variables-keyword-name.vlt"
+

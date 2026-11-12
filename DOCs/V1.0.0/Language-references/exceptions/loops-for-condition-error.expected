@@ -1,0 +1,12 @@
+ERROR
+
+TypeError: expected 'bool', got 'int'
+------------------------------------------
+4-|      1;
+5-|      SET i = GET i + 1
+--|      ^
+------------------------------------------
+Condition of for loop must be boolean
+
+File: "<exemples_path>/loops-for-condition-error.vlt"
+

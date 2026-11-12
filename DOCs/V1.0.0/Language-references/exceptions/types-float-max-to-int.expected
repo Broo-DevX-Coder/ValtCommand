@@ -1,0 +1,8 @@
+ERROR
+
+OverflowError: cannot convert non-finite or out-of-range float to int
+------------------------------------------
+2-|  SET from_float_max<int> = GET FLOAT_MAX
+
+File: "<exemples_path>/types-float-max-to-int.vlt"
+

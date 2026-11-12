@@ -1,0 +1,8 @@
+ERROR
+
+VariableError: Variable 'PI' already defined in this scope
+------------------------------------------
+2-|  SET PI<float> = 4
+
+File: "<exemples_path>/variables-builtin-redeclaration.vlt"
+

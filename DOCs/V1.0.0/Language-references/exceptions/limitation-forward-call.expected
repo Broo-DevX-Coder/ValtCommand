@@ -1,0 +1,12 @@
+ERROR
+
+NameError: 'later' is not defined
+------------------------------------------
+2-|  CALL later END
+3-|  FUNCTION later()->int
+--|       ^^^^^
+------------------------------------------
+Unknown function
+
+File: "<exemples_path>/limitation-forward-call.vlt"
+

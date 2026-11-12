@@ -1,0 +1,12 @@
+ERROR
+
+NameError: 'recurse' is not defined
+------------------------------------------
+3-|      RETURN CALL recurse END
+4-|  END
+--|                  ^^^^^^^
+------------------------------------------
+Unknown function
+
+File: "<exemples_path>/limitation-self-recursion.vlt"
+

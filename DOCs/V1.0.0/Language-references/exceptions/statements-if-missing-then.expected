@@ -1,0 +1,12 @@
+ERROR
+
+SyntaxError: unexpected token 'CALL'
+------------------------------------------
+3-|      CALL println value<str>:"body" END
+4-|  END
+--|      ^^^^
+------------------------------------------
+Use `ELSE THEN IF ... END` for an else-if branch.
+
+File: "<exemples_path>/statements-if-missing-then.vlt"
+

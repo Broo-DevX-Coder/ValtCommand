@@ -1,0 +1,9 @@
+ERROR
+
+TypeError: cannot convert 'str' to 'int'
+------------------------------------------
+3-|  SET result<int> = GET value
+4-|  CALL println value<int>:GET result END
+--|      ^^^^^^
+File: "<exemples_path>/types-any-string-to-int.vlt"
+

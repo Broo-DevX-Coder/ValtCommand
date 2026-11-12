@@ -1,0 +1,9 @@
+ERROR
+
+MissingReturnError: Function 'no_return' has no RETURN statement
+------------------------------------------
+2-|  FUNCTION no_return()->int
+3-|      CALL println value<str>:"body is not executed" END
+--|           ^^^^^^^^^
+File: "<exemples_path>/statements-missing-return.vlt"
+

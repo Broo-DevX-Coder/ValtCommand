@@ -1,0 +1,11 @@
+ERROR
+
+SyntaxError: unexpected token '(end of code!)'
+------------------------------------------
+7-|      CALL println value<int>:GET i END
+
+------------------------------------------
+Expected `END` to close the FOR loop.
+
+File: "<exemples_path>/loops-for-missing-end.vlt"
+

@@ -1,0 +1,11 @@
+ERROR
+
+NameError: 'missing' is not defined
+------------------------------------------
+2-|  CALL println value<int>:GET missing END
+
+------------------------------------------
+Unknown variable
+
+File: "<exemples_path>/variables-undeclared.vlt"
+

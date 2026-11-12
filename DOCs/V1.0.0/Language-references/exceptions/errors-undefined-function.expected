@@ -1,0 +1,11 @@
+ERROR
+
+NameError: 'foo' is not defined
+------------------------------------------
+2-|  CALL foo END
+
+------------------------------------------
+Unknown function
+
+File: "<exemples_path>/errors-undefined-function.vlt"
+

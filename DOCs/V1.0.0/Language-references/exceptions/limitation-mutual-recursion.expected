@@ -1,0 +1,12 @@
+ERROR
+
+NameError: 'second' is not defined
+------------------------------------------
+3-|      RETURN CALL second END
+4-|  END
+--|                  ^^^^^^
+------------------------------------------
+Unknown function
+
+File: "<exemples_path>/limitation-mutual-recursion.vlt"
+

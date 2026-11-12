@@ -1,0 +1,8 @@
+ERROR
+
+OverflowError: cannot convert non-finite or out-of-range float to int
+------------------------------------------
+2-|  SET from_nan<int> = GET NAN
+
+File: "<exemples_path>/types-nonfinite-to-int.vlt"
+

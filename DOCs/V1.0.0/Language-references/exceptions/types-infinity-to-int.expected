@@ -1,0 +1,8 @@
+ERROR
+
+OverflowError: cannot convert non-finite or out-of-range float to int
+------------------------------------------
+2-|  SET from_inf<int> = GET INF
+
+File: "<exemples_path>/types-infinity-to-int.vlt"
+
