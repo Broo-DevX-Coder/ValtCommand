@@ -28,7 +28,7 @@ static void emit_event(
             message,
             line,
             Context.ParentScope,
-            Context.FilePath
+            Context.FilePath.string()
         });
     }
 }
@@ -38,14 +38,14 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-ValueNode::ValueNode(const std::string& FilePath,
+ValueNode::ValueNode(
     const Token& END_token,
     Token t_,
     std::string tt_
 ):
     vToken(t_),
     type(tt_),
-    ASTNode(FilePath, END_token) {
+    ASTNode(END_token) {
     return_type = type;
 }
 
@@ -96,10 +96,10 @@ ValueNode::NType() {
 // String Value Node
 // ==================================================================
 
-StringValueNode::StringValueNode(const std::string& FilePath,
+StringValueNode::StringValueNode(
     const Token& END_token,
     Token t_
-): ValueNode(FilePath, END_token, t_, "str") {}
+): ValueNode(END_token, t_, "str") {}
 
 // Semantic analysis
 ReturnResult<bool>
@@ -114,13 +114,6 @@ StringValueNode::accept(
     );
 
     if (vToken.Type != TokenType::STRING) {
-        emit_event(
-            Context,
-            DevTools::EventsT::Analysis,
-            "String literal type validation failed",
-            vToken.line
-        );
-
         auto err = Errors::TypeError(
             type,
             TokenTypes_to_StringType[vToken.Type],
@@ -128,6 +121,7 @@ StringValueNode::accept(
             vToken.column,
             vToken.value.size()
         );
+        emit_event(Context, DevTools::EventsT::Error, err.msg, vToken.line);
 
         ReturnResult<bool> re = {
             err.msg,
@@ -136,6 +130,7 @@ StringValueNode::accept(
         };
 
         re.error_info = err.info;
+        re.error_info.file = vToken.FilePath;
 
         return re;
     }
@@ -159,7 +154,7 @@ StringValueNode::exec(
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
-        "Evaluating string literal",
+        "Executing string literal",
         vToken.line
     );
 
@@ -167,7 +162,7 @@ StringValueNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "String literal evaluated successfully",
         vToken.line
     );
@@ -184,18 +179,18 @@ StringValueNode::NType() {
 // Clone node
 ASTNode*
 StringValueNode::clone() {
-    return new StringValueNode(file, END_token, vToken);
+    return new StringValueNode(END_token, vToken);
 }
 
 // ==================================================================
 // Number Value Node
 // ==================================================================
 
-NumberValueNode::NumberValueNode(const std::string& FilePath,
+NumberValueNode::NumberValueNode(
     const Token& END_token,
     Token t_,
     std::string tt_
-): ValueNode(FilePath, END_token, t_, tt_) {}
+): ValueNode(END_token, t_, tt_) {}
 
 // Semantic analysis
 ReturnResult<bool>
@@ -213,13 +208,6 @@ NumberValueNode::accept(
         vToken.Type != TokenType::INTEGER &&
         vToken.Type != TokenType::FLOAT
     ) {
-        emit_event(
-            Context,
-            DevTools::EventsT::Analysis,
-            "Numeric literal type validation failed",
-            vToken.line
-        );
-
         auto err = Errors::TypeError(
             type,
             TokenTypes_to_StringType[vToken.Type],
@@ -227,6 +215,7 @@ NumberValueNode::accept(
             vToken.column,
             vToken.value.size()
         );
+        emit_event(Context, DevTools::EventsT::Error, err.msg, vToken.line);
 
         ReturnResult<bool> re = {
             err.msg,
@@ -235,6 +224,7 @@ NumberValueNode::accept(
         };
 
         re.error_info = err.info;
+        re.error_info.file = vToken.FilePath;
 
         return re;
     }
@@ -258,7 +248,7 @@ NumberValueNode::exec(
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
-        "Evaluating numeric literal",
+        "Executing numeric literal",
         vToken.line
     );
 
@@ -272,15 +262,17 @@ NumberValueNode::exec(
         }
     }
     catch (const std::exception& e) {
+        const std::string message =
+            std::string("Numeric literal conversion failed: ") + e.what();
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Numeric literal conversion failed",
+            DevTools::EventsT::Error,
+            message,
             vToken.line
         );
 
         return {
-            std::string("Numeric literal conversion failed: ") + e.what(),
+            message,
             false,
             std::monostate{}
         };
@@ -288,7 +280,7 @@ NumberValueNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Numeric literal evaluated successfully",
         vToken.line
     );
@@ -305,17 +297,17 @@ NumberValueNode::NType() {
 // Clone node
 ASTNode*
 NumberValueNode::clone() {
-    return new NumberValueNode(file, END_token, vToken, type);
+    return new NumberValueNode(END_token, vToken, type);
 }
 
 // ==================================================================
 // Boolean Value Node
 // ==================================================================
 
-BooleanValueNode::BooleanValueNode(const std::string& FilePath,
+BooleanValueNode::BooleanValueNode(
     const Token& END_token,
     Token t_
-): ValueNode(FilePath, END_token, t_, "bool") {}
+): ValueNode(END_token, t_, "bool") {}
 
 // Semantic analysis
 ReturnResult<bool>
@@ -330,13 +322,6 @@ BooleanValueNode::accept(
     );
 
     if (vToken.Type != TokenType::BOOLEAN) {
-        emit_event(
-            Context,
-            DevTools::EventsT::Analysis,
-            "Boolean literal type validation failed",
-            vToken.line
-        );
-
         auto err = Errors::TypeError(
             type,
             TokenTypes_to_StringType[vToken.Type],
@@ -344,6 +329,7 @@ BooleanValueNode::accept(
             vToken.column,
             vToken.value.size()
         );
+        emit_event(Context, DevTools::EventsT::Error, err.msg, vToken.line);
 
         ReturnResult<bool> re = {
             err.msg,
@@ -352,6 +338,7 @@ BooleanValueNode::accept(
         };
 
         re.error_info = err.info;
+        re.error_info.file = vToken.FilePath;
 
         return re;
     }
@@ -375,7 +362,7 @@ BooleanValueNode::exec(
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
-        "Evaluating boolean literal",
+        "Executing boolean literal",
         vToken.line
     );
 
@@ -383,7 +370,7 @@ BooleanValueNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Boolean literal evaluated successfully",
         vToken.line
     );
@@ -400,7 +387,7 @@ BooleanValueNode::NType() {
 // Clone node
 ASTNode*
 BooleanValueNode::clone() {
-    return new BooleanValueNode(file, END_token, vToken);
+    return new BooleanValueNode(END_token, vToken);
 }
 
 } // namespace vltc

@@ -42,7 +42,7 @@ static void emit_event(
             message,
             line,
             Context.ParentScope,
-            Context.FilePath
+            Context.FilePath.string()
         });
     }
 }
@@ -50,6 +50,7 @@ static void emit_event(
 template <typename T>
 static ReturnResult<T> make_error_result(
     const std::string& type,
+    const fs::path& FilePath,
     const std::string& message,
     const std::string& comment,
     T failure_value,
@@ -60,6 +61,7 @@ static ReturnResult<T> make_error_result(
     ReturnResult<T> result{message, false, std::move(failure_value)};
     result.error_info = {
         type,
+        FilePath,
         message,
         comment,
         line,
@@ -131,12 +133,12 @@ static std::string binary_to_string(TokenType op) {
 // ==================================================================
 
 // Constructor
-BinOpsNode::BinOpsNode(const std::string& FilePath,
+BinOpsNode::BinOpsNode(
     const Token& END_token,
     OperationPartsList& parts_
 ):
     Parts(std::move(parts_)),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 // Get string representation
 std::string
@@ -230,8 +232,8 @@ BinOpsNode::accept(NodesContext Context) {
         if (!accept_result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Binary operation analysis failed while checking an operand",
+                DevTools::EventsT::Error,
+                "Fail in analyzing operand of binary operation: " + accept_result.Message,
                 part.token.line
             );
 
@@ -253,15 +255,14 @@ BinOpsNode::accept(NodesContext Context) {
 
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Binary operation rejected operand of type '" +
-                    part.node->return_type +
-                    "'; expected 'int' or 'float'",
+                DevTools::EventsT::Error,
+                e.msg,
                 part.token.line
             );
 
             ReturnResult<bool> re = {e.msg, false, false};
             re.error_info = e.info;
+            re.error_info.file = part.token.FilePath;
             return re;
         }
 
@@ -319,18 +320,22 @@ BinOpsNode::push_to_result(
 ReturnResult<Value>
 BinOpsNode::exec(NodesContext Context) {
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
+    emit_event(Context, DevTools::EventsT::Runtime,
+        "Executing binary operation",
+        Parts.empty() ? END_token.line : Parts.front().token.line);
     return_type = "float";
 
     if (Parts.empty()) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Error,
             "Binary operation contains no operands",
-            0
+            END_token.line
         );
 
         return make_error_result<Value>(
             "RuntimeError",
+            END_token.FilePath,
             "Binary operation contains no operands",
             "",
             std::monostate{},
@@ -340,13 +345,6 @@ BinOpsNode::exec(NodesContext Context) {
         );
     }
 
-    emit_event(
-        Context,
-        DevTools::EventsT::Runtime,
-        "Executing binary operation",
-        Parts.front().token.line
-    );
-
     long double result = 0;
 
     for (size_t i = 0; i < Parts.size(); i++) {
@@ -354,9 +352,11 @@ BinOpsNode::exec(NodesContext Context) {
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Evaluating operand for operator '" +
-                binary_to_string(part.op) + "'",
+            DevTools::EventsT::Debug,
+            (i == 0
+                ? "Evaluating first operand of binary operation"
+                : "Evaluating operand for operator '" +
+                    binary_to_string(part.op) + "'"),
             part.token.line
         );
 
@@ -365,8 +365,9 @@ BinOpsNode::exec(NodesContext Context) {
         if (!exec_result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "Binary operation failed while evaluating an operand",
+                DevTools::EventsT::Error,
+            "Fail in evaluating operand " + std::to_string(i + 1) +
+                " of binary operation: " + exec_result.Message,
                 part.token.line
             );
 
@@ -385,8 +386,8 @@ BinOpsNode::exec(NodesContext Context) {
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "Division by zero detected",
+            DevTools::EventsT::Error,
+            error.division_by_zero(),
                 part.token.line
             );
 
@@ -397,6 +398,7 @@ BinOpsNode::exec(NodesContext Context) {
             };
 
             re.error_info = error.info;
+            re.error_info.file = part.token.FilePath;
             return re;
         }
 
@@ -419,6 +421,7 @@ BinOpsNode::exec(NodesContext Context) {
                 (part.op == TokenType::MOD && !fits_int64(integer_input))) {
                 Errors::ErrorInfo info = {
                     "OverflowError",
+                    part.token.FilePath,
                     "integer operation result is out of range",
                     "",
                     part.token.line,
@@ -427,6 +430,10 @@ BinOpsNode::exec(NodesContext Context) {
                 };
                 ReturnResult<Value> re = {"", false, std::monostate{}};
                 re.error_info = std::move(info);
+                emit_event(Context, DevTools::EventsT::Error,
+                    "Fail in evaluating operand " + std::to_string(i + 1) +
+                        " of binary operation: " + re.error_info.message,
+                    part.token.line);
                 return re;
             }
 
@@ -443,6 +450,11 @@ BinOpsNode::exec(NodesContext Context) {
                     0
                 };
                 re.error_info = error.info;
+                re.error_info.file = part.token.FilePath;
+                emit_event(Context, DevTools::EventsT::Error,
+                    "Fail in evaluating operand " + std::to_string(i + 1) +
+                        " of binary operation: " + error.division_by_zero(),
+                    part.token.line);
                 return re;
             }
         }
@@ -454,17 +466,15 @@ BinOpsNode::exec(NodesContext Context) {
             push_to_result(result, part.op, val.value);
         }
 
-        emit_event(
-            Context,
-            DevTools::EventsT::Runtime,
-            "Applied operator '" + binary_to_string(part.op) + "'",
-            part.token.line
-        );
+        emit_event(Context, DevTools::EventsT::Debug,
+            i == 0 ? "Evaluated first operand of binary operation"
+                   : "Applied operator '" + binary_to_string(part.op) + "'",
+            part.token.line);
     }
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Binary operation completed successfully",
         Parts.back().token.line
     );
@@ -490,7 +500,7 @@ BinOpsNode::clone() {
         });
     }
 
-    return new BinOpsNode(file, END_token, new_parts);
+    return new BinOpsNode(END_token, new_parts);
 }
 
 // ==================================================================
@@ -498,7 +508,7 @@ BinOpsNode::clone() {
 // ==================================================================
 
 // Constructor
-CompOpsNode::CompOpsNode(const std::string& FilePath,
+CompOpsNode::CompOpsNode(
     const Token& END_token,
     OperationPart& FToken,
     OperationPart& SToken,
@@ -507,7 +517,7 @@ CompOpsNode::CompOpsNode(const std::string& FilePath,
     first_part(std::move(FToken)),
     second_part(std::move(SToken)),
     type(T),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 // Get string representation
 std::string
@@ -580,7 +590,7 @@ CompOpsNode::clone() {
         std::move(spart_ptr)
     };
 
-    return new CompOpsNode(file, END_token, FirstP, SecondP, type);
+    return new CompOpsNode(END_token, FirstP, SecondP, type);
 }
 
 // ==================================================================
@@ -613,8 +623,8 @@ CompOpsNode::accept(NodesContext Context) {
     if (!fresult.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Left operand analysis failed",
+            DevTools::EventsT::Error,
+            "Fail in analyzing left operand of comparison: " + fresult.Message,
             first_part.token.line
         );
 
@@ -634,8 +644,8 @@ CompOpsNode::accept(NodesContext Context) {
     if (!sresult.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Right operand analysis failed",
+            DevTools::EventsT::Error,
+            "Fail in analyzing right operand of comparison: " + sresult.Message,
             second_part.token.line
         );
 
@@ -657,9 +667,8 @@ CompOpsNode::accept(NodesContext Context) {
     if (!are_types_compatible(first_type, second_type)) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Comparison rejected: incompatible operand types '" +
-                first_type + "' and '" + second_type + "'",
+            DevTools::EventsT::Error,
+            "can't compare `" + first_type + "` with `" + second_type + "`",
             second_part.token.line
         );
 
@@ -670,6 +679,7 @@ CompOpsNode::accept(NodesContext Context) {
         );
         return make_error_result<bool>(
             "IncompatibleTypesError",
+            second_part.token.FilePath,
             message,
             "",
             false,
@@ -700,13 +710,14 @@ CompOpsNode::accept(NodesContext Context) {
     
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Cannot analyze ordered comparison with non-numeric operands",
+                DevTools::EventsT::Error,
+                message,
                 second_part.token.line
             );
     
             return make_error_result<bool>(
                 "IncompatibleTypesError",
+                second_part.token.FilePath,
                 message,
                 "Ordered comparisons require numeric operands",
                 false,
@@ -751,8 +762,8 @@ CompOpsNode::exec(NodesContext Context) {
     if (!fresult.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Comparison failed while evaluating the left operand",
+            DevTools::EventsT::Error,
+            "Fail in evaluating left operand of comparison: " + fresult.Message,
             first_part.token.line
         );
 
@@ -764,8 +775,8 @@ CompOpsNode::exec(NodesContext Context) {
     if (!sresult.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Comparison failed while evaluating the right operand",
+            DevTools::EventsT::Error,
+            "Fail in evaluating right operand of comparison: " + sresult.Message,
             second_part.token.line
         );
 
@@ -814,18 +825,18 @@ CompOpsNode::exec(NodesContext Context) {
         type == ComparitonOpsTypes::LESS_THEN_OR_EQUAL ||
         type == ComparitonOpsTypes::GREATER_THEN_OR_EQUAL
     ) {
-        emit_event(
-            Context,
-            DevTools::EventsT::Runtime,
-            "Cannot execute ordered comparison with non-numeric operands",
-            second_part.token.line
-        );
-
         const std::string message =
             "Invalid operand types for ordered comparison between `" +
             FN_return_t + "` and `" + SN_return_t + "`";
+        emit_event(
+            Context,
+            DevTools::EventsT::Error,
+            message,
+            second_part.token.line
+        );
         return make_error_result<Value>(
             "IncompatibleTypesError",
+            second_part.token.FilePath,
             message,
             "Ordered comparisons require numeric operands",
             std::monostate{},
@@ -838,7 +849,7 @@ CompOpsNode::exec(NodesContext Context) {
     // Report comparison result
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Comparison '" + op + "' evaluated successfully",
         second_part.token.line
     );
@@ -851,12 +862,12 @@ CompOpsNode::exec(NodesContext Context) {
 // ==================================================================
 
 // Constructor
-LogicOpsNode::LogicOpsNode(const std::string& FilePath,
+LogicOpsNode::LogicOpsNode(
     const Token& END_token,
     OperationPartsList& parts
 ):
     Parts(std::move(parts)),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 // Get string representation
 std::string
@@ -935,7 +946,7 @@ LogicOpsNode::clone() {
         });
     }
 
-    return new LogicOpsNode(file, END_token, new_parts);
+    return new LogicOpsNode(END_token, new_parts);
 }
 
 // ==================================================================
@@ -949,13 +960,14 @@ LogicOpsNode::accept(NodesContext Context) {
     if (Parts.empty()) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "Logical operation contains no operands",
-            0
+            END_token.line
         );
 
         return make_error_result<bool>(
             "SyntaxError",
+            END_token.FilePath,
             "Logical operation contains no operands",
             "",
             false,
@@ -986,8 +998,8 @@ LogicOpsNode::accept(NodesContext Context) {
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Logical operand analysis failed",
+                DevTools::EventsT::Error,
+                "Fail in analyzing operand of logical operation: " + r.Message,
                 part.token.line
             );
 
@@ -1005,7 +1017,7 @@ LogicOpsNode::accept(NodesContext Context) {
 
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "Logical operation rejected operand of type '" +
                     part.node->return_type + "'; expected 'bool'",
                 part.token.line
@@ -1013,6 +1025,7 @@ LogicOpsNode::accept(NodesContext Context) {
 
             ReturnResult<bool> re = {err.msg, false, false};
             re.error_info = err.info;
+            re.error_info.file = part.token.FilePath;
 
             return re;
         }
@@ -1035,18 +1048,22 @@ LogicOpsNode::accept(NodesContext Context) {
 ReturnResult<Value>
 LogicOpsNode::exec(NodesContext Context) {
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
+    emit_event(Context, DevTools::EventsT::Runtime,
+        "Executing logical operation",
+        Parts.empty() ? END_token.line : Parts.front().token.line);
     return_type = "bool";
 
     if (Parts.empty()) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Error,
             "Logical operation contains no operands",
-            0
+            END_token.line
         );
 
         return make_error_result<Value>(
             "RuntimeError",
+            END_token.FilePath,
             "Logical operation contains no operands",
             "",
             std::monostate{},
@@ -1056,21 +1073,14 @@ LogicOpsNode::exec(NodesContext Context) {
         );
     }
 
-    emit_event(
-        Context,
-        DevTools::EventsT::Runtime,
-        "Executing logical operation",
-        Parts.front().token.line
-    );
-
     // Execute first operand
     auto r = Parts[0].node->exec(Context);
 
     if (!r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Logical operation failed while evaluating the first operand",
+            DevTools::EventsT::Error,
+            "Fail in evaluating operand 1 of logical operation: " + r.Message,
             Parts[0].token.line
         );
 
@@ -1080,13 +1090,6 @@ LogicOpsNode::exec(NodesContext Context) {
     auto* first_value = std::get_if<bool>(&r.value);
 
     if (!first_value) {
-        emit_event(
-            Context,
-            DevTools::EventsT::Runtime,
-            "Logical operation received a non-boolean first operand",
-            Parts[0].token.line
-        );
-
         auto err = Errors::TypeError(
             "bool",
             Get_ValueT(r.value),
@@ -1094,8 +1097,11 @@ LogicOpsNode::exec(NodesContext Context) {
             Parts[0].token.column,
             Parts[0].token.value.size()
         );
+        emit_event(Context, DevTools::EventsT::Error, err.info.message,
+            Parts[0].token.line);
         return make_error_result<Value>(
             err.info.type,
+            Parts[0].token.FilePath,
             err.info.message,
             err.info.comment,
             std::monostate{},
@@ -1116,7 +1122,7 @@ LogicOpsNode::exec(NodesContext Context) {
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Error,
                 "Applying short-circuit on logical operation '" +
                 std::string(
                     part.op == TokenType::LOGICAL_AND ? "&&" :
@@ -1127,7 +1133,7 @@ LogicOpsNode::exec(NodesContext Context) {
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Info,
                 "Logical operation completed successfully",
                 Parts[0].token.line
             );
@@ -1138,7 +1144,7 @@ LogicOpsNode::exec(NodesContext Context) {
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Evaluating logical operator '" +
                 std::string(
                     part.op == TokenType::LOGICAL_AND ? "&&" :
@@ -1152,8 +1158,9 @@ LogicOpsNode::exec(NodesContext Context) {
         if (!part_result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "Logical operation failed while evaluating an operand",
+                DevTools::EventsT::Error,
+                "Fail in evaluating operand " + std::to_string(i + 1) +
+                    " of logical operation: " + part_result.Message,
                 part.token.line
             );
 
@@ -1163,13 +1170,6 @@ LogicOpsNode::exec(NodesContext Context) {
         auto* part_value = std::get_if<bool>(&part_result.value);
 
         if (!part_value) {
-            emit_event(
-                Context,
-                DevTools::EventsT::Runtime,
-                "Logical operation received a non-boolean operand",
-                part.token.line
-            );
-
             auto err = Errors::TypeError(
                 "bool",
                 Get_ValueT(part_result.value),
@@ -1177,8 +1177,11 @@ LogicOpsNode::exec(NodesContext Context) {
                 part.token.column,
                 part.token.value.size()
             );
+            emit_event(Context, DevTools::EventsT::Error, err.info.message,
+                part.token.line);
             return make_error_result<Value>(
                 err.info.type,
+                part.token.FilePath,
                 err.info.message,
                 err.info.comment,
                 std::monostate{},
@@ -1199,7 +1202,7 @@ LogicOpsNode::exec(NodesContext Context) {
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Logical operation completed successfully",
         Parts.back().token.line
     );
@@ -1213,7 +1216,7 @@ LogicOpsNode::exec(NodesContext Context) {
 
 
 // Constructor
-PowerNode::PowerNode(const std::string& FilePath,
+PowerNode::PowerNode(
     const Token& END_token,
     const Token& token,
     OperationPart& left,
@@ -1222,7 +1225,7 @@ PowerNode::PowerNode(const std::string& FilePath,
     : token(token),
       left(std::move(left)),
       right(std::move(right)),
-    ASTNode(FilePath, END_token) {
+    ASTNode(END_token) {
         return_type = "float";
     }
 
@@ -1281,13 +1284,25 @@ ReturnResult<bool>
 PowerNode::accept(
     NodesContext Context
 ) {
+    emit_event(Context, DevTools::EventsT::Analysis,
+        "Analyzing power operation", token.line ? token.line : END_token.line);
     // Analyze the base
     auto left_result = left.node->accept(Context);
-    if (!left_result.success) return left_result;
+    if (!left_result.success) {
+        emit_event(Context, DevTools::EventsT::Error,
+            "Fail in analyzing the base operand of power operation: " + left_result.Message,
+            left.token.line);
+        return left_result;
+    }
 
     // Analyze the exponent
     auto right_result = right.node->accept(Context);
-    if (!right_result.success) return right_result;
+    if (!right_result.success) {
+        emit_event(Context, DevTools::EventsT::Error,
+            "Fail in analyzing the exponent operand of power operation: " + right_result.Message,
+            right.token.line);
+        return right_result;
+    }
 
     // Validate the base type
     if (left.node->return_type != "int" &&
@@ -1302,8 +1317,10 @@ PowerNode::accept(
             "The base of a power operation must be numeric"
         );
 
+        emit_event(Context, DevTools::EventsT::Error, error.msg, left.token.line);
         ReturnResult<bool> re = {error.msg, false, false};
         re.error_info = error.info;
+        re.error_info.file = left.token.FilePath;
 
         return re;
     }
@@ -1321,14 +1338,19 @@ PowerNode::accept(
             "The exponent of a power operation must be numeric"
         );
 
+        emit_event(Context, DevTools::EventsT::Error, error.msg, right.token.line);
         ReturnResult<bool> re = {error.msg, false, false};
         re.error_info = error.info;
+        re.error_info.file = right.token.FilePath;
 
         return re;
     }
 
     // Power operations return float
     return_type = "float";
+
+    emit_event(Context, DevTools::EventsT::Analysis,
+        "Power operation passed semantic analysis", token.line);
 
     return {"", true, true};
 }
@@ -1339,13 +1361,26 @@ PowerNode::exec
 (
     NodesContext Context
 ) {
+    ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
+    emit_event(Context, DevTools::EventsT::Runtime,
+        "Executing power operation", token.line ? token.line : END_token.line);
     // Execute the base
     auto left_result = left.node->exec(Context);
-    if (!left_result.success) return left_result;
+    if (!left_result.success) {
+        emit_event(Context, DevTools::EventsT::Error,
+            "Fail in evaluating the base operand of power operation: " + left_result.Message,
+            left.token.line);
+        return left_result;
+    }
 
     // Execute the exponent
     auto right_result = right.node->exec(Context);
-    if (!right_result.success) return right_result;
+    if (!right_result.success) {
+        emit_event(Context, DevTools::EventsT::Error,
+            "Fail in evaluating the exponent operand of power operation: " + right_result.Message,
+            right.token.line);
+        return right_result;
+    }
 
     // Convert the base to float
     auto base_result = turn_value_to_float(left_result.value);
@@ -1363,6 +1398,7 @@ PowerNode::exec
     if (std::isnan(result)) {
         Errors::ErrorInfo err_info = {
             "ValueError",
+            left.token.FilePath,
             "invalid result in power operation",
             "",
             left.token.line,
@@ -1371,6 +1407,8 @@ PowerNode::exec
         };
         ReturnResult<Value> re = {"", false, std::monostate{}};
         re.error_info = err_info;
+        emit_event(Context, DevTools::EventsT::Error,
+            "invalid result in power operation", left.token.line);
         return re;
     }
 
@@ -1378,6 +1416,7 @@ PowerNode::exec
     if (std::isinf(result)) {
         Errors::ErrorInfo err_info = {
             "OverflowError",
+            left.token.FilePath,
             "power operation result is out of range",
             "",
             left.token.line,
@@ -1386,6 +1425,8 @@ PowerNode::exec
         };
         ReturnResult<Value> re = {"", false, std::monostate{}};
         re.error_info = err_info;
+        emit_event(Context, DevTools::EventsT::Error,
+            "power operation result is out of range", left.token.line);
         return re;
     }
 
@@ -1406,7 +1447,7 @@ ASTNode* PowerNode::clone() {
         std::unique_ptr<ASTNode>(right.node->clone())
     };
 
-    return new PowerNode(file, END_token, token, left_copy, right_copy);
+    return new PowerNode(END_token, token, left_copy, right_copy);
 }
 
 } // namespace vltc

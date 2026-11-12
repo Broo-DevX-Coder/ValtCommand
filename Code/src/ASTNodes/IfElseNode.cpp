@@ -29,7 +29,7 @@ static void emit_event(
             message,
             line,
             Context.ParentScope,
-            Context.FilePath
+            Context.FilePath.string()
         });
     }
 }
@@ -39,7 +39,7 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-IfStatmentsNode::IfStatmentsNode(const std::string& FilePath,
+IfStatmentsNode::IfStatmentsNode(
     const Token& END_token,
     Token& CFtoken,
     Node& condition,
@@ -50,7 +50,7 @@ IfStatmentsNode::IfStatmentsNode(const std::string& FilePath,
     condition_node(std::move(condition)),
     Statments(std::move(statments)),
     Else_statments(std::move(else_statments)),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 // ==================================================================
 // Get String Representation
@@ -153,7 +153,7 @@ IfStatmentsNode::clone() {
         new_else_stms_list.push_back(std::move(new_stm));
     }
 
-    return new IfStatmentsNode(file, END_token, condition_FT,
+    return new IfStatmentsNode(END_token, condition_FT,
         new_condition,
         new_stms_list,
         new_else_stms_list
@@ -204,8 +204,8 @@ IfStatmentsNode::accept(
     if (!r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Semantic analysis failed while analyzing the IF condition",
+            DevTools::EventsT::Error,
+            "Fail in analyzing the IF condition: " + r.Message,
             condition_FT.line
         );
 
@@ -232,14 +232,6 @@ IfStatmentsNode::accept(
     );
 
     if (condition_node->return_type != "bool") {
-        emit_event(
-            Context,
-            DevTools::EventsT::Analysis,
-            "IF condition type validation failed: expected 'bool', received '" +
-                condition_node->return_type + "'",
-            condition_FT.line
-        );
-
         auto err = Errors::TypeError(
             "bool",
             condition_node->return_type,
@@ -247,6 +239,8 @@ IfStatmentsNode::accept(
             condition_FT.column,
             condition_FT.value.size()
         );
+        emit_event(Context, DevTools::EventsT::Error, err.msg,
+            condition_FT.line);
 
         ReturnResult<bool> re = {
             err.msg,
@@ -255,6 +249,7 @@ IfStatmentsNode::accept(
         };
 
         re.error_info = err.info;
+        re.error_info.file = condition_FT.FilePath;
 
         return re;
     }
@@ -317,14 +312,14 @@ IfStatmentsNode::accept(
         auto statement_result = smt->accept({
             if_scoupe.get(),
             Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
         });
 
         if (!statement_result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Semantic analysis failed inside the IF branch",
+                DevTools::EventsT::Error,
+                "Fail in analyzing a statement in the IF branch: " + statement_result.Message,
                 condition_FT.line
             );
 
@@ -381,14 +376,14 @@ IfStatmentsNode::accept(
         auto statement_result = smt->accept({
             if_scoupe.get(),
             Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
         });
 
         if (!statement_result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Semantic analysis failed inside the ELSE branch",
+                DevTools::EventsT::Error,
+                "Fail in analyzing a statement in the ELSE branch: " + statement_result.Message,
                 condition_FT.line
             );
 
@@ -464,7 +459,7 @@ IfStatmentsNode::exec(
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Starting execution of IF statement",
         condition_FT.line
     );
@@ -478,7 +473,7 @@ IfStatmentsNode::exec(
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
-        "Evaluating the condition of IF statement",
+        "Executing IF statement",
         condition_FT.line
     );
 
@@ -487,8 +482,8 @@ IfStatmentsNode::exec(
     if (!condition_result.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Execution failed while evaluating the IF condition",
+            DevTools::EventsT::Error,
+            "Fail in evaluating the IF condition: " + condition_result.Message,
             condition_FT.line
         );
 
@@ -497,7 +492,7 @@ IfStatmentsNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "IF condition evaluated successfully",
         condition_FT.line
     );
@@ -508,7 +503,7 @@ IfStatmentsNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Releasing the evaluated IF condition node",
         condition_FT.line
     );
@@ -521,7 +516,7 @@ IfStatmentsNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Creating a runtime scope for IF statement",
         condition_FT.line
     );
@@ -537,7 +532,7 @@ IfStatmentsNode::exec(
     if (condition_result.value == Value(true)) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "IF condition evaluated to true; executing IF branch",
             condition_FT.line
         );
@@ -545,7 +540,7 @@ IfStatmentsNode::exec(
         for (auto& stm : Statments) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Executing a statement in the IF branch",
                 condition_FT.line
             );
@@ -553,14 +548,14 @@ IfStatmentsNode::exec(
             auto r = stm->exec({
                 if_scoupe.get(),
                 Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
             });
 
             if (!r.success) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
-                    "Execution failed inside the IF branch",
+                    DevTools::EventsT::Error,
+                    "Fail in executing a statement in the IF branch: " + r.Message,
                     condition_FT.line
                 );
 
@@ -569,7 +564,7 @@ IfStatmentsNode::exec(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Statement in the IF branch executed successfully",
                 condition_FT.line
             );
@@ -577,7 +572,7 @@ IfStatmentsNode::exec(
             if (r.state != ExecState::Normal) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Debug,
                     "Statement in the IF branch changed execution state; propagating control flow",
                     condition_FT.line
                 );
@@ -590,7 +585,7 @@ IfStatmentsNode::exec(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Released the executed statement from the IF branch",
                 condition_FT.line
             );
@@ -598,7 +593,7 @@ IfStatmentsNode::exec(
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "IF branch executed successfully",
             condition_FT.line
         );
@@ -610,7 +605,7 @@ IfStatmentsNode::exec(
     } else {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "IF condition evaluated to false; executing ELSE branch",
             condition_FT.line
         );
@@ -618,7 +613,7 @@ IfStatmentsNode::exec(
         for (auto& stm : Else_statments) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Executing a statement in the ELSE branch",
                 condition_FT.line
             );
@@ -626,14 +621,14 @@ IfStatmentsNode::exec(
             auto r = stm->exec({
                 if_scoupe.get(),
                 Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
             });
 
             if (!r.success) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
-                    "Execution failed inside the ELSE branch",
+                    DevTools::EventsT::Error,
+                    "Fail in executing a statement in the ELSE branch: " + r.Message,
                     condition_FT.line
                 );
 
@@ -642,7 +637,7 @@ IfStatmentsNode::exec(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Statement in the ELSE branch executed successfully",
                 condition_FT.line
             );
@@ -650,7 +645,7 @@ IfStatmentsNode::exec(
             if (r.state != ExecState::Normal) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Debug,
                     "Statement in the ELSE branch changed execution state; propagating control flow",
                     condition_FT.line
                 );
@@ -663,7 +658,7 @@ IfStatmentsNode::exec(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Released the executed statement from the ELSE branch",
                 condition_FT.line
             );
@@ -671,7 +666,7 @@ IfStatmentsNode::exec(
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "ELSE branch executed successfully",
             condition_FT.line
         );
@@ -683,7 +678,7 @@ IfStatmentsNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "IF statement completed successfully",
         condition_FT.line
     );

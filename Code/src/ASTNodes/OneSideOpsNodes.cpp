@@ -28,7 +28,7 @@ static void emit_sign_event(
             message,
             line,
             Context.ParentScope,
-            Context.FilePath
+            Context.FilePath.string()
         });
     }
 }
@@ -53,7 +53,7 @@ static std::string sign_to_string(SignOpsTypes type) {
 // Constructor
 // ==================================================================
 
-SignOpNode::SignOpNode(const std::string& FilePath,
+SignOpNode::SignOpNode(
     const Token& END_token,
     SignOpsTypes type,
     const Token& token,
@@ -64,7 +64,7 @@ SignOpNode::SignOpNode(const std::string& FilePath,
     token(token),
     Operand_FT(operand_ft),
     node(std::move(node)),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 // ==================================================================
 // Get string representation
@@ -129,7 +129,7 @@ SignOpNode::clone() {
     if (node)
         node_copy.reset(node->clone());
 
-    return new SignOpNode(file, END_token, type,
+    return new SignOpNode(END_token, type,
         token,
         Operand_FT,
         node_copy
@@ -145,7 +145,7 @@ SignOpNode::accept(NodesContext Context) {
     if (!node) {
         emit_sign_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "Sign operation has no operand",
             token.line
         );
@@ -158,6 +158,7 @@ SignOpNode::accept(NodesContext Context) {
 
         re.error_info = {
             "NodeNotExists",
+            Operand_FT.FilePath,
             "Sign operation has no operand",
             "",
             Operand_FT.line,
@@ -181,8 +182,8 @@ SignOpNode::accept(NodesContext Context) {
     if (!result.success) {
         emit_sign_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Sign operation failed while analyzing its operand",
+            DevTools::EventsT::Error,
+            "Fail in analyzing operand of unary sign: " + result.Message,
             token.line
         );
 
@@ -205,10 +206,8 @@ SignOpNode::accept(NodesContext Context) {
 
         emit_sign_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Sign operation rejected operand of type '" +
-                node->return_type +
-                "'; expected 'int' or 'float'",
+            DevTools::EventsT::Error,
+            error.msg,
             Operand_FT.line
         );
 
@@ -219,6 +218,7 @@ SignOpNode::accept(NodesContext Context) {
         };
 
         re.error_info = error.info;
+        re.error_info.file = Operand_FT.FilePath;
         return re;
     }
 
@@ -243,10 +243,13 @@ SignOpNode::accept(NodesContext Context) {
 ReturnResult<Value>
 SignOpNode::exec(NodesContext Context) {
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
+    emit_sign_event(Context, DevTools::EventsT::Runtime,
+        "Executing unary sign '" + sign_to_string(type) + "'",
+        token.line ? token.line : END_token.line);
     if (!node) {
         emit_sign_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "Sign operation has no operand",
             token.line
         );
@@ -259,6 +262,7 @@ SignOpNode::exec(NodesContext Context) {
 
         re.error_info = {
             "NodeNotExists",
+            Operand_FT.FilePath,
             "Sign operation has no operand",
             "",
             Operand_FT.line,
@@ -268,13 +272,6 @@ SignOpNode::exec(NodesContext Context) {
 
         return re;
     }
-
-    emit_sign_event(
-        Context,
-        DevTools::EventsT::Runtime,
-        "Executing unary sign '" + sign_to_string(type) + "'",
-        token.line
-    );
 
     if (type == SignOpsTypes::NEGATIVE &&
         Operand_FT.Type == TokenType::INTEGER &&
@@ -288,8 +285,8 @@ SignOpNode::exec(NodesContext Context) {
     if (!result.success) {
         emit_sign_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Sign operation failed while evaluating its operand",
+            DevTools::EventsT::Error,
+            "Fail in evaluating operand of unary sign: " + result.Message,
             token.line
         );
 
@@ -299,12 +296,6 @@ SignOpNode::exec(NodesContext Context) {
     // Get the value
     auto value_r = turn_value_to_float(result.value);
     if (!value_r.success) {
-        emit_sign_event(
-            Context,
-            DevTools::EventsT::Runtime,
-            "Unary ("+sign_to_string(type)+") received a non-numeric operand",
-            token.line
-        );
         auto error = Errors::TypeError(
             "int | float",
             node->return_type,
@@ -313,12 +304,19 @@ SignOpNode::exec(NodesContext Context) {
             Operand_FT.value.size(),
             "Unary sign operations support numeric types only"
         );
+        emit_sign_event(
+            Context,
+            DevTools::EventsT::Error,
+            error.msg,
+            token.line
+        );
         ReturnResult<Value> re = {
             error.msg,
             false,
             std::monostate{}
         };
         re.error_info = error.info;
+        re.error_info.file = Operand_FT.FilePath;
         return re;
     }
 
@@ -327,7 +325,7 @@ SignOpNode::exec(NodesContext Context) {
 
         emit_sign_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Info,
             "Unary '+' completed successfully",
             token.line
         );
@@ -336,8 +334,12 @@ SignOpNode::exec(NodesContext Context) {
         auto reconciled = reconsiliation_int_float(
             node->return_type, v, Operand_FT
         );
-        if (!reconciled.success)
+        if (!reconciled.success) {
+            emit_sign_event(Context, DevTools::EventsT::Error,
+                "Fail in reconciling result of unary sign: " + reconciled.Message,
+                Operand_FT.line);
             return reconciled;
+        }
         return {"", true, std::move(reconciled.value)};
 
     }
@@ -347,7 +349,7 @@ SignOpNode::exec(NodesContext Context) {
 
     emit_sign_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Unary '-' completed successfully",
         token.line
     );
@@ -355,8 +357,12 @@ SignOpNode::exec(NodesContext Context) {
     auto reconciled = reconsiliation_int_float(
         node->return_type, negative, Operand_FT
     );
-    if (!reconciled.success)
+    if (!reconciled.success) {
+        emit_sign_event(Context, DevTools::EventsT::Error,
+            "Fail in reconciling result of unary sign: " + reconciled.Message,
+            Operand_FT.line);
         return reconciled;
+    }
     return {"", true, std::move(reconciled.value)};
 }
 
@@ -366,7 +372,7 @@ SignOpNode::exec(NodesContext Context) {
 // ==================================================================
 
 // Constructor
-LogicalNotNode::LogicalNotNode(const std::string& FilePath,
+LogicalNotNode::LogicalNotNode(
     const Token& END_token,
     const Token& token,
     const Token& operand_token,
@@ -375,7 +381,7 @@ LogicalNotNode::LogicalNotNode(const std::string& FilePath,
     : token(token),
       Operand_FT(operand_token),
       node(std::move(node)),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 // Get string representation
 std::string
@@ -421,9 +427,16 @@ ReturnResult<bool>
 LogicalNotNode::accept(
     NodesContext Context
 ) {
+    emit_sign_event(Context, DevTools::EventsT::Analysis,
+        "Analyzing logical NOT", token.line ? token.line : END_token.line);
     // Analyze the operand
     auto result = node->accept(Context);
-    if (!result.success) return result;
+    if (!result.success) {
+        emit_sign_event(Context, DevTools::EventsT::Error,
+            "Fail in analyzing operand of logical NOT: " + result.Message,
+            token.line ? token.line : END_token.line);
+        return result;
+    }
 
 
     // Logical NOT only supports boolean operands
@@ -436,6 +449,9 @@ LogicalNotNode::accept(
             token.value.size(),
             "Logical NOT supports boolean operands only"
         );
+        error_info.info.file = token.FilePath;
+        emit_sign_event(Context, DevTools::EventsT::Error,
+            error_info.info.message, token.line);
 
         return {"", false, false};
     }
@@ -443,16 +459,24 @@ LogicalNotNode::accept(
     // The result of logical NOT is always boolean
     return_type = "bool";
 
+    emit_sign_event(Context, DevTools::EventsT::Analysis,
+        "Logical NOT passed semantic analysis", token.line);
+
     return {"", true, true};
 }
 
 // Execution
 ReturnResult<Value> LogicalNotNode::exec(NodesContext Context) {
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
+    emit_sign_event(Context, DevTools::EventsT::Runtime,
+        "Executing logical NOT", token.line ? token.line : END_token.line);
     // Execute the operand
     auto result = node->exec(Context);
 
     if (!result.success) {
+        emit_sign_event(Context, DevTools::EventsT::Error,
+            "Fail in evaluating operand of logical NOT: " + result.Message,
+            token.line ? token.line : END_token.line);
         return result;
     }
 
@@ -463,7 +487,7 @@ ReturnResult<Value> LogicalNotNode::exec(NodesContext Context) {
 // Clone
 ASTNode* LogicalNotNode::clone() {
     std::unique_ptr<ASTNode> new_node(node->clone());
-    return new LogicalNotNode(file, END_token, token,
+    return new LogicalNotNode(END_token, token,
         Operand_FT,
         new_node
     );

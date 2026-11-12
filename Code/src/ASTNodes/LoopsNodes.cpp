@@ -27,7 +27,7 @@ static void emit_event(
             message,
             line,
             Context.ParentScope,
-            Context.FilePath
+            Context.FilePath.string()
         });
     }
 }
@@ -37,20 +37,20 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-BreakLoopNode::BreakLoopNode(const std::string& FilePath,
+BreakLoopNode::BreakLoopNode(
     const Token& END_token,
     Token& t_
 ): BreakT(t_),
-    ASTNode(FilePath, END_token) {
+    ASTNode(END_token) {
         return_type = "void";
     }
 
 // Constructor
-ContinueLoopNode::ContinueLoopNode(const std::string& FilePath,
+ContinueLoopNode::ContinueLoopNode(
     const Token& END_token,
     Token& t_
 ): ContinueT(t_),
-    ASTNode(FilePath, END_token) {
+    ASTNode(END_token) {
         return_type = "void";
     }
 
@@ -178,7 +178,7 @@ BreakLoopNode::exec(
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
-        "BREAK encountered; exiting the current loop",
+        "Executing BREAK statement",
         BreakT.line
     );
 
@@ -202,7 +202,7 @@ ContinueLoopNode::exec(
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
-        "CONTINUE encountered; skipping the remaining loop body",
+        "Executing CONTINUE statement",
         ContinueT.line
     );
 
@@ -220,12 +220,12 @@ ContinueLoopNode::exec(
 
 ASTNode*
 BreakLoopNode::clone() {
-    return new BreakLoopNode(file, END_token, BreakT);
+    return new BreakLoopNode(END_token, BreakT);
 }
 
 ASTNode*
 ContinueLoopNode::clone() {
-    return new ContinueLoopNode(file, END_token, ContinueT);
+    return new ContinueLoopNode(END_token, ContinueT);
 }
 
 // ==================================================================
@@ -233,7 +233,7 @@ ContinueLoopNode::clone() {
 // ==================================================================
 
 // Constructor
-WhileLoopsNode::WhileLoopsNode(const std::string& FilePath,
+WhileLoopsNode::WhileLoopsNode(
     const Token& END_token,
     Token& FirstToken,
     Node& condition,
@@ -242,7 +242,7 @@ WhileLoopsNode::WhileLoopsNode(const std::string& FilePath,
     condition_node(std::move(condition)),
     FirstToken(FirstToken),
     Statments(std::move(nodes_list)),
-    ASTNode(FilePath, END_token) {
+    ASTNode(END_token) {
     return_type = "void";
 }
 
@@ -314,7 +314,7 @@ WhileLoopsNode::clone() {
         new_stms_list.push_back(std::move(new_stm));
     }
 
-    return new WhileLoopsNode(file, END_token, FirstToken,
+    return new WhileLoopsNode(END_token, FirstToken,
         new_condition,
         new_stms_list
     );
@@ -342,7 +342,7 @@ WhileLoopsNode::accept(
     if (!condition_node) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "WHILE condition node is null",
             FirstToken.line
         );
@@ -359,7 +359,7 @@ WhileLoopsNode::accept(
     if (!r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "WHILE condition analysis failed",
             FirstToken.line
         );
@@ -378,7 +378,7 @@ WhileLoopsNode::accept(
     if (condition_node->return_type != "bool") {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "WHILE condition type mismatch: expected bool",
             FirstToken.line
         );
@@ -399,6 +399,7 @@ WhileLoopsNode::accept(
         };
 
         re.error_info = err.info;
+        re.error_info.file = FirstToken.FilePath;
 
         return re;
     }
@@ -415,7 +416,7 @@ WhileLoopsNode::accept(
         if (!smt) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "Null statement found in WHILE loop",
                 FirstToken.line
             );
@@ -433,13 +434,13 @@ WhileLoopsNode::accept(
         auto statement_result = smt->accept({
             while_scoupe.get(),
             Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
         });
 
         if (!statement_result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "WHILE loop statement analysis failed",
                 FirstToken.line
             );
@@ -482,17 +483,19 @@ WhileLoopsNode::exec(
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Starting WHILE loop execution",
         FirstToken.line
     );
+    emit_event(Context, DevTools::EventsT::Runtime,
+        "Executing WHILE loop", FirstToken.line ? FirstToken.line : END_token.line);
 
     return_type = "void";
 
     if (!condition_node) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Error,
             "Cannot execute WHILE loop: condition node is null",
             FirstToken.line
         );
@@ -517,8 +520,8 @@ WhileLoopsNode::exec(
         if (!condition_result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "WHILE condition execution failed",
+                DevTools::EventsT::Error,
+                "Fail in evaluating the WHILE condition: " + condition_result.Message,
                 FirstToken.line
             );
 
@@ -528,7 +531,7 @@ WhileLoopsNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         condition_result.value == Value(true)
             ? "WHILE condition evaluated to true"
             : "WHILE condition evaluated to false",
@@ -544,7 +547,7 @@ WhileLoopsNode::exec(
     ) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Entering WHILE loop iteration",
             FirstToken.line
         );
@@ -563,7 +566,7 @@ WhileLoopsNode::exec(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Executing WHILE loop statement",
                 FirstToken.line
             );
@@ -572,14 +575,14 @@ WhileLoopsNode::exec(
             auto r = stm_ptr->exec({
                 while_scoupe.get(),
                 Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
             });
 
             if (!r.success) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
-                    "WHILE loop statement execution failed",
+                    DevTools::EventsT::Error,
+                    "Fail in executing a WHILE loop statement: " + r.Message,
                     FirstToken.line
                 );
 
@@ -590,7 +593,7 @@ WhileLoopsNode::exec(
             if (r.state == ExecState::Return) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Debug,
                     "RETURN propagated from WHILE loop",
                     FirstToken.line
                 );
@@ -602,7 +605,7 @@ WhileLoopsNode::exec(
             if (r.state == ExecState::Continue) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Debug,
                     "CONTINUE propagated by WHILE loop",
                     FirstToken.line
                 );
@@ -614,7 +617,7 @@ WhileLoopsNode::exec(
             if (r.state == ExecState::Break) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Debug,
                     "BREAK propagated by WHILE loop",
                     FirstToken.line
                 );
@@ -635,7 +638,7 @@ WhileLoopsNode::exec(
             if (!condition_result.success) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Error,
                     "WHILE condition reevaluation failed",
                     FirstToken.line
                 );
@@ -645,7 +648,7 @@ WhileLoopsNode::exec(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 condition_result.value == Value(true)
                     ? "WHILE condition evaluated to true"
                     : "WHILE condition evaluated to false",
@@ -656,7 +659,7 @@ WhileLoopsNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "WHILE loop execution completed",
         FirstToken.line
     );
@@ -679,7 +682,7 @@ WhileLoopsNode::exec(
 // ==================================================================
 
 // Constructor
-ForLoopsNode::ForLoopsNode(const std::string& FilePath,
+ForLoopsNode::ForLoopsNode(
     const Token& END_token,
     Component& Initialization,
     Component& Condition,
@@ -690,7 +693,7 @@ ForLoopsNode::ForLoopsNode(const std::string& FilePath,
     Condition(std::move(Condition)),
     Update(std::move(Update)),
     Statments(std::move(statments)),
-    ASTNode(FilePath, END_token) {
+    ASTNode(END_token) {
     return_type = "void";
 }
 
@@ -810,7 +813,7 @@ ForLoopsNode::clone() {
     }
 
     // Create and return the new node
-    return new ForLoopsNode(file, END_token, new_Initialization,
+    return new ForLoopsNode(END_token, new_Initialization,
         new_Condition,
         new_Update,
         new_stms_list
@@ -848,7 +851,7 @@ ForLoopsNode::accept(
         if (!comp->node) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "FOR loop contains a null component",
                 comp->first_token.line
             );
@@ -870,13 +873,13 @@ ForLoopsNode::accept(
         auto r = comp->node->accept({
             for_scoupe.get(),
             Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
         });
 
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "FOR loop component analysis failed",
                 comp->first_token.line
             );
@@ -889,7 +892,7 @@ ForLoopsNode::accept(
     if (Condition.node->return_type != "bool") {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "FOR condition type mismatch: expected bool",
             Condition.first_token.line
         );
@@ -910,6 +913,7 @@ ForLoopsNode::accept(
         };
 
         re.error_info = err.info;
+        re.error_info.file = Condition.first_token.FilePath;
 
         return re;
     }
@@ -929,7 +933,7 @@ ForLoopsNode::accept(
         if (!stm) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "Null statement found in FOR loop",
                 Initialization.first_token.line
             );
@@ -947,13 +951,13 @@ ForLoopsNode::accept(
         auto r = stm->accept({
             for_scoupe.get(),
             Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
         });
 
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "FOR loop statement analysis failed",
                 Initialization.first_token.line
             );
@@ -996,10 +1000,13 @@ ForLoopsNode::exec(
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Starting FOR loop execution",
         Initialization.first_token.line
     );
+    emit_event(Context, DevTools::EventsT::Runtime,
+        "Executing FOR loop", Initialization.first_token.line ?
+            Initialization.first_token.line : END_token.line);
 
     // Create a scope for the for loop
     auto for_scoupe =
@@ -1012,7 +1019,7 @@ ForLoopsNode::exec(
     if (!Initialization.node) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Error,
             "FOR initialization node is null",
             Initialization.first_token.line
         );
@@ -1028,14 +1035,14 @@ ForLoopsNode::exec(
         auto r = Initialization.node->exec({
             for_scoupe.get(),
             Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
         });
 
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "FOR initialization failed",
+                DevTools::EventsT::Error,
+                "Fail in executing FOR initialization: " + r.Message,
                 Initialization.first_token.line
             );
 
@@ -1045,7 +1052,7 @@ ForLoopsNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "FOR initialization completed",
         Initialization.first_token.line
     );
@@ -1054,7 +1061,7 @@ ForLoopsNode::exec(
     if (!Condition.node) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Error,
             "FOR condition node is null",
             Condition.first_token.line
         );
@@ -1073,14 +1080,14 @@ ForLoopsNode::exec(
         condition_result = condition_cp->exec({
             for_scoupe.get(),
             Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
         });
 
         if (!condition_result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "Initial FOR condition evaluation failed",
+                DevTools::EventsT::Error,
+                "Fail in evaluating initial FOR condition: " + condition_result.Message,
                 Condition.first_token.line
             );
 
@@ -1090,7 +1097,7 @@ ForLoopsNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         condition_result.value == Value(true)
             ? "FOR condition evaluated to true"
             : "FOR condition evaluated to false",
@@ -1106,7 +1113,7 @@ ForLoopsNode::exec(
     ) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Entering FOR loop iteration",
             Initialization.first_token.line
         );
@@ -1125,7 +1132,7 @@ ForLoopsNode::exec(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Executing FOR loop statement",
                 Initialization.first_token.line
             );
@@ -1134,14 +1141,14 @@ ForLoopsNode::exec(
             auto r = stm_ptr->exec({
                 while_scoupe.get(),
                 Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
             });
 
             if (!r.success) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
-                    "FOR loop statement execution failed",
+                    DevTools::EventsT::Error,
+                    "Fail in executing a FOR loop statement: " + r.Message,
                     Initialization.first_token.line
                 );
 
@@ -1152,7 +1159,7 @@ ForLoopsNode::exec(
             if (r.state == ExecState::Return) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Debug,
                     "RETURN propagated from FOR loop",
                     Initialization.first_token.line
                 );
@@ -1164,7 +1171,7 @@ ForLoopsNode::exec(
             if (r.state == ExecState::Continue) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Debug,
                     "CONTINUE propagated by FOR loop",
                     Initialization.first_token.line
                 );
@@ -1176,7 +1183,7 @@ ForLoopsNode::exec(
             if (r.state == ExecState::Break) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Debug,
                     "BREAK propagated by FOR loop",
                     Initialization.first_token.line
                 );
@@ -1191,7 +1198,7 @@ ForLoopsNode::exec(
             if (!Update.node) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Error,
                     "FOR update node is null",
                     Update.first_token.line
                 );
@@ -1210,7 +1217,7 @@ ForLoopsNode::exec(
 
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Debug,
                     "Executing FOR update",
                     Update.first_token.line
                 );
@@ -1219,14 +1226,14 @@ ForLoopsNode::exec(
                 auto update_result = update_node_cp->exec({
                     for_scoupe.get(),
                     Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
                 });
 
                 if (!update_result.success) {
                     emit_event(
                         Context,
-                        DevTools::EventsT::Runtime,
-                        "FOR update execution failed",
+                        DevTools::EventsT::Error,
+                        "Fail in executing FOR update: " + update_result.Message,
                         Update.first_token.line
                     );
 
@@ -1242,13 +1249,13 @@ ForLoopsNode::exec(
             condition_result = condition_node_cp->exec({
                 for_scoupe.get(),
                 Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
             });
 
             if (!condition_result.success) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Runtime,
+                    DevTools::EventsT::Error,
                     "FOR condition reevaluation failed",
                     Condition.first_token.line
                 );
@@ -1258,7 +1265,7 @@ ForLoopsNode::exec(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 condition_result.value == Value(true)
                     ? "FOR condition evaluated to true"
                     : "FOR condition evaluated to false",
@@ -1269,7 +1276,7 @@ ForLoopsNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "FOR loop execution completed",
         Initialization.first_token.line
     );

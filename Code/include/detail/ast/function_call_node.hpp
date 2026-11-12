@@ -26,7 +26,7 @@ class FunctionCallArgumentNode: public ASTNode
         Token TypeToken; ///< toke of type
         std::unique_ptr<ASTNode> VNode; ///< AST Node that givs Argument its content
 
-        FunctionCallArgumentNode(const std::string& FilePath, const Token& END_token, std::string& Aname, Token TypeToken, std::unique_ptr<ASTNode> Value_node); ///< Constructure
+        FunctionCallArgumentNode(const Token& END_token, std::string& Aname, Token TypeToken, std::unique_ptr<ASTNode> Value_node); ///< Constructure
         std::string get_str(int level) override; ///< Get str of node to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
@@ -49,7 +49,7 @@ class FunctionCallNode: public ASTNode
         Token NameToken; ///< Token of function name in code
         std::unique_ptr<UserProxyFunctionNode> user_func_copy; ///< The proxy of user's function copy
 
-        FunctionCallNode(const std::string& FilePath, const Token& END_token, std::string Fname, ArgsT& Args_list, Token name_token); ///< Contructure
+        FunctionCallNode(const Token& END_token, std::string Fname, ArgsT& Args_list, Token name_token); ///< Contructure
         std::string get_str(int level) override; ///< Get str of node to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node

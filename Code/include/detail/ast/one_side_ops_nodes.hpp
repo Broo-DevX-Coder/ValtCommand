@@ -38,7 +38,7 @@ private:
 
 public:
     /// Constructor: Initialize the sign operation node
-    SignOpNode(const std::string& FilePath, const Token& END_token,
+    SignOpNode(const Token& END_token,
         SignOpsTypes type,
         const Token& token,
         const Token& operand_ft,
@@ -79,7 +79,7 @@ private:
 
 public:
     /// Constructor: Initialize the logical NOT node
-    LogicalNotNode(const std::string& FilePath, const Token& END_token,
+    LogicalNotNode(const Token& END_token,
         const Token& token,
         const Token& operand_ft,
         std::unique_ptr<ASTNode>& node

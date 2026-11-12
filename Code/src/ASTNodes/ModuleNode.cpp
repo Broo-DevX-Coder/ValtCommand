@@ -26,23 +26,23 @@ static void emit_event(
             message,
             line,
             Context.ParentScope,
-            Context.FilePath
+            Context.FilePath.string()
         });
     }
 }
 
 // Constructure of ASTNode that creates the file
-ASTNode::ASTNode(const std::string& FilePath, const Token& END_token)
-    : file(FilePath), END_token(END_token) {}
+ASTNode::ASTNode(const Token& END_token)
+    : file(END_token.FilePath), END_token(END_token) {}
 
 void ASTNode::emit_exec_end_event(const NodesContext& Context) const {
     if (Context.Debugger) {
         Context.Debugger->emit({
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "AST node execution finished",
             END_token.line,
             Context.ParentScope,
-            file
+            file.string()
         });
     }
 }
@@ -53,13 +53,12 @@ void ASTNode::emit_exec_end_event(const NodesContext& Context) const {
 
 // Constructor
 ModuleNode::ModuleNode(
-    const std::string& FilePath,
     const Token& END_token,
     StatmentsT& s_,
     Token& First_token
 ): statements(std::move(s_)),
    FToken(First_token),
-   ASTNode(FilePath, END_token) {
+   ASTNode(END_token) {
     return_type = "void";
 }
 
@@ -116,7 +115,7 @@ ModuleNode::exec(
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Starting program execution",
         FToken.line
     );
@@ -131,10 +130,10 @@ ModuleNode::exec(
         if (!stmt.node) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Skipping null statement #" +
                     std::to_string(statement_index),
-                FToken.line
+                stmt.first_token.line
             );
 
             continue;
@@ -142,10 +141,10 @@ ModuleNode::exec(
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Executing program statement #" +
                 std::to_string(statement_index),
-            FToken.line
+            stmt.first_token.line
         );
 
         r = stmt.node->exec(Context);
@@ -153,11 +152,10 @@ ModuleNode::exec(
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "Program statement #" +
-                    std::to_string(statement_index) +
-                    " execution failed",
-                FToken.line
+                DevTools::EventsT::Error,
+                "Fail in executing program statement #" +
+                    std::to_string(statement_index) + ": " + r.Message,
+                stmt.first_token.line
             );
 
             return r;
@@ -169,9 +167,9 @@ ModuleNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Program execution completed successfully",
-        FToken.line
+        END_token.line
     );
 
     return {"", true, std::monostate{}};
@@ -202,10 +200,10 @@ ModuleNode::accept(
         if (!stmt.node) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Debug,
                 "Skipping null statement #" +
                     std::to_string(statement_index),
-                FToken.line
+                stmt.first_token.line
             );
 
             continue;
@@ -216,7 +214,7 @@ ModuleNode::accept(
             DevTools::EventsT::Analysis,
             "Analyzing program statement #" +
                 std::to_string(statement_index),
-            FToken.line
+            stmt.first_token.line
         );
 
         r = stmt.node->accept(Context);
@@ -224,11 +222,10 @@ ModuleNode::accept(
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Program statement #" +
-                    std::to_string(statement_index) +
-                    " semantic analysis failed",
-                FToken.line
+                DevTools::EventsT::Error,
+                "Fail in analyzing program statement #" +
+                    std::to_string(statement_index) + ": " + r.Message,
+                stmt.first_token.line
             );
 
             return r;
@@ -239,7 +236,7 @@ ModuleNode::accept(
         Context,
         DevTools::EventsT::Analysis,
         "Program semantic analysis completed successfully",
-        FToken.line
+        END_token.line
     );
 
     return {"", true, true};
@@ -263,7 +260,7 @@ ModuleNode::clone() {
         new_statments.push_back({std::move(statment_c),s.first_token});
     }
 
-    return new ModuleNode(file, END_token, new_statments, FToken);
+    return new ModuleNode(END_token, new_statments, FToken);
 }
 
 } // namespace vltc

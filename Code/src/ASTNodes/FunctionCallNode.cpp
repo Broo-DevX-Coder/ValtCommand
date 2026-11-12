@@ -29,7 +29,7 @@ static void emit_event(
             message,
             line,
             Context.ParentScope,
-            Context.FilePath
+            Context.FilePath.string()
         });
     }
 }
@@ -39,7 +39,7 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-FunctionCallArgumentNode::FunctionCallArgumentNode(const std::string& FilePath,
+FunctionCallArgumentNode::FunctionCallArgumentNode(
     const Token& END_token,
     std::string& Aname,
     Token TToken,
@@ -49,7 +49,7 @@ FunctionCallArgumentNode::FunctionCallArgumentNode(const std::string& FilePath,
     type(TToken.value),
     TypeToken(TToken),
     VNode(std::move(Value_node)),
-    ASTNode(FilePath, END_token) {
+    ASTNode(END_token) {
     return_type = type;
 }
 
@@ -120,9 +120,8 @@ FunctionCallArgumentNode::accept(
     if (!vnode_ar.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Semantic analysis failed for the value expression of argument '" +
-                name + "'",
+            DevTools::EventsT::Error,
+            "Fail in analyzing argument '" + name + "': " + vnode_ar.Message,
             TypeToken.line
         );
 
@@ -154,7 +153,7 @@ FunctionCallArgumentNode::accept(
     if (!are_types_compatible(VNode->return_type, type)) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "Type validation failed for argument '" + name +
                 "': expected '" + type +
                 "', received '" + VNode->return_type + "'",
@@ -176,6 +175,7 @@ FunctionCallArgumentNode::accept(
         };
 
         re.error_info = err.info;
+        re.error_info.file = TypeToken.FilePath;
 
         return re;
     }
@@ -207,44 +207,28 @@ FunctionCallArgumentNode::exec(
     NodesContext Context
 ) {
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
-    emit_event(
-        Context,
-        DevTools::EventsT::Runtime,
-        "Evaluating argument '" + name + "'",
-        TypeToken.line
-    );
-
     // --------------------------------------------------------------
     // Evaluate argument expression
     // --------------------------------------------------------------
 
-    emit_event(
-        Context,
-        DevTools::EventsT::Runtime,
-        "Executing the value expression of argument '" + name + "'",
-        TypeToken.line
-    );
+    emit_event(Context, DevTools::EventsT::Runtime,
+        "Executing function call argument", TypeToken.line ? TypeToken.line : END_token.line);
 
     auto vnode_r = VNode->exec(Context);
 
     if (!vnode_r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Execution failed while evaluating argument '" + name + "'",
+            DevTools::EventsT::Error,
+"Fail in evaluating argument '" + name + "': " + vnode_r.Message,
             TypeToken.line
         );
 
         return vnode_r;
     }
 
-    emit_event(
-        Context,
-        DevTools::EventsT::Runtime,
-        "Value expression of argument '" + name +
-            "' evaluated successfully",
-        TypeToken.line
-    );
+    emit_event(Context, DevTools::EventsT::Debug,
+        "Evaluating argument '" + name + "'", TypeToken.line);
 
     // --------------------------------------------------------------
     // Reconcile the argument value with its declared type
@@ -252,7 +236,7 @@ FunctionCallArgumentNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Reconciling the value of argument '" + name +
             "' with expected type '" + type + "'",
         TypeToken.line
@@ -261,13 +245,16 @@ FunctionCallArgumentNode::exec(
     auto reconciled = reconsiliation_int_float(type, vnode_r.value, TypeToken);
     if (!reconciled.success) {
         VNode = nullptr;
+        emit_event(Context, DevTools::EventsT::Error,
+"Fail in reconciling argument '" + name + "': " + reconciled.Message,
+            TypeToken.line);
         return reconciled;
     }
     value = std::move(reconciled.value);
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Value reconciliation completed for argument '" + name + "'",
         TypeToken.line
     );
@@ -277,7 +264,7 @@ FunctionCallArgumentNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Argument '" + name + "' evaluated successfully",
         TypeToken.line
     );
@@ -293,7 +280,7 @@ ASTNode*
 FunctionCallArgumentNode::clone() {
     std::unique_ptr<ASTNode> new_value_node(VNode->clone());
 
-    return new FunctionCallArgumentNode(file, END_token, name,
+    return new FunctionCallArgumentNode(END_token, name,
         TypeToken,
         std::move(new_value_node)
     );
@@ -304,7 +291,7 @@ FunctionCallArgumentNode::clone() {
 // ==================================================================
 
 // Constructor
-FunctionCallNode::FunctionCallNode(const std::string& FilePath,
+FunctionCallNode::FunctionCallNode(
     const Token& END_token,
     std::string Fname,
     ArgsT& Args_list,
@@ -313,7 +300,7 @@ FunctionCallNode::FunctionCallNode(const std::string& FilePath,
     name(Fname),
     arguments(std::move(Args_list)),
     NameToken(n_token),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 // Get string representation
 std::string
@@ -391,8 +378,8 @@ FunctionCallNode::accept(
     if (!search_result.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Function lookup failed for '" + name + "'",
+            DevTools::EventsT::Error,
+                "Fail in looking up function '" + name + "': " + search_result.Message,
             NameToken.line
         );
 
@@ -453,7 +440,7 @@ FunctionCallNode::accept(
         if (arguments.size() > func->arguments.size()) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "Argument validation failed for function '" + name +
                     "': too many arguments were provided",
                 NameToken.line
@@ -469,6 +456,7 @@ FunctionCallNode::accept(
             };
 
             re.error_info = error_obj.info;
+            re.error_info.file = NameToken.FilePath;
 
             return re;
         }
@@ -496,7 +484,7 @@ FunctionCallNode::accept(
             if (!func->arguments.contains(ar->name)) {
                 emit_event(
                     Context,
-                    DevTools::EventsT::Analysis,
+                    DevTools::EventsT::Error,
                     "Argument validation failed: unexpected argument '" +
                         ar->name + "' passed to function '" + name + "'",
                     ar->TypeToken.line
@@ -509,6 +497,7 @@ FunctionCallNode::accept(
                 };
 
                 re.error_info = error_obj.info;
+                re.error_info.file = NameToken.FilePath;
 
                 return re;
             }
@@ -549,7 +538,7 @@ FunctionCallNode::accept(
                 if (it == arguments.end()) {
                     emit_event(
                         Context,
-                        DevTools::EventsT::Analysis,
+                        DevTools::EventsT::Error,
                         "Required argument '" + mt_n +
                             "' is missing from function call '" + name + "'",
                         NameToken.line
@@ -562,6 +551,7 @@ FunctionCallNode::accept(
                     };
 
                     re.error_info = error_obj.info;
+                    re.error_info.file = NameToken.FilePath;
 
                     return re;
                 }
@@ -598,7 +588,7 @@ FunctionCallNode::accept(
 
                 emit_event(
                     Context,
-                    DevTools::EventsT::Analysis,
+                    DevTools::EventsT::Error,
                     "Argument type validation failed for '" + ar->name +
                         "' in function '" + name + "'",
                     ar->TypeToken.line
@@ -615,6 +605,7 @@ FunctionCallNode::accept(
                 };
 
                 re.error_info = error_obj.info;
+                re.error_info.file = NameToken.FilePath;
 
                 return re;
             }
@@ -648,7 +639,9 @@ FunctionCallNode::accept(
     // Analyze each argument expression
     // --------------------------------------------------------------
 
-    for (auto& ar : arguments) {
+    for (std::size_t argument_index = 0;
+         argument_index < arguments.size(); ++argument_index) {
+        auto& ar = arguments[argument_index];
         emit_event(
             Context,
             DevTools::EventsT::Analysis,
@@ -662,9 +655,9 @@ FunctionCallNode::accept(
         if (!arg_accept_r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Semantic analysis failed for argument '" + ar->name +
-                    "' in function call '" + name + "'",
+                DevTools::EventsT::Error,
+                "Fail in analyzing argument '" + ar->name +
+                    "' of call to '" + name + "': " + arg_accept_r.Message,
                 ar->TypeToken.line
             );
 
@@ -789,15 +782,15 @@ FunctionCallNode::accept(
         auto a_r = user_func_copy->accept({
             func_scoupe.get(),
             Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
         });
 
         if (!a_r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Semantic analysis failed for the body of function '" +
-                    name + "'",
+                DevTools::EventsT::Error,
+                "Fail in analyzing body of function '" +
+                    name + "': " + a_r.Message,
                 NameToken.line
             );
 
@@ -843,10 +836,13 @@ FunctionCallNode::exec(
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Starting execution of function call '" + name + "'",
         NameToken.line
     );
+
+    emit_event(Context, DevTools::EventsT::Runtime,
+        "Executing function call", NameToken.line ? NameToken.line : END_token.line);
 
     ExternalFunInType::ArgsType args_list;
 
@@ -854,20 +850,16 @@ FunctionCallNode::exec(
     // Search for the function
     // --------------------------------------------------------------
 
-    emit_event(
-        Context,
-        DevTools::EventsT::Runtime,
-        "Searching for function '" + name + "' before execution",
-        NameToken.line
-    );
+    emit_event(Context, DevTools::EventsT::Debug,
+        "Searching for function '" + name + "' before execution", NameToken.line);
 
     auto search_result = Context.ParentScope->search_function(NameToken);
 
     if (!search_result.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Function lookup failed during execution of '" + name + "'",
+            DevTools::EventsT::Error,
+            "Fail in looking up function '" + name + "': " + search_result.Message,
             NameToken.line
         );
 
@@ -884,7 +876,7 @@ FunctionCallNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Function '" + name + "' found successfully for execution",
         NameToken.line
     );
@@ -895,7 +887,7 @@ FunctionCallNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Preparing to execute function '" + name +
             "' with return type '" + return_type + "'",
         NameToken.line
@@ -907,16 +899,18 @@ FunctionCallNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Evaluating " + std::to_string(arguments.size()) +
             " argument(s) for function '" + name + "'",
         NameToken.line
     );
 
-    for (auto& ar : arguments) {
+    for (std::size_t argument_index = 0;
+         argument_index < arguments.size(); ++argument_index) {
+        auto& ar = arguments[argument_index];
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Executing argument '" + ar->name +
                 "' for function '" + name + "'",
             ar->TypeToken.line
@@ -927,9 +921,10 @@ FunctionCallNode::exec(
         if (!arg_exec_r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "Execution failed while evaluating argument '" +
-                    ar->name + "' for function '" + name + "'",
+                DevTools::EventsT::Error,
+                "Fail in executing argument " +
+                    std::to_string(argument_index + 1) + " of call to '" +
+                    name + "': " + arg_exec_r.Message,
                 ar->TypeToken.line
             );
 
@@ -938,7 +933,7 @@ FunctionCallNode::exec(
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Argument '" + ar->name +
                 "' evaluated successfully for function '" + name + "'",
             ar->TypeToken.line
@@ -948,7 +943,7 @@ FunctionCallNode::exec(
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Stored the evaluated value of argument '" + ar->name +
                 "' for function '" + name + "'",
             ar->TypeToken.line
@@ -962,7 +957,7 @@ FunctionCallNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Finished evaluating arguments for function '" + name + "'",
         NameToken.line
     );
@@ -976,7 +971,7 @@ FunctionCallNode::exec(
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Function '" + name +
                 "' is external; invoking its implementation",
             NameToken.line
@@ -987,17 +982,18 @@ FunctionCallNode::exec(
         if (!result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "External function '" + name + "' returned an error",
+                DevTools::EventsT::Error,
+                "Function call to '" + name + "' failed: " + result.Message,
                 NameToken.line
             );
 
+            result.error_info.file = NameToken.FilePath;
             return result;
         }
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "External function '" + name +
                 "' executed successfully",
             NameToken.line
@@ -1012,7 +1008,7 @@ FunctionCallNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Function '" + name +
             "' is user-defined; preparing its execution scope",
         NameToken.line
@@ -1021,7 +1017,7 @@ FunctionCallNode::exec(
     // Create function scope
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Creating a runtime scope for user-defined function '" +
             name + "'",
         NameToken.line
@@ -1040,7 +1036,7 @@ FunctionCallNode::exec(
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Registering argument '" + arg_name +
                 "' with runtime type '" + arg_type +
                 "' in function scope '" + name + "'",
@@ -1063,7 +1059,7 @@ FunctionCallNode::exec(
         if (!args_list.contains(argument_name)) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Debug,
                 "Registering default value for argument '" + argument_name +
                     "' in function '" + name + "'",
                 NameToken.line
@@ -1084,7 +1080,7 @@ FunctionCallNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Starting execution of the body of user-defined function '" +
             name + "'",
         NameToken.line
@@ -1093,14 +1089,14 @@ FunctionCallNode::exec(
     auto result = user_func_copy->exec({
         func_scoupe.get(),
         Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
     });
 
     if (!result.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Execution failed inside user-defined function '" + name + "'",
+            DevTools::EventsT::Error,
+            "Fail in executing body of function '" + name + "': " + result.Message,
             NameToken.line
         );
 
@@ -1109,7 +1105,7 @@ FunctionCallNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "User-defined function '" + name +
             "' executed successfully",
         NameToken.line
@@ -1117,7 +1113,7 @@ FunctionCallNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "Function call '" + name + "' completed successfully",
         NameToken.line
     );
@@ -1140,7 +1136,7 @@ FunctionCallNode::clone() {
         new_args_list.push_back(std::move(arg));
     }
 
-    auto* node = new FunctionCallNode(file, END_token, name, new_args_list, NameToken);
+    auto* node = new FunctionCallNode(END_token, name, new_args_list, NameToken);
 
     // Keep the analyzed copy of the user function (null for external functions)
     node->return_type = return_type;

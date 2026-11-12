@@ -46,7 +46,7 @@ class BinOpsNode: public ASTNode {
         OperationPartsList Parts; ///< Parts of calculation
 
     public:
-        BinOpsNode(const std::string& FilePath, const Token& END_token, OperationPartsList& parts); ///< Constructure
+        BinOpsNode(const Token& END_token, OperationPartsList& parts); ///< Constructure
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
@@ -64,7 +64,7 @@ class CompOpsNode: public ASTNode {
         ComparitonOpsTypes type; ///< Type of operation
 
     public:
-        CompOpsNode(const std::string& FilePath, const Token& END_token, OperationPart& first_token, OperationPart& secound_token, ComparitonOpsTypes type); ///< Constructure
+        CompOpsNode(const Token& END_token, OperationPart& first_token, OperationPart& secound_token, ComparitonOpsTypes type); ///< Constructure
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
@@ -79,7 +79,7 @@ class LogicOpsNode: public ASTNode {
         OperationPartsList Parts; ///< Parts of calculation
 
     public:
-        LogicOpsNode(const std::string& FilePath, const Token& END_token, OperationPartsList& parts); ///< Constructure
+        LogicOpsNode(const Token& END_token, OperationPartsList& parts); ///< Constructure
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
@@ -99,7 +99,7 @@ private:
     OperationPart right;
 
 public:
-    PowerNode(const std::string& FilePath, const Token& END_token, const Token& token,OperationPart& left,OperationPart& right); ///< Constructor: Initialize the power operation node
+    PowerNode(const Token& END_token, const Token& token,OperationPart& left,OperationPart& right); ///< Constructor: Initialize the power operation node
     std::string get_str(int level) override; ///< Get the string representation of the node for debugging
     nlohmann::json get_json() override; ///< Get the json file of ASTNode
     ASTNodesTypes NType() override; ///< Get the AST node type

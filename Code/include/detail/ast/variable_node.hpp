@@ -27,7 +27,7 @@ class SetVariableNode: public ASTNode {
         bool is_const; ///< Is the variable const
 
     public:
-        SetVariableNode(const std::string& FilePath, const Token& END_token, Token name_token, Token type_token, std::unique_ptr<ASTNode> value_node, bool is_const = false); ///< Constructure
+        SetVariableNode(const Token& END_token, Token name_token, Token type_token, std::unique_ptr<ASTNode> value_node, bool is_const = false); ///< Constructure
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
@@ -45,7 +45,7 @@ class ResetVariableNode: public ASTNode {
         std::unique_ptr<ASTNode> VNode; ///< value node that givs the real value after exec
 
     public:
-        ResetVariableNode(const std::string& FilePath, const Token& END_token, Token name_token, std::unique_ptr<ASTNode> value_node); ///< Constructure
+        ResetVariableNode(const Token& END_token, Token name_token, std::unique_ptr<ASTNode> value_node); ///< Constructure
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
@@ -61,7 +61,7 @@ class GetVariableNode: public ASTNode {
         Token NameToken; ///< Token of Name of variable
         std::string name; ///< Name of variable
     public:
-        GetVariableNode(const std::string& FilePath, const Token& END_token, Token name_token); ///< Constructure
+        GetVariableNode(const Token& END_token, Token name_token); ///< Constructure
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node

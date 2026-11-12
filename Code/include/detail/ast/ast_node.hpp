@@ -56,16 +56,16 @@ enum ASTNodesTypes {
 struct NodesContext {
     Scopes::Scope* ParentScope;
     DevTools::Debugger* Debugger;
-    std::string FilePath;
+    fs::path FilePath;
 };
 
 /// ASTNode
 class ASTNode {
     public:
         std::string return_type; ///< The type of return value
-        std::string file; ///< The path of file that encludes the nodes
+        fs::path file; ///< The path of file that encludes the nodes
         Token END_token; ///< Token marking the end location associated with this node
-        ASTNode(const std::string& FilePath, const Token& END_token); ///< Constructure
+        ASTNode(const Token& END_token); ///< Constructure
         void emit_exec_end_event(const NodesContext& Context) const;
         virtual ~ASTNode()= default; 
         virtual std::string get_str(int level) = 0; ///< Get the string of node to print AST
@@ -100,9 +100,10 @@ class ModuleNode : public ASTNode
     private:
         StatmentsT statements;
         Token FToken;
+        Token LToken;
 
     public:
-        ModuleNode(const std::string& FilePath, const Token& END_token, StatmentsT& s_,Token& First_token); ///< Constructure
+        ModuleNode(const Token& END_token, StatmentsT& s_,Token& First_token); ///< Constructure
         std::string get_str(int level=0) override; ///< get the str of node to print
         nlohmann::json get_json(); ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node

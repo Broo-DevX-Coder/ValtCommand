@@ -21,7 +21,7 @@ class BreakLoopNode: public ASTNode {
     private:
         Token BreakT;
     public:
-        BreakLoopNode(const std::string& FilePath, const Token& END_token, Token& token);
+        BreakLoopNode(const Token& END_token, Token& token);
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
@@ -35,7 +35,7 @@ class ContinueLoopNode: public ASTNode {
     private:
         Token ContinueT;
     public:
-        ContinueLoopNode(const std::string& FilePath, const Token& END_token, Token& token);
+        ContinueLoopNode(const Token& END_token, Token& token);
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
@@ -58,7 +58,7 @@ class WhileLoopsNode: public ASTNode {
         Token FirstToken; ///< The first token of loop definition
 
     public:
-        WhileLoopsNode(const std::string& FilePath, const Token& END_token, Token& FirstToken, Node& condition, NodesL& nodes_list); ///< Constructure
+        WhileLoopsNode(const Token& END_token, Token& FirstToken, Node& condition, NodesL& nodes_list); ///< Constructure
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
@@ -86,7 +86,7 @@ class ForLoopsNode: public ASTNode {
         NodesL Statments; ///< All instructions of loop excuting
 
     public:
-        ForLoopsNode(const std::string& FilePath, const Token& END_token, Component& Initialization, Component& Condition, Component& Update, NodesL& statments); ///< Constructure
+        ForLoopsNode(const Token& END_token, Component& Initialization, Component& Condition, Component& Update, NodesL& statments); ///< Constructure
         std::string get_str(int level) override; ///< Get the str to print
         nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node

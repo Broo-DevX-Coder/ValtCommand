@@ -28,7 +28,7 @@ static void emit_event(
             message,
             line,
             Context.ParentScope,
-            Context.FilePath
+            Context.FilePath.string()
         });
     }
 }
@@ -38,7 +38,7 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-SetVariableNode::SetVariableNode(const std::string& FilePath,
+SetVariableNode::SetVariableNode(
     const Token& END_token,
     Token name_token,
     Token type_token,
@@ -51,7 +51,7 @@ SetVariableNode::SetVariableNode(const std::string& FilePath,
     type(type_token.value),
     is_const(is_const_),
     VNode(std::move(value_node_)),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 
 // Get the string representation
@@ -141,21 +141,22 @@ SetVariableNode::accept(
 
     if (search_r.success) {
         if (parent_scope_id == search_r.value->scope_id) {
+            const auto failure_message = err.reset_var_in_same_scope();
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Variable declaration failed: '" + name +
-                    "' already exists in the current scope",
+                DevTools::EventsT::Error,
+                failure_message,
                 NameToken.line
             );
 
             ReturnResult<bool> re = {
-                err.reset_var_in_same_scope(),
+                failure_message,
                 false,
                 false
             };
 
             re.error_info = err.info;
+            re.error_info.file = NameToken.FilePath;
             return re;
         }
     }
@@ -172,9 +173,9 @@ SetVariableNode::accept(
     if (!vnode_ar.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Variable declaration failed while analyzing the initial value of '" +
-                name + "'",
+            DevTools::EventsT::Error,
+            "Fail in analyzing the initial value of variable '" +
+                name + "': " + vnode_ar.Message,
             NameToken.line
         );
 
@@ -200,9 +201,8 @@ SetVariableNode::accept(
 
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Variable declaration failed: incompatible type for '" +
-                name + "'",
+            DevTools::EventsT::Error,
+            type_err.msg,
             TypeToken.line
         );
 
@@ -213,6 +213,7 @@ SetVariableNode::accept(
         };
 
         re.error_info = type_err.info;
+        re.error_info.file = TypeToken.FilePath;
         return re;
     }
 
@@ -257,9 +258,9 @@ SetVariableNode::exec(
     if (!vnode_ar.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Variable declaration failed while evaluating the initial value of '" +
-                name + "'",
+            DevTools::EventsT::Error,
+            "Fail in evaluating the initial value of variable '" +
+                name + "': " + vnode_ar.Message,
             NameToken.line
         );
 
@@ -271,8 +272,13 @@ SetVariableNode::exec(
         vnode_ar.value,
         NameToken
     );
-    if (!reconciled.success)
+    if (!reconciled.success) {
+        emit_event(Context, DevTools::EventsT::Error,
+            "Fail in reconciling initial value of variable '" + name +
+                "': " + reconciled.Message,
+            NameToken.line);
         return reconciled;
+    }
 
     Context.ParentScope->add_var(
         name,
@@ -283,7 +289,7 @@ SetVariableNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Variable '" + name +
             "' was initialized successfully",
         NameToken.line
@@ -300,7 +306,7 @@ SetVariableNode::clone() {
         VNode->clone()
     );
 
-    return new SetVariableNode(file, END_token, NameToken,
+    return new SetVariableNode(END_token, NameToken,
         TypeToken,
         std::move(new_value_node),
         is_const
@@ -313,7 +319,7 @@ SetVariableNode::clone() {
 // ==================================================================
 
 // Constructor
-ResetVariableNode::ResetVariableNode(const std::string& FilePath,
+ResetVariableNode::ResetVariableNode(
     const Token& END_token,
     Token name_token,
     std::unique_ptr<ASTNode> value_node_
@@ -321,7 +327,7 @@ ResetVariableNode::ResetVariableNode(const std::string& FilePath,
     NameToken(name_token),
     name(name_token.value),
     VNode(std::move(value_node_)),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 
 // Get the string representation
@@ -393,8 +399,8 @@ ResetVariableNode::accept(
     if (!search_r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Assignment failed: variable '" + name + "' was not found",
+            DevTools::EventsT::Error,
+            search_r.Message,
             NameToken.line
         );
 
@@ -419,20 +425,22 @@ ResetVariableNode::accept(
 
     // Variable is const
     if (var_ptr->is_const) {
+        const auto failure_message = err.reset_const_var();
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Assignment failed: variable '" + name + "' is constant",
+            DevTools::EventsT::Error,
+            failure_message,
             NameToken.line
         );
 
         ReturnResult<bool> re = {
-            err.reset_const_var(),
+            failure_message,
             false,
             false
         };
 
         re.error_info = err.info;
+        re.error_info.file = NameToken.FilePath;
         return re;
     }
 
@@ -455,9 +463,9 @@ ResetVariableNode::accept(
     if (!vnode_ar.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Assignment failed while analyzing the new value of '" +
-                name + "'",
+            DevTools::EventsT::Error,
+            "Fail in analyzing the new value of variable '" +
+                name + "': " + vnode_ar.Message,
             NameToken.line
         );
 
@@ -474,23 +482,24 @@ ResetVariableNode::accept(
     );
 
     if (!are_types_compatible(VNode->return_type, type)) {
+        const auto failure_message = err.reset_var_value_by_other_type(
+            type,
+            VNode->return_type
+        );
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Assignment failed: incompatible value type for variable '" +
-                name + "'",
+            DevTools::EventsT::Error,
+            failure_message,
             NameToken.line
         );
 
         ReturnResult<bool> re = {
-            err.reset_var_value_by_other_type(
-                type,
-                VNode->return_type
-            ),
+            failure_message,
             false,
             false
         };
         re.error_info = err.info;
+        re.error_info.file = NameToken.FilePath;
         return re;
     }
 
@@ -526,9 +535,9 @@ ResetVariableNode::exec(
     if (!vnode_ar.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Assignment failed while evaluating the new value of '" +
-                name + "'",
+            DevTools::EventsT::Error,
+            "Fail in evaluating the new value of variable '" +
+                name + "': " + vnode_ar.Message,
             NameToken.line
         );
 
@@ -542,9 +551,8 @@ ResetVariableNode::exec(
     if (!search_r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Assignment failed: variable '" + name +
-                "' could not be found during execution",
+            DevTools::EventsT::Error,
+            search_r.Message,
             NameToken.line
         );
 
@@ -563,13 +571,18 @@ ResetVariableNode::exec(
         value,
         NameToken
     );
-    if (!reconciled.success)
+    if (!reconciled.success) {
+        emit_event(Context, DevTools::EventsT::Error,
+            "Fail in reconciling new value of variable '" + name +
+                "': " + reconciled.Message,
+            NameToken.line);
         return reconciled;
+    }
     search_r.value->value = std::move(reconciled.value);
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Variable '" + name + "' was updated successfully",
         NameToken.line
     );
@@ -585,7 +598,7 @@ ResetVariableNode::clone() {
         VNode->clone()
     );
 
-    return new ResetVariableNode(file, END_token, NameToken,
+    return new ResetVariableNode(END_token, NameToken,
         std::move(new_value_node)
     );
 }
@@ -596,13 +609,13 @@ ResetVariableNode::clone() {
 // ==================================================================
 
 // Constructor
-GetVariableNode::GetVariableNode(const std::string& FilePath,
+GetVariableNode::GetVariableNode(
     const Token& END_token,
     Token name_token
 ):
     NameToken(name_token),
     name(name_token.value),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 
 // Get the string representation
@@ -656,8 +669,8 @@ GetVariableNode::accept(
     if (!search_r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Variable access failed: '" + name + "' was not found",
+            DevTools::EventsT::Error,
+            search_r.Message,
             NameToken.line
         );
 
@@ -694,7 +707,7 @@ GetVariableNode::exec(
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
-        "Reading the value of variable '" + name + "'",
+        "Executing variable read '" + name + "'",
         NameToken.line
     );
 
@@ -703,9 +716,8 @@ GetVariableNode::exec(
     if (!search_r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Variable read failed: '" + name +
-                "' was not found during execution",
+            DevTools::EventsT::Error,
+            search_r.Message,
             NameToken.line
         );
 
@@ -723,7 +735,7 @@ GetVariableNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Variable '" + name + "' was read successfully",
         NameToken.line
     );
@@ -735,7 +747,7 @@ GetVariableNode::exec(
 // Copy node
 ASTNode*
 GetVariableNode::clone() {
-    return new GetVariableNode(file, END_token, NameToken);
+    return new GetVariableNode(END_token, NameToken);
 }
 
 } // namespace vltc

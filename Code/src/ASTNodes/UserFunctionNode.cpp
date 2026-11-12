@@ -29,7 +29,7 @@ static void emit_event(
             message,
             line,
             Context.ParentScope,
-            Context.FilePath
+            Context.FilePath.string()
         });
     }
 }
@@ -39,7 +39,7 @@ static void emit_event(
 // ==================================================================
 
 // Constructor
-UserFunctionArgumentNode::UserFunctionArgumentNode(const std::string& FilePath,
+UserFunctionArgumentNode::UserFunctionArgumentNode(
     const Token& END_token,
     Token& nameT,
     Token& typeT,
@@ -52,7 +52,7 @@ UserFunctionArgumentNode::UserFunctionArgumentNode(const std::string& FilePath,
     default_value_node(std::move(default_value_N)),
     default_value_ftoekn(default_value_FT),
     is_argument_any(is_argument_any),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 
 // Get string for print
@@ -128,7 +128,7 @@ UserFunctionArgumentNode::accept(
     if (default_value_node != nullptr) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "Analyzing default value of parameter '" +
                 name_token.value + "'",
             default_value_ftoekn.line
@@ -139,9 +139,9 @@ UserFunctionArgumentNode::accept(
         if (!result.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Failed to analyze default value of parameter '" +
-                    name_token.value + "'",
+                DevTools::EventsT::Error,
+                "Fail in analyzing default value of parameter '" +
+                    name_token.value + "': " + result.Message,
                 default_value_ftoekn.line
             );
 
@@ -162,7 +162,7 @@ UserFunctionArgumentNode::accept(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "Parameter '" + name_token.value +
                     "' has an incompatible default value type",
                 default_value_ftoekn.line
@@ -175,6 +175,7 @@ UserFunctionArgumentNode::accept(
             };
 
             re.error_info = err.info;
+            re.error_info.file = default_value_ftoekn.FilePath;
             return re;
         }
     }
@@ -199,9 +200,12 @@ UserFunctionArgumentNode::exec(
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
     return_type = type_token.value;
 
+    emit_event(Context, DevTools::EventsT::Runtime,
+        "Executing user function argument", name_token.line ?
+            name_token.line : END_token.line);
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Processing parameter '" + name_token.value + "'",
         name_token.line
     );
@@ -209,7 +213,7 @@ UserFunctionArgumentNode::exec(
     if (default_value_node != nullptr) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Error,
             "Evaluating default value of parameter '" +
                 name_token.value + "'",
             default_value_ftoekn.line
@@ -220,9 +224,9 @@ UserFunctionArgumentNode::exec(
         if (!vnode_r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "Failed to evaluate default value of parameter '" +
-                    name_token.value + "'",
+                DevTools::EventsT::Error,
+                "Fail in evaluating default value of parameter '" +
+                    name_token.value + "': " + vnode_r.Message,
                 default_value_ftoekn.line
             );
 
@@ -234,15 +238,20 @@ UserFunctionArgumentNode::exec(
             vnode_r.value,
             default_value_ftoekn
         );
-        if (!reconciled.success)
+        if (!reconciled.success) {
+            emit_event(Context, DevTools::EventsT::Error,
+                "Fail in reconciling default value of parameter '" +
+                    name_token.value + "': " + reconciled.Message,
+                default_value_ftoekn.line);
             return reconciled;
+        }
         default_value = std::move(reconciled.value);
 
         default_value_node = nullptr;
 
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Debug,
             "Default value of parameter '" +
                 name_token.value + "' evaluated successfully",
             default_value_ftoekn.line
@@ -262,7 +271,7 @@ UserFunctionArgumentNode::clone() {
             : default_value_node->clone()
     );
 
-    return new UserFunctionArgumentNode(file, END_token, name_token,
+    return new UserFunctionArgumentNode(END_token, name_token,
         type_token,
         default_value_ftoekn,
         std::move(new_defualt_value_node),
@@ -276,14 +285,14 @@ UserFunctionArgumentNode::clone() {
 // ==================================================================
 
 // Constructor
-UserFunctionReturnNode::UserFunctionReturnNode(const std::string& FilePath,
+UserFunctionReturnNode::UserFunctionReturnNode(
     const Token& END_token,
     Token& t_,
     std::unique_ptr<ASTNode> value_node
 ):
     VNode(std::move(value_node)),
     ReturnT(t_),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 
 // Get string to print
@@ -342,7 +351,7 @@ UserFunctionReturnNode::accept(
     if (VNode == nullptr) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
+            DevTools::EventsT::Error,
             "RETURN statement has no value expression",
             ReturnT.line
         );
@@ -360,8 +369,8 @@ UserFunctionReturnNode::accept(
     if (!r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Analysis,
-            "Failed to analyze RETURN expression",
+            DevTools::EventsT::Error,
+            "Fail in analyzing RETURN expression: " + r.Message,
             ReturnT.line
         );
 
@@ -416,7 +425,7 @@ UserFunctionReturnNode::exec(
     if (VNode == nullptr) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
+            DevTools::EventsT::Error,
             "RETURN statement has no value expression",
             ReturnT.line
         );
@@ -434,8 +443,8 @@ UserFunctionReturnNode::exec(
     if (!vnode_r.success) {
         emit_event(
             Context,
-            DevTools::EventsT::Runtime,
-            "Failed to evaluate RETURN expression",
+            DevTools::EventsT::Error,
+            "Fail in evaluating RETURN expression: " + vnode_r.Message,
             ReturnT.line
         );
 
@@ -470,7 +479,7 @@ UserFunctionReturnNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "RETURN completed with type '" + return_type + "'",
         ReturnT.line
     );
@@ -486,7 +495,7 @@ UserFunctionReturnNode::clone() {
         VNode == nullptr ? nullptr : VNode->clone()
     );
 
-    return new UserFunctionReturnNode(file, END_token, ReturnT,
+    return new UserFunctionReturnNode(END_token, ReturnT,
         std::move(new_VNode)
     );
 }
@@ -497,13 +506,13 @@ UserFunctionReturnNode::clone() {
 // ==================================================================
 
 // Constructor
-UserProxyFunctionNode::UserProxyFunctionNode(const std::string& FilePath,
+UserProxyFunctionNode::UserProxyFunctionNode(
     const Token& END_token,
     NodesListT statements,
     const std::string& type
 ):
     statements(std::move(statements)),
-    ASTNode(FilePath, END_token) {
+    ASTNode(END_token) {
     return_type = type;
 }
 
@@ -561,7 +570,7 @@ UserProxyFunctionNode::accept(
         Context,
         DevTools::EventsT::Analysis,
         "Analyzing user function body",
-        0
+        END_token.line
     );
 
     for (auto& stm : statements) {
@@ -573,9 +582,9 @@ UserProxyFunctionNode::accept(
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "User function body analysis failed",
-                0
+                DevTools::EventsT::Error,
+                "Fail in analyzing a statement in user function body: " + r.Message,
+                END_token.line
             );
 
             return r;
@@ -586,7 +595,7 @@ UserProxyFunctionNode::accept(
         Context,
         DevTools::EventsT::Analysis,
         "User function body passed analysis",
-        0
+        END_token.line
     );
 
     return {"", true, true};
@@ -599,12 +608,9 @@ UserProxyFunctionNode::exec(
     NodesContext Context
 ) {
     ASTNodeExecCompletionGuard exec_end_guard(*this, Context);
-    emit_event(
-        Context,
-        DevTools::EventsT::Runtime,
-        "Executing user function body",
-        0
-    );
+    const std::size_t node_line = END_token.line;
+    emit_event(Context, DevTools::EventsT::Runtime,
+        "Executing user function body", node_line);
 
     for (auto& statement : statements) {
         if (statement == nullptr)
@@ -615,9 +621,9 @@ UserProxyFunctionNode::exec(
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "User function body execution failed",
-                0
+                DevTools::EventsT::Error,
+                "Fail in executing a statement in user function body: " + r.Message,
+                node_line
             );
 
             return r;
@@ -626,9 +632,9 @@ UserProxyFunctionNode::exec(
         if (r.state == ExecState::Return) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
+                DevTools::EventsT::Info,
                 "User function returned a value",
-                0
+                node_line
             );
 
             const Token& return_token = r.return_nodes.empty()
@@ -639,8 +645,13 @@ UserProxyFunctionNode::exec(
                 r.return_data,
                 return_token
             );
-            if (!reconciled.success)
+            if (!reconciled.success) {
+                emit_event(Context, DevTools::EventsT::Error,
+                    "Fail in reconciling returned value of function body: " +
+                        reconciled.Message,
+                    return_token.line ? return_token.line : END_token.line);
                 return reconciled;
+            }
             return {"", true, std::move(reconciled.value)};
         }
 
@@ -649,9 +660,9 @@ UserProxyFunctionNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Info,
         "User function body completed without RETURN",
-        0
+                node_line
     );
 
     return {"", true, std::monostate{}};
@@ -673,7 +684,7 @@ UserProxyFunctionNode::clone() {
         new_statments.push_back(std::move(stm));
     }
 
-    return new UserProxyFunctionNode(file, END_token, std::move(new_statments),
+    return new UserProxyFunctionNode(END_token, std::move(new_statments),
         return_type
     );
 }
@@ -684,7 +695,7 @@ UserProxyFunctionNode::clone() {
 // ==================================================================
 
 // Constructor
-UserFunctionNode::UserFunctionNode(const std::string& FilePath,
+UserFunctionNode::UserFunctionNode(
     const Token& END_token,
     Token& nameT,
     Token& typeT,
@@ -697,7 +708,7 @@ UserFunctionNode::UserFunctionNode(const std::string& FilePath,
     arguments_list(std::move(arguments_list)),
     statements(std::move(statements)),
     is_function_any(is_any),
-    ASTNode(FilePath, END_token) {}
+    ASTNode(END_token) {}
 
 
 // Get string to print
@@ -800,7 +811,7 @@ UserFunctionNode::accept(
 
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
+                DevTools::EventsT::Error,
                 "Function declaration failed: '" +
                     name_token.value +
                     "' is already defined in this scope",
@@ -821,6 +832,7 @@ UserFunctionNode::accept(
             };
 
             re.error_info = err.info;
+            re.error_info.file = name_token.FilePath;
             return re;
         }
     }
@@ -853,9 +865,9 @@ UserFunctionNode::accept(
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Function parameter verification failed in '" +
-                    name_token.value + "'",
+                DevTools::EventsT::Error,
+                "Fail in verifying parameter '" + argument->name_token.value +
+                    "' of function '" + name_token.value + "': " + r.Message,
                 argument->name_token.line
             );
 
@@ -899,15 +911,15 @@ UserFunctionNode::accept(
         auto r = statement->accept({
             func_scoupe.get(),
             Context.Debugger,
-            Context.FilePath
+            Context.FilePath.string()
         });
 
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Analysis,
-                "Statement analysis failed in function '" +
-                    name_token.value + "'",
+                DevTools::EventsT::Error,
+                "Fail in analyzing a statement in function '" +
+                    name_token.value + "': " + r.Message,
                 name_token.line
             );
 
@@ -923,7 +935,7 @@ UserFunctionNode::accept(
 
                     emit_event(
                         Context,
-                        DevTools::EventsT::Analysis,
+                        DevTools::EventsT::Error,
                         "Return type mismatch in function '" +
                             name_token.value + "': expected '" +
                             return_type_token.value + "', got '" +
@@ -948,6 +960,7 @@ UserFunctionNode::accept(
                     };
 
                     re.error_info = err.info;
+                    re.error_info.file = name_token.FilePath;
                     return re;
                 }
 
@@ -983,6 +996,7 @@ UserFunctionNode::accept(
         };
 
         re.error_info = err.info;
+        re.error_info.file = name_token.FilePath;
         return re;
     }
 
@@ -1014,7 +1028,7 @@ UserFunctionNode::accept(
         statements_copy.push_back(std::move(t_ptr));
     }
 
-    auto proxy_node = new UserProxyFunctionNode(file, END_token, std::move(statements_copy),
+    auto proxy_node = new UserProxyFunctionNode(END_token, std::move(statements_copy),
         return_type_token.value
     );
 
@@ -1043,12 +1057,12 @@ UserFunctionNode::exec(
     emit_event(
         Context,
         DevTools::EventsT::Runtime,
-        "Registering function '" + name_token.value + "'",
+        "Executing function declaration",
         name_token.line
     );
 
     // Create proxy node
-    auto proxy_node = new UserProxyFunctionNode(file, END_token, std::move(statements),
+    auto proxy_node = new UserProxyFunctionNode(END_token, std::move(statements),
         return_type_token.value
     );
 
@@ -1068,9 +1082,10 @@ UserFunctionNode::exec(
         if (!r.success) {
             emit_event(
                 Context,
-                DevTools::EventsT::Runtime,
-                "Failed to evaluate parameters for function '" +
-                    name_token.value + "'",
+                DevTools::EventsT::Error,
+                "Fail in evaluating parameter '" +
+                    argument->name_token.value + "' of function '" +
+                    name_token.value + "': " + r.Message,
                 argument->name_token.line
             );
 
@@ -1103,7 +1118,7 @@ UserFunctionNode::exec(
 
     emit_event(
         Context,
-        DevTools::EventsT::Runtime,
+        DevTools::EventsT::Debug,
         "Function '" + name_token.value +
             "' registered successfully",
         name_token.line
@@ -1142,7 +1157,7 @@ UserFunctionNode::clone() {
         new_statements.push_back(std::move(new_stm));
     }
 
-    return new UserFunctionNode(file, END_token, name_token,
+    return new UserFunctionNode(END_token, name_token,
         return_type_token,
         std::move(new_arguments_list),
         std::move(new_statements),
