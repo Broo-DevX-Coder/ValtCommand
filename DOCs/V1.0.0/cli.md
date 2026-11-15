@@ -4,8 +4,6 @@
 
 The command-line tool runs ValtCommand source code from a file or directly from the command line, optionally with the debugger enabled. The CLI is built with CLI11.
 
-> Everything in this document is derived from `main.cpp`. Items marked **(unverified)** depend on CLI11 or Runtime behavior that `main.cpp` does not show; test them before publishing.
-
 ---
 
 ## 1. Synopsis
@@ -14,11 +12,11 @@ The command-line tool runs ValtCommand source code from a file or directly from 
 valtc [OPTIONS]
 ```
 
-Exactly one source must be given: a file (`--file`) or code (`--eval`).
+One source should be given: a file (`--file`) or code (`--eval`).
 
 ```
 valtc --file main.vlt
-valtc --eval "CALL print \"Hello World!\" END"
+valtc --eval 'CALL print value<str>:"Hello World!" END'
 valtc --debug --break main.vlt:1,2,3 --file main.vlt
 ```
 
@@ -28,17 +26,17 @@ valtc --debug --break main.vlt:1,2,3 --file main.vlt
 
 | Option | Aliases | Value | Default | Needs `--debug` |
 |---|---|---|---|---|
-| `-f` | `--file` | `FILE` | none | no |
-| `-e` | `--eval` | `CODE` | none | no |
+| `-f` | `--file` | `FILE` (required) | none | no |
+| `-e` | `--eval` | `CODE` (required) | none | no |
 | `-d` | `--debug`, `--no-debug` | none (flag) | off | - |
 | `-l` | `--logs`, `--no-logs` | none (flag) | off | **yes** |
-| | `--log-file`, `--logsf` | `FILE` | none | **yes** |
+| | `--log-file`, `--logsf` | `FILE` (required) | none | **yes** |
 | | `--break` | `BREAKPOINT...` | none | **yes** |
 | `-v` | `--version` | none | | no |
 | `-h` | `--help` | none | | no |
 
 ### `-f, --file FILE`
-Path of the source file to run.
+Path of the source file to run. The option takes a value: the path of the file.
 - The path must exist and must be a regular file (not a directory).
 - Relative paths are resolved from the current working directory.
 - It is the default file for `--break` entries written with only line numbers.
@@ -66,7 +64,7 @@ Writes debugger log messages to `FILE`.
 - The file is created, or overwritten if it already exists.
 - Takes priority over `--logs`.
 - If `FILE` is an existing directory, the option is ignored and `--logs` rules apply.
-- If the file cannot be opened (for example no permission), logs are silently lost and no error is shown. **(unverified: depends on stream state handling in Runtime)**
+- If the file cannot be opened (for example no permission), logs are silently lost and no error is shown.
 
 ### `--break BREAKPOINT...`
 Registers breakpoints. Accepts one or more values.
@@ -85,16 +83,17 @@ Rules:
 - Repeating the same line for the same path is allowed and is registered once.
 - A trailing comma (`1,2,`) is accepted.
 - Only works with `--debug`. Without it, the values are ignored without any message.
-- Breakpoint paths are compared after conversion to absolute, lexically normalized paths. The tested spellings `main.vlt`, `./main.vlt`, and the absolute path therefore match each other when they identify the same file.
-- CLI breakpoints remain active after a hit. A breakpoint on a loop-body line stops each time execution reaches that line after another line; in the documented two-iteration probe it stopped twice.
-- With `--eval`, a line-only breakpoint has an empty file path, which matches any event file. `--break 1` was tested and stops on line 1; `--break :1` is rejected as an empty file path.
-- The debugger checks breakpoints on `Runtime` events when either the line or file differs from the last Runtime event, then matches both file and line. Several nodes on one source line cause one stop; a later visit after another line can stop again. See [Debugger and tracer events](Language-references/tracer-debugger.md) for details.
+- Breakpoint paths are compared after conversion to absolute, lexically normalized paths. The spellings `main.vlt`, `./main.vlt`, and the absolute path therefore match each other when they identify the same file.
+- Breakpoints only trigger on lines that execute code. A breakpoint on an empty line or on an `END` line never stops, because no `Runtime` event is emitted for it. To stop at the end of a block, put the breakpoint on the last statement inside it.
+- CLI breakpoints are not removed after a stop. A breakpoint on a loop-body line stops each time execution reaches that line after another line; in the documented two-iteration probe it stopped twice. (Only the temporary breakpoint created by the debugger's `next` command is removed after use.)
+- With `--eval`, a line-only breakpoint has an empty file path, which matches any event file. `--break 1` stops on line 1; `--break :1` is rejected as an empty file path.
+- The debugger checks breakpoints on `Runtime` events when either the line or the file differs from the last Runtime event, then matches both file and line. Several nodes on one source line cause one stop; a later visit after another line can stop again. See [Debugger and tracer events](Language-references/tracer-debugger.md) for details.
 
 Both forms below are supported:
 
 ```
 valtc --debug --break main.vlt:1,2,3 utils.vlt:5,10 --file main.vlt
-valtc --debug --break=main.vlt:1,2,3 utils.vlt:5,10 --file main.vlt   (unverified)
+valtc --debug --break=main.vlt:1,2,3 utils.vlt:5,10 --file main.vlt
 ```
 
 ### `-v, --version`
@@ -116,7 +115,6 @@ The program checks in this order:
 Consequences:
 - Running with no arguments prints `No work to do ...` to standard output and exits with code `2`; it does not print help.
 - A wrong file path (`--file missing.vlt`) also prints `No work to do ...` and exits with code `2`, not "file not found".
-- Both cases exit with code `2`; these outputs and exit codes were tested with `valtc`.
 - Giving both `--file` and `--eval` is rejected by the parser before anything runs (see section 7).
 
 ---
@@ -139,7 +137,7 @@ When `--debug` is off, none of these options do anything.
 
 | Stream | Content |
 |---|---|
-| Standard output | `No work to do ...`, `--help`, `--version`, and anything the script itself prints **(unverified: depends on the script's output library)** |
+| Standard output | `No work to do ...`, `--help`, `--version`, and anything the script itself prints |
 | Standard error | Script errors, breakpoint syntax errors, debugger logs (with `--logs`), parser errors from CLI11 |
 
 ---
@@ -150,8 +148,7 @@ When the script fails (a parse error or a runtime error), the CLI prints to **st
 
 1. an empty line,
 2. the formatted error from `Errors::formatter` (type, message, separator line, numbered source line),
-3. the line `File: "<absolute path>"`, only if the error belongs to a file,
-4. an empty line.
+3. the line `File: "<absolute path>"` followed by an empty line, only if the error belongs to a file.
 
 Example:
 
@@ -160,13 +157,13 @@ TypeError: expected 'int', got 'str'
 ------------------------------------------
 1-|  SET i<int> = "55"
 
-File: "/home/user/project/tests/n.vlt"
+File: "/path/to/project/tests/n.vlt"
 ```
 
 Details:
 - The source line shown is read again from the file named in the error. If that file cannot be read, the source part is empty.
 - The file path is the absolute, normalized path and is printed with quotes.
-- For `--eval`, the shown source is the eval text and no `File:` line is printed.
+- For `--eval`, the shown source is the eval text, no `File:` line is printed, and no empty line follows the error.
 - The error can belong to a different file than the main file, and the file shown is always the one where the error happened.
 - The exit code is `1`.
 
@@ -197,11 +194,11 @@ Breakpoint values are only checked when `--debug` is on.
 | `2` | Nothing to run (`No work to do ...`), or an invalid breakpoint |
 | `108` | CLI11 rejected the excluded `--file` and `--eval` option pair |
 | `109` | CLI11 received an unknown option |
-| `114` | CLI11 found the required `--file` value missing |
+| `114` | An option that requires a value was given without one (for example, `--file` with no path) |
 
 For these parser errors, CLI11 prints its message and help hint. The listed parser codes were verified by running `valtc --unknown`, `valtc --file` and `valtc --file Code/tests/n.vlt --eval x`.
 
-A script that ends the program itself (for example through an exit call inside the script) may produce a different code. **(unverified)**
+The debugger's exit command ends the whole process immediately with code `0`, without running the rest of the script.
 
 ---
 
@@ -214,7 +211,7 @@ valtc --file main.vlt
 
 Run code directly:
 ```
-valtc --eval "CALL print \"Hello World!\" END"
+valtc --eval 'CALL print value<str>:"Hello World!" END'
 ```
 
 Debug with breakpoints in two files, logs to the console:
@@ -240,7 +237,7 @@ if [ $? -ne 0 ]; then echo "script failed"; fi
 | Symptom | Reason |
 |---|---|
 | `No work to do ...` although you passed `--file` | The path does not exist or is not a regular file |
-| Breakpoints never trigger | `--debug` is missing, or the path/line does not match the loaded file |
+| Breakpoints never trigger | `--debug` is missing, the path/line does not match the loaded file, or the line is empty / an `END` line |
 | `--logs` prints nothing | `--debug` is missing, or `--log-file` is set to a valid file |
 | Log file is empty or missing | `--debug` is missing, or the file could not be created |
 | No `File:` line in the error | The code was run with `--eval` |
