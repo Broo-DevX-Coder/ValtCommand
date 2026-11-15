@@ -231,7 +231,7 @@ int main(int argc, char* argv[]) {
         "Examples:\n"
         "  valtc --file main.vlt\n"
         "  valtc -f main.vlt --debug\n"
-        "  valtc --eval \"CALL print value<str>:\"Hello World!\" END\"\n"
+        "  valtc --eval 'CALL print value<str>:\"Hello World!\" END'\n"
         "  valtc --debug --logs --file main.vlt\n"
         "  valtc --debug --break main.vlt:1,2,3\n"
         "  valtc --debug --break main.vlt:1,2,3 utils.vlt:5,10\n"
