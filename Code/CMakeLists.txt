@@ -21,18 +21,17 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ASann and UBSan in Debug mode
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC)
-    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer) 
     add_link_options(-fsanitize=address,undefined)
+
+    # Enable testing
+    enable_testing()
 endif()
 
 # Get Libraries
 find_package(fmt REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
-
 # Add Directories for files
 add_subdirectory(src)
 add_subdirectory(app)
-
-# Enable testing
-enable_testing()
