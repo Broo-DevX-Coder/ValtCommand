@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "detail/api_export.hpp"
+#include "valtcommand/api_export.hpp"
 
 /// Include neccessary headers
 
@@ -24,32 +24,32 @@ namespace Scopes {
 
     namespace SymbolTableTypes {
         /** @brief Distinguishes host-provided and script-defined functions. */
-        enum class FunctionsTypes {
+        enum class VALTC_API FunctionsTypes {
             Extenal, ///< An external function comes from pure c++
             Inside ///< The user function `SET_FUNCTION`
         };
 
         /** @brief Variable metadata shared by declarations and runtime values. */
-        struct SVar {
+        struct VALTC_API SVar {
             std::string type; ///< Type of data in var
             bool is_const; ///< Is the var const `can't change value`
         };
 
         /** @brief A variable entry, including its current value and defining scope. */
-        struct RVar: public SVar {
+        struct VALTC_API RVar: public SVar {
             Value value; ///< The value of var
             size_t scope_id; ///< The scope id where the var created
         };
 
         /** @brief Argument metadata stored for a function. */
-        struct Argument: public SVar {
+        struct VALTC_API Argument: public SVar {
             bool is_required; ///< Is the argument required 
             bool is_any; ///< Is the type of argument any (means the argument can be any type)
             Value default_value; ///< The default alue of argument in set function (arg<str> = "hh")
         };
         
         /** @brief Function metadata and callback or script implementation. */
-        struct Function {
+        struct VALTC_API Function {
             ~Function(); ///< Destructure
             std::string return_type; ///< The type of value returned
             std::unordered_map<std::string, Argument> arguments; ///< All arguments of function
@@ -68,7 +68,7 @@ namespace Scopes {
      * A scope can have a parent. Lookups and visible-table queries include
      * entries reachable through that parent chain.
      */
-    class Scope {
+    class VALTC_API Scope {
         public: 
             /** @brief Name and entry pointer for a visible variable. */
             struct VarsTableLine { std::string name; SymbolTableTypes::RVar* var_ptr; };

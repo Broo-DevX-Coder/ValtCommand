@@ -1,3 +1,12 @@
+# =======================================================================
+# Modules and libraries
+# =======================================================================
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+# =======================================================================
+# Create a dll or shred object
+# =======================================================================
 function(create_module NAME FOLDER)
 
     # Engine implementation and its internal/public declarations all remain
@@ -12,7 +21,8 @@ function(create_module NAME FOLDER)
     target_include_directories(
         ${NAME}
         PUBLIC
-        ${PROJECT_SOURCE_DIR}/include
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
 
     target_compile_definitions(
@@ -21,21 +31,67 @@ function(create_module NAME FOLDER)
         BUILDING_COMPILER_DLL
     )
 
+    set_target_properties(${NAME} PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+    )
+
+
 endfunction()
 
 # =======================================================================
 # Link objects with libs and thier self
 # =======================================================================
 
-create_module(engine .)
+create_module(valtcommand .)
 
 target_link_libraries(
-    engine
+    valtcommand
     PUBLIC
-    fmt
+    fmt::fmt
+    nlohmann_json::nlohmann_json
 )
 
-target_link_libraries(engine
-    PRIVATE
-        nlohmann_json::nlohmann_json
+# =======================================================================
+# Install: library, headers, and the find_package files
+# =======================================================================
+
+set_target_properties(valtcommand PROPERTIES
+    VERSION 1.0.0
+    SOVERSION 1
+)
+
+install(TARGETS valtcommand
+    EXPORT ValtCommandTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/valtcommand
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT ValtCommandTargets
+    FILE ValtCommandTargets.cmake
+    NAMESPACE ValtCommand::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ValtCommand
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/ValtCommandConfigVersion.cmake
+    VERSION 1.0.0
+    COMPATIBILITY SameMajorVersion
+)
+
+configure_package_config_file(
+    ${PROJECT_SOURCE_DIR}/cmake/ValtCommandConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/ValtCommandConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ValtCommand
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/ValtCommandConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/ValtCommandConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ValtCommand
 )

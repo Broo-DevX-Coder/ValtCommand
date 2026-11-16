@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "detail/api_export.hpp"
+
 
 /// Include neccessary headers
 
@@ -20,7 +20,7 @@
 /// This is the maain lixar class
 namespace vltc {
 
-class API Lexar {
+class Lexar {
     private:
         size_t pos = 0; ///< The curent position in code
         size_t curent_line = 1; ///< The line that the cursor is on.

@@ -17,7 +17,8 @@
  * - Type compatibility and conversion functions.
  */
 
-#include "detail/api_export.hpp"
+
+#include "valtcommand/api_export.hpp"
 #include "valtcommand/result.hpp"
 #include "valtcommand/value.hpp"
 
@@ -50,6 +51,12 @@ class ASTNode;
  */
 namespace Errors {
     struct ErrorInfo;
+
+    /// @brief Format the error to print them on screan
+    /// @param info Info of errro
+    /// @param code The source code
+    /// @return The printable str
+    VALTC_API std::string formatter(ErrorInfo info, const std::string& code); 
 }
 
 /**
@@ -68,7 +75,7 @@ namespace Scopes {
  * Used to control interpreter execution and propagate control-flow
  * instructions between AST nodes.
  */
-enum class ExecState {
+enum class VALTC_API ExecState {
 
     /**
      * @brief Normal execution.
@@ -101,7 +108,7 @@ enum class ExecState {
  * @tparam T Type of the returned value.
  */
 template<typename T>
-struct ReturnResult {
+struct VALTC_API ReturnResult {
 
     /**
      * @brief Message associated with the execution result.
@@ -155,7 +162,7 @@ struct ReturnResult {
  * Contains the function arguments and the parent scope from which
  * the external function was called.
  */
-struct ExternalFunInType {
+struct VALTC_API ExternalFunInType {
 
     /**
      * @brief Type used to represent external function arguments.
@@ -197,7 +204,7 @@ using ExternalFuncType =
  * Includes identifiers, literals, keywords, operators, punctuation,
  * and special tokens used during lexical analysis and parsing.
  */
-enum class TokenType {
+enum class VALTC_API TokenType {
 
     /** @brief Identifier token. */
     IDENTIFIER,
@@ -327,7 +334,7 @@ enum class TokenType {
  *
  * Used to convert TokenType values into readable strings.
  */
-extern std::unordered_map<TokenType, std::string> TokenTypesStr;
+extern VALTC_API std::unordered_map<TokenType, std::string> TokenTypesStr;
 
 /// Structures
 
@@ -337,7 +344,7 @@ extern std::unordered_map<TokenType, std::string> TokenTypesStr;
  *
  * Contains the token type, its textual value, and its source location.
  */
-struct Token {
+struct VALTC_API Token {
 
     /**
      * @brief Type of the token.
@@ -394,37 +401,37 @@ struct Token {
  *
  * Used to retrieve the readable representation of a token type.
  */
-extern std::unordered_map<TokenType, std::string>
+extern VALTC_API std::unordered_map<TokenType, std::string>
     TokenTypes_to_StringType;
 
 /**
  * @brief Contains all supported ValtCommand data types.
  */
-extern std::vector<std::string> __types__;
+extern VALTC_API std::vector<std::string> __types__;
 
 /**
  * @brief Contains all supported ValtCommand keywords.
  */
-extern std::vector<std::string> __key_words__;
+extern VALTC_API std::vector<std::string> __key_words__;
 
 /**
  * @brief Maps supported single-character symbols to their tokens.
  */
-extern std::unordered_map<char, Token> __symbols__;
+extern VALTC_API std::unordered_map<char, Token> __symbols__;
 
 /**
  * @brief Maps supported multi-character symbols to their tokens.
  *
  * Examples include equality and logical operators.
  */
-extern std::unordered_map<std::string, Token> __complex_2_symbols__;
+extern VALTC_API std::unordered_map<std::string, Token> __complex_2_symbols__;
 
 /**
  * @brief Maps escaped characters to their corresponding characters.
  *
  * Examples include newline and tab escape sequences.
  */
-extern std::unordered_map<char, char> __backslashed_symbols__;
+extern VALTC_API std::unordered_map<char, char> __backslashed_symbols__;
 
 /// Functions
 
@@ -434,7 +441,7 @@ extern std::unordered_map<char, char> __backslashed_symbols__;
  * @param token String to check.
  * @return true if the string represents a supported type, otherwise false.
  */
-bool is_token_type_(std::string token);
+VALTC_API bool is_token_type_(std::string token);
 
 /**
  * @brief Checks whether a string represents a supported keyword.
@@ -442,7 +449,7 @@ bool is_token_type_(std::string token);
  * @param token String to check.
  * @return true if the string represents a supported keyword, otherwise false.
  */
-bool is_token_key_word_(std::string token);
+VALTC_API bool is_token_key_word_(std::string token);
 
 /**
  * @brief Retrieves the type name of a runtime value.
@@ -453,7 +460,7 @@ bool is_token_key_word_(std::string token);
  * @param value Runtime value to inspect.
  * @return String representing the runtime value type.
  */
-std::string Get_ValueT(const Value& value);
+VALTC_API std::string Get_ValueT(const Value& value);
 
 /**
  * @brief Checks whether two ValtCommand data types are compatible.
@@ -465,7 +472,7 @@ std::string Get_ValueT(const Value& value);
  * @param secound Second data type.
  * @return true if the types are compatible, otherwise false.
  */
-bool are_types_compatible(
+VALTC_API bool are_types_compatible(
     const std::string& first,
     const std::string& secound
 );
@@ -480,7 +487,7 @@ bool are_types_compatible(
  * @param input Value to convert.
  * @return Converted runtime value.
  */
-ReturnResult<Value> reconsiliation_int_float(
+VALTC_API ReturnResult<Value> reconsiliation_int_float(
     const std::string& type,
     Value& input,
     const Token& source_token
@@ -495,6 +502,6 @@ ReturnResult<Value> reconsiliation_int_float(
  * @return ReturnResult containing the converted floating-point value
  *         or error information if conversion fails.
  */
-ReturnResult<long double> turn_value_to_float(Value& input);
+VALTC_API ReturnResult<long double> turn_value_to_float(Value& input);
 
 } // namespace vltc

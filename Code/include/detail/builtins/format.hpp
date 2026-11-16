@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "detail/api_export.hpp"
-
 /// Includes
 
 #include "valtcommand/runtime.hpp"
@@ -66,7 +64,7 @@ namespace Lib {
          * @note Call this function during runtime initialization before
          *       executing ValtCommand code that uses @c format.
          */
-        API void __init__(Runtime::RunTime& runtime);
+        void __init__(Runtime::RunTime& runtime);
 
         /**
          * @brief Formats a string by replacing named placeholders.
@@ -109,7 +107,7 @@ namespace Lib {
          *         - A placeholder is empty or has no closing brace.
          *         - A placeholder references a missing named argument.
          */
-        API ReturnResult<Value> format_fn(ExternalFunInType input);
+        ReturnResult<Value> format_fn(ExternalFunInType input);
 
     } ///< namespace Format
 

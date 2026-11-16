@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <string>
 #include <filesystem>
+#include "valtcommand/api_export.hpp"
 
 namespace fs = std::filesystem; // Definition of filesystem namespace as fs
 
@@ -22,7 +23,7 @@ namespace Errors {
  * @struct ErrorInfo
  * @brief Describes an error and its location in source code.
  */
-struct ErrorInfo {
+struct VALTC_API ErrorInfo {
     std::string type;     ///< Error category.
     fs::path file; ///< Error file path
     std::string message;  ///< Main error message.
@@ -39,7 +40,7 @@ namespace Runtime {
     /**
      * @brief The stage of the pipeline that produced an error.
      */
-    enum class ErrorStage {
+    enum class VALTC_API ErrorStage {
         None, ///< No error.
         IO, ///< RunTime::run_file(): the file is missing or unreadable.
         Parse, ///< Lexer or parser failed.
@@ -51,7 +52,7 @@ namespace Runtime {
     /**
      * @brief Details of a failed operation.
      */
-    struct RunError {
+    struct VALTC_API RunError {
         ErrorStage stage = ErrorStage::None; ///< Where the error happened.
         std::string type; ///< Error class of the language ("NameError", "TypeError", ...), "" if none.
         std::string message; ///< Human-readable error message.
@@ -71,7 +72,7 @@ namespace Runtime {
      * @endcode
      * works as a failure check.
      */
-    struct RunResult {
+    struct VALTC_API RunResult {
         bool ok = true; ///< @c true if the operation succeeded.
         std::string value; ///< Textual form of the last value ("" if none).
         std::string type; ///< Type name of that value ("" if none).
@@ -84,7 +85,7 @@ namespace Runtime {
     /**
      * @brief How a call to RunTime::run() treats the global scope.
      */
-    enum class ScopeMode {
+    enum class VALTC_API ScopeMode {
         Persistent, ///< Reuse the global scope: variables and functions survive between calls.
         Fresh ///< Run in a temporary scope; the persistent state is untouched.
     };

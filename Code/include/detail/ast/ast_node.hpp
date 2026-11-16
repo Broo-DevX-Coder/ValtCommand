@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "detail/api_export.hpp"
+
 
 /// Include neccessary headers
 

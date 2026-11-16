@@ -1,3 +1,6 @@
+# include libraries
+include(GNUInstallDirs)
+
 # Stack all cpp source code files from app folder
 file(GLOB_RECURSE APP_SOURCES
     "*.cpp"
@@ -21,5 +24,10 @@ target_include_directories(
 target_link_libraries(
     valtc
     PRIVATE
-    engine
+    valtcommand
+)
+
+# Install target in the system
+install(TARGETS valtc
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

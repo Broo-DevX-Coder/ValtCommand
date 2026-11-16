@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "detail/api_export.hpp"
+
 
 /// Include neccessary headers
 
@@ -89,7 +89,7 @@ class LogicOpsNode: public ASTNode {
 };
 
 /// Power Operation Node
-class API PowerNode : public ASTNode {
+class PowerNode : public ASTNode {
 private:
     /// Token representing the power operator (**)
     Token token;

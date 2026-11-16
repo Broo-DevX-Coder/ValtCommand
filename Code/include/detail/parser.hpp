@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "detail/api_export.hpp"
+
 
 /// Include neccessary headers
 
@@ -17,7 +17,7 @@
 
 namespace vltc {
 
-class API Parser {
+class Parser {
     public:
         using Node = std::unique_ptr<ASTNode>;
         using PNode = std::unique_ptr<ModuleNode>;

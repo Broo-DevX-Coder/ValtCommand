@@ -1038,6 +1038,8 @@ int main() {
 }
 ```
 
+The public headers mark shared-library symbols with `VALTC_API`, defined in `valtcommand/api_export.hpp`. When building the ValtCommand DLL or shared library, define `BUILDING_COMPILER_DLL` for the library target so its symbols are exported. Host applications should include the public headers without defining that macro; on Windows the declarations then import symbols from the DLL. Link the host application against the ValtCommand library.
+
 Debugger host integrations can set the log stream with `set_debugger_ostream()` and read it with `get_debugger_ostream()`; these names replace the former `set_ostream()` and `get_ostream()` methods on `RunTime`. `Debugger::EmitSlotType` callbacks receive both the event and an `std::ostream&`. Errors include `result.error.info.file`; it is empty for `run(source)` and contains the source path for file-backed errors. See `include/valtcommand/runtime.hpp` and `include/valtcommand/result.hpp` for the current API.
 
 ### 19. Known limitations

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "valtcommand/value.hpp"
+#include "valtcommand/api_export.hpp"
 
 namespace vltc {
 
@@ -13,7 +14,7 @@ namespace Runtime {
     /**
      * @brief The struct of agrument that includes every thing about them
      */
-    struct ExternalFunctionArgument {
+    struct VALTC_API ExternalFunctionArgument {
         std::string type; ///< Type of data in var
         bool is_const; ///< Is the var const `can't change value`
         bool is_required; ///< Is the argument required

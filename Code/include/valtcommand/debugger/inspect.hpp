@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "detail/api_export.hpp"
+#include "valtcommand/api_export.hpp"
 
 /// Include neccessary headers
 
@@ -22,19 +22,19 @@ namespace vltc {
 namespace DevTools {
 
     /// Inspect return
-    struct InspecturesReturn {
+    struct VALTC_API InspecturesReturn {
         std::string printable;
         nlohmann::json JSON;
     };
 
     /// Get the basic information of the curent scope
-    InspecturesReturn ScopeInspect(Scopes::Scope* scope);
+    VALTC_API InspecturesReturn ScopeInspect(Scopes::Scope* scope);
 
     /// Get visible variables table in entred scope
-    InspecturesReturn VariablesInspect(Scopes::Scope* scope);
+    VALTC_API InspecturesReturn VariablesInspect(Scopes::Scope* scope);
 
     /// Get visible functions in entred scope
-    InspecturesReturn FunctionsInspect(Scopes::Scope* scope);
+    VALTC_API InspecturesReturn FunctionsInspect(Scopes::Scope* scope);
 }
 
 } // namespace vltc

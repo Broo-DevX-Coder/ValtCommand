@@ -4,9 +4,6 @@
  */
 
 #pragma once
-
-#include "detail/api_export.hpp"
-
 /// Include neccessary headers
 
 /// == Libs ==
@@ -21,9 +18,6 @@
 namespace vltc {
 
 namespace Errors {
-
-    /// Errors formatter
-    std::string formatter(ErrorInfo info, const std::string& code);
 
     /// Main Error class
     class Error {

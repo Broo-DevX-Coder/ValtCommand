@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "detail/api_export.hpp"
+#include "valtcommand/api_export.hpp"
 
 /// @name Local includes
 /// @{
@@ -34,7 +34,7 @@ namespace DevTools {
     /**
      * @brief Levels (categories) of events.
      */
-    enum class EventsT {
+    enum class VALTC_API EventsT {
         Info,     ///< General information.
         Analysis, ///< Semantic analysis step (verifies all code before running).
         Runtime,  ///< Events raised while the program is running.
@@ -48,12 +48,12 @@ namespace DevTools {
      * @param tegory The event type to convert.
      * @return The string representation of @p tegory.
      */
-    std::string event_type_to_string(EventsT tegory);
+    VALTC_API std::string event_type_to_string(EventsT tegory);
 
     /**
      * @brief A single event emitted by the runtime or the debugger.
      */
-    struct event {
+    struct VALTC_API event {
         EventsT type;                ///< The level of the event.
         std::string message;         ///< The message of the event.
         size_t line;                 ///< The line where the event happened.
@@ -72,7 +72,7 @@ namespace DevTools {
     /**
      * @brief A breakpoint set on a specific line (and optionally a file).
      */
-    struct breakPointType {
+    struct VALTC_API breakPointType {
         private:
             size_t line;       ///< The line of the breakpoint.
             fs::path file;  ///< File containing the breakpoint; empty matches any file.
@@ -131,7 +131,7 @@ namespace DevTools {
     /**
      * @brief The debugger: tracks runtime events and handles breakpoints.
      */
-    class Debugger {
+    class VALTC_API Debugger {
         public:
             /// Callback for runtime tracker events: receives the event and the output stream.
             using EmitSlotType = std::function<void(event,std::ostream&)>;

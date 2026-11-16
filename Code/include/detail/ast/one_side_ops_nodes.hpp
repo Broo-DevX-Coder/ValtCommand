@@ -22,7 +22,7 @@ enum class SignOpsTypes {
 
 /// Unary Sign Operation Node
 
-class API SignOpNode : public ASTNode {
+class SignOpNode : public ASTNode {
 private:
     /// The type of unary sign operation (positive or negative)
     SignOpsTypes type;
@@ -66,7 +66,7 @@ public:
 
 
 /// Logical NOT Node
-class API LogicalNotNode : public ASTNode {
+class LogicalNotNode : public ASTNode {
 private:
     /// Token representing the logical NOT operator (!)
     Token token;

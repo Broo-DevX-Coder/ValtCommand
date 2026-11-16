@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "detail/api_export.hpp"
+#include "valtcommand/api_export.hpp"
 
 /// Include necessary headers
 
@@ -66,7 +66,7 @@ namespace Runtime {
      * @note The class is not copyable.
      * @see RunResult, ScopeMode
      */
-    class API RunTime {
+    class VALTC_API RunTime {
         private:
 
             /**
