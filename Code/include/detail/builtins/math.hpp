@@ -38,7 +38,6 @@ namespace Lib{
 
         /// Remainder / Division ========
         ReturnResult<Value> fmod_fn(ExternalFunInType input); ///< fmod(a, b)
-        ReturnResult<Value> divmod_fn(ExternalFunInType input); ///< divmod(a, b)
 
         /// Min / Max / Sign ========
         ReturnResult<Value> min_fn(ExternalFunInType input); ///< min(a, b, ...)

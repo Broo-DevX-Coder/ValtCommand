@@ -110,11 +110,12 @@ The program checks in this order:
 
 1. If `--file` points to an existing regular file: run it.
 2. Otherwise, if `--eval` is non-empty: run the code.
-3. Otherwise: print `No work to do ...` to **standard output** and exit with code `2`.
+3. If `--file` was supplied but is missing or is not a regular file, print `Cannot open file: <absolute normalized path>` to **standard error** and exit with code `3`.
+4. If no file path and no non-empty eval source were supplied, print `No work to do ...` to **standard error** and exit with code `1`.
 
 Consequences:
-- Running with no arguments prints `No work to do ...` to standard output and exits with code `2`; it does not print help.
-- A wrong file path (`--file missing.vlt`) also prints `No work to do ...` and exits with code `2`, not "file not found".
+- Running with no arguments prints `No work to do ...` to standard error and exits with code `1`; it does not print help.
+- A wrong file path (`--file missing.vlt`) prints `Cannot open file: "<absolute normalized path>"` to standard error and exits with code `3`.
 - Giving both `--file` and `--eval` is rejected by the parser before anything runs (see section 7).
 
 ---
@@ -137,8 +138,8 @@ When `--debug` is off, none of these options do anything.
 
 | Stream | Content |
 |---|---|
-| Standard output | `No work to do ...`, `--help`, `--version`, and anything the script itself prints |
-| Standard error | Script errors, breakpoint syntax errors, debugger logs (with `--logs`), parser errors from CLI11 |
+| Standard output | `--help`, `--version`, and anything the script itself prints |
+| Standard error | Script errors, no-work/file-open messages, breakpoint syntax errors, debugger logs (with `--logs`), parser errors from CLI11 |
 
 ---
 
@@ -165,7 +166,7 @@ Details:
 - The file path is the absolute, normalized path and is printed with quotes.
 - For `--eval`, the shown source is the eval text, no `File:` line is printed, and no empty line follows the error.
 - The error can belong to a different file than the main file, and the file shown is always the one where the error happened.
-- The exit code is `1`.
+- The exit code is `2`.
 
 ---
 
@@ -190,8 +191,9 @@ Breakpoint values are only checked when `--debug` is on.
 | Code | Meaning |
 |---|---|
 | `0` | The script finished without error, or `--help` / `--version` was used |
-| `1` | The script failed with a parse or runtime error |
-| `2` | Nothing to run (`No work to do ...`), or an invalid breakpoint |
+| `1` | Nothing to run (`No work to do ...`) |
+| `2` | The script failed with a parse or runtime error, or an invalid breakpoint |
+| `3` | `--file` was supplied but does not name an existing regular file |
 | `108` | CLI11 rejected the excluded `--file` and `--eval` option pair |
 | `109` | CLI11 received an unknown option |
 | `114` | An option that requires a value was given without one (for example, `--file` with no path) |
@@ -236,7 +238,7 @@ if [ $? -ne 0 ]; then echo "script failed"; fi
 
 | Symptom | Reason |
 |---|---|
-| `No work to do ...` although you passed `--file` | The path does not exist or is not a regular file |
+| `Cannot open file ...` | The path passed to `--file` does not exist or is not a regular file |
 | Breakpoints never trigger | `--debug` is missing, the path/line does not match the loaded file, or the line is empty / an `END` line |
 | `--logs` prints nothing | `--debug` is missing, or `--log-file` is set to a valid file |
 | Log file is empty or missing | `--debug` is missing, or the file could not be created |

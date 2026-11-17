@@ -101,7 +101,7 @@ Arithmetic operators also report `ValueError` and `OverflowError`: `**` reports 
 
 ## Host API
 
-Errors from `vltc::Runtime::RunTime::run()` and `vltc::Runtime::RunTime::run_file()` are returned in `vltc::Runtime::RunResult`; a failed result does not throw an exception. Check the result, then inspect `result.error.stage`, `type`, `message`, and `info.file` along with the source position. `run()` has no filename parameter, so `result.error.info.file` is empty; `run_file()` associates the source path with tokens and errors. If the file cannot be opened, `run_file()` returns `ErrorStage::IO` with `Cannot open file: <path>`. The CLI also checks that `--file` exists and is a regular file before calling `run_file()`.
+Errors from `vltc::Runtime::RunTime::run()` and `vltc::Runtime::RunTime::run_file()` are returned in `vltc::Runtime::RunResult`; a failed result does not throw an exception. Check the result, then inspect `result.error.stage`, `type`, `message`, and `info.file` along with the source position. `run()` has no filename parameter, so `result.error.info.file` is empty; `run_file()` associates the source path with tokens and errors. If the file cannot be opened, `run_file()` returns `ErrorStage::IO` with `Cannot open file: <path>`. The CLI checks that `--file` names an existing regular file before calling `run_file()`; if not, it writes `Cannot open file: <absolute normalized path>` to stderr and exits with code `3`. A script parse or runtime failure is formatted to stderr and exits with code `2`.
 
 ## Scope
 

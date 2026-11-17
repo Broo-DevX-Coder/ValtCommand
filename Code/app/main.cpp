@@ -301,9 +301,13 @@ int main(int argc, char* argv[]) {
         // Direct code was given (-e, --eval)
         run_result = r.run(eval_code);
 
+    } else if (!main_file_path.empty()) {
+        std::cerr << "Cannot open file: " << fs::absolute(main_file_path).lexically_normal() << std::endl;
+        return 3;
+
     } else {
-        std::cout << "No work to do ..." << std::endl;
-        return 2;
+        std::cerr << "No work to do ..." << std::endl;
+        return 1;
     }
 
     // ==================================================================
@@ -332,7 +336,7 @@ int main(int argc, char* argv[]) {
                       << fs::absolute(run_result.error.info.file).lexically_normal()
                       << std::endl << std::endl;
         }
-        return 1;
+        return 2;
     }
 
     return 0;
