@@ -6,7 +6,7 @@ import sys
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-VALTC = ROOT / "Code" / "build" / "bin" / "valtc"
+VALTC = pathlib.Path(os.environ.get("VALTC_BIN", str(ROOT / "Code" / "build" / "bin" / "valtc")))
 EXAMPLES = ROOT / "DOCs" / "V1.0.0" / "Language-references" / "examples"
 EXPECTED = EXAMPLES.parent / "exceptions"
 

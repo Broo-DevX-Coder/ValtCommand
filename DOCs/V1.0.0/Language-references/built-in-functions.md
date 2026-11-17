@@ -1044,6 +1044,7 @@ Debugger host integrations can set the log stream with `set_debugger_ostream()` 
 
 ### 19. Known limitations
 
+- `print` and `println` display floating-point values with six significant decimal digits. For example, `PI` is displayed as `3.14159`, and `0.697077123` as `0.697077`. This affects display only; it does not change the stored value.
 - `format` supports named `{placeholder}` substitution only. It has no escaping for literal braces and no numeric precision, alignment, or padding specifiers.
 - Math functions use the platform’s C++ `long double` implementation. Precision, representable range, and overflow thresholds can differ across compilers and platforms; examples marked `≈` are approximate.
 - `abs`, `min`, `max`, and `clamp` have fixed `float` return types; they do not preserve integer input types.

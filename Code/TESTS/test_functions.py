@@ -6,7 +6,7 @@ import sys
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-VALTC = ROOT / "Code" / "build" / "bin" / "valtc"
+VALTC = pathlib.Path(os.environ.get("VALTC_BIN", str(ROOT / "Code" / "build" / "bin" / "valtc")))
 
 
 def run(code):
@@ -23,6 +23,24 @@ class Functions(unittest.TestCase):
     def test_math_success(self):
         # Representative constants, trig/log/math utilities and seeded random.
         self.assert_run("math success", 'CALL println value<float>:GET PI END CALL println value<float>:CALL sin x<float>:0 END END CALL println value<float>:CALL log x<float>:1 END END CALL println value<int>:CALL abs x<int>:-4 END END CALL seed_random seed<int>:9 END CALL println value<int>:CALL randint lo<int>:1 hi<int>:1 END END', "3.14159\n0\n0\n4\n1\n")
+
+    def test_seed_random_reproducibility(self):
+        # A repeated seed reproduces the same three draws; a different seed changes the sequence.
+        def sequence(seed):
+            code = (f'CALL seed_random seed<int>:{seed} END '
+                    'CALL println value<float>:CALL random END END '
+                    'CALL println value<float>:CALL random END END '
+                    'CALL println value<float>:CALL random END END')
+            p = run(code)
+            self.assertEqual((p.stderr, p.returncode), ('', 0))
+            values = p.stdout.splitlines()
+            self.assertEqual(len(values), 3)
+            return values
+
+        with self.subTest(seed="repeat"):
+            self.assertEqual(sequence(17), sequence(17))
+        with self.subTest(seed="different"):
+            self.assertNotEqual(sequence(17), sequence(18))
 
     def test_stdio_and_format(self):
         # print, println, input and named format substitution.

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-VALTC = ROOT / "Code" / "build" / "bin" / "valtc"
+VALTC = pathlib.Path(os.environ.get("VALTC_BIN", str(ROOT / "Code" / "build" / "bin" / "valtc")))
 EXAMPLES = ROOT / 'DOCs' / 'V1.0.0' / 'Language-references' / 'examples'
 EXPECTED = EXAMPLES.parent / 'exceptions'
 
@@ -82,6 +82,7 @@ class Errors(unittest.TestCase):
                 self.assertIn(kind, p.stderr)
 
     def test_full_diagnostics_positions(self):
+        # snapshot of current caret placement, not a specification
         # Check exact message, zero-based source location rendered as one-based text, and caret.
         cases = [
             ('IF 1 THEN\nEND', "\nTypeError: expected 'bool', got 'int'\n------------------------------------------\n1-|  IF 1 THEN\n2-|  END\n--|     ^\n"),
@@ -101,7 +102,7 @@ class Errors(unittest.TestCase):
         self.assertIn("Use `ELSE THEN IF ... END` for an else-if branch.", p.stderr)
 
     def test_multibyte_utf8_lexer_error(self):
-        # Unsupported UTF-8 text after a multibyte string is diagnosed as a lexer/parser error.
+        # A multibyte UTF-8 identifier is consumed as one unknown token and diagnosed by the parser.
         code = 'é'
         p = run('--eval', code)
         self.assertEqual((p.stdout, p.returncode), ('', 2))
