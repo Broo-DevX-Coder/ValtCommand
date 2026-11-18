@@ -85,6 +85,12 @@ namespace Scopes {
             std::unordered_map<std::string, std::unique_ptr<SymbolTableTypes::RVar>> variables; ///< All variables in scope
 
         public:
+
+            Scope(const Scope&) = delete;
+            Scope& operator=(const Scope&) = delete;
+            Scope(Scope&&) noexcept = default;
+            Scope& operator=(Scope&&) noexcept = default;
+
             /** @brief Creates a scope, optionally nested under @p parent. */
             Scope(Scope* parent = nullptr);
             /** @brief Returns this scope's identifier. */
