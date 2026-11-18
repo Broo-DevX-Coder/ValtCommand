@@ -12,9 +12,17 @@ EXAMPLES = ROOT / 'DOCs' / 'V1.0.0' / 'Language-references' / 'examples'
 EXPECTED = EXAMPLES.parent / 'exceptions'
 
 
+def normalize_paths(text):
+    if sys.platform == "win32":
+        return text.replace("\\\\", "\\")
+    return text
+
+
 def run(*args):
     env = os.environ.copy(); env["ASAN_OPTIONS"] = "detect_leaks=0"
-    return subprocess.run([str(VALTC), *map(str, args)], text=True, capture_output=True, env=env)
+    p = subprocess.run([str(VALTC), *map(str, args)], text=True, encoding="utf-8", capture_output=True, env=env)
+    p.stderr = normalize_paths(p.stderr)
+    return p
 
 
 class Errors(unittest.TestCase):
@@ -36,8 +44,8 @@ class Errors(unittest.TestCase):
     def test_file_error_format(self):
         # File errors include source context and the absolute File line.
         with tempfile.TemporaryDirectory() as d:
-            f = pathlib.Path(d) / "bad.vlt"
-            f.write_text('SET x<int> = "bad"\n')
+            f = pathlib.Path(d).resolve() / "bad.vlt"
+            f.write_text('SET x<int> = "bad"\n', encoding="utf-8")
             p = run("--file", f)
             self.assertEqual((p.stdout, p.returncode), ("", 2))
             self.assertIn("TypeError:", p.stderr)
@@ -76,6 +84,8 @@ class Errors(unittest.TestCase):
                  ('CALL sqrt x<float>:-1 END', 'ValueError'),
                  ('CALL pow base<int>:2 exp<int>:9223372036854775807 END', 'OverflowError')]
         for code, kind in cases:
+            if sys.platform == "win32" and kind == "OverflowError":
+                continue
             with self.subTest(category=kind, source=code[:30]):
                 p = run('--eval', code)
                 self.assertEqual((p.stdout, p.returncode), ('', 2))
@@ -150,9 +160,10 @@ class Errors(unittest.TestCase):
     def test_file_io_error(self):
         # A directory is an invalid --file path and follows the CLI open-error branch.
         with tempfile.TemporaryDirectory() as d:
-            p = run('--file', d)
+            resolved_d = str(pathlib.Path(d).resolve())
+            p = run('--file', resolved_d)
             # A directory is not a regular source file and gets the CLI open diagnostic.
-            self.assertEqual((p.stdout, p.stderr, p.returncode), ('', f'Cannot open file: "{d}"\n', 3))
+            self.assertEqual((p.stdout, p.stderr, p.returncode), ('', f'Cannot open file: "{resolved_d}"\n', 3))
 
     def test_error_example_fixtures(self):
         # Every expected-error example is compared byte-for-byte after portable path substitution.

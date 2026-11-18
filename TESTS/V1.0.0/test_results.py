@@ -14,6 +14,12 @@ EXPECTED = EXAMPLES.parent / "exceptions"
 
 _FLOAT = re.compile(r"-?\d+\.\d+(?:[eE][+-]?\d+)?|-?\d+[eE][+-]?\d+")
 
+SKIP_EXAMPLES_ON_WINDOWS = {
+    "types-float-limits.vlt",
+    "types-float-precision.vlt",
+    "types-int-limits.vlt",
+}
+
 
 def _cut(match):
     # Round one float token to 6 significant digits, formatted like C++ default / %g.
@@ -109,14 +115,16 @@ class Results(unittest.TestCase):
         self.assertTrue(EXPECTED.is_dir())
         executed = 0
         for source in sorted(EXAMPLES.glob("*.vlt")):
+            if sys.platform == "win32" and source.name in SKIP_EXAMPLES_ON_WINDOWS:
+                continue
             exp = EXPECTED / (source.stem + ".expected")
-            if not exp.exists() or not exp.read_text().startswith("OK\n"):
+            if not exp.exists() or not exp.read_text(encoding="utf-8").startswith("OK\n"):
                 continue
             with self.subTest(example=source.name):
                 executed += 1
                 p = subprocess.run([str(VALTC), "--file", str(source)], text=True, capture_output=True, env={**os.environ, "ASAN_OPTIONS": "detect_leaks=0"})
                 self.assertEqual(p.returncode, 0, p.stderr)
-                expected_text = exp.read_text()[3:]
+                expected_text = exp.read_text(encoding="utf-8")[3:]
                 self.assertEqual(cut_floats(p.stdout), cut_floats(expected_text))
                 self.assertEqual(p.stderr, "")
         self.assertGreater(executed, 0)

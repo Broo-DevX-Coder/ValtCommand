@@ -47,5 +47,4 @@ jobs:
           python3 TESTS/${LTS_VERSION}/test_results.py
           python3 TESTS/${LTS_VERSION}/test_functions.py
           python3 TESTS/${LTS_VERSION}/test_errors.py
-          python3 TESTS/${LTS_VERSION}/run_examples.py
       

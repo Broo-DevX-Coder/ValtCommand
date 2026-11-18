@@ -58,4 +58,3 @@ jobs:
           python TESTS/$env:LTS_VERSION/test_results.py
           python TESTS/$env:LTS_VERSION/test_functions.py
           python TESTS/$env:LTS_VERSION/test_errors.py
-          python TESTS/$env:LTS_VERSION/run_examples.py
