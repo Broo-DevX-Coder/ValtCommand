@@ -22,7 +22,7 @@ jobs:
       
       # Get ccache (cmake cache) files
       - name: Get ccache
-        uses: actions/cache@4
+        uses: actions/cache@v4
         with:
           path: ~/.ccache
           key: ${{ runner.os }}-ccache-${{ github.run_id }}
