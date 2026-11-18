@@ -34,6 +34,7 @@ function(create_module NAME FOLDER)
     set_target_properties(${NAME} PROPERTIES
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
+        WINDOWS_EXPORT_ALL_SYMBOLS ON
     )
 
 
@@ -43,7 +44,7 @@ endfunction()
 # Link objects with libs and thier self
 # =======================================================================
 
-create_module(valtcommand .)
+create_module(valtcommand ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(
     valtcommand
