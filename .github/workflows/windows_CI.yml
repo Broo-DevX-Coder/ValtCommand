@@ -39,6 +39,7 @@ jobs:
           cd Code
           cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
           cmake --build build --config Release -j
+          Get-ChildItem -Path build -Recurse -Include *.dll,*.exe,*.lib
           cmake --install build --config Release --prefix C:\valtc_install
           "C:\valtc_install\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       
