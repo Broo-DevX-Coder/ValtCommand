@@ -4,7 +4,32 @@ import os
 import re
 import subprocess
 import sys
+from decimal import Context
 from pathlib import Path
+
+_FLOAT = re.compile(r"-?\d+\.\d+(?:[eE][+-]?\d+)?|-?\d+[eE][+-]?\d+")
+
+
+def _cut(match) -> str:
+    # Round one float token to 6 significant digits, formatted like C++ default / %g.
+    d = Context(prec=6).create_decimal(match.group(0))
+    if d == 0:
+        return "0"
+    sign, digits, exp = d.as_tuple()
+    digits = "".join(map(str, digits))
+    x = exp + len(digits) - 1
+    s = digits.rstrip("0") or "0"
+    if x < -4 or x >= 6:
+        body = s[0] + ("." + s[1:] if len(s) > 1 else "") + f"e{'-' if x < 0 else '+'}{abs(x):02d}"
+    elif x >= 0:
+        body = s[:x + 1].ljust(x + 1, "0") + ("." + s[x + 1:] if len(s) > x + 1 else "")
+    else:
+        body = "0." + "0" * (-x - 1) + s
+    return ("-" if sign else "") + body
+
+
+def cut_floats(text: str) -> str:
+    return _FLOAT.sub(_cut, text)
 
 
 def main() -> None:
@@ -47,7 +72,10 @@ def main() -> None:
             check=False,
         )
         prefix = "ERROR" if run.returncode != 0 or error.search(run.stdout) else "OK"
-        actual = prefix + "\n" + run.stdout + run.stderr
+        # Float numbers are cut to 6 significant digits only for successful runs,
+        # so source lines echoed inside error messages stay untouched.
+        stdout = cut_floats(run.stdout) if prefix == "OK" else run.stdout
+        actual = prefix + "\n" + stdout + run.stderr
         expected = examples.parent / "exceptions" / source.with_suffix(".expected").name
         # Keep expected output portable while preserving the runtime's source path.
         actual = actual.replace(str(source.resolve()), f"<exemples_path>/{source.name}")

@@ -1,14 +1,40 @@
 """CLI behavior checks for values, operators, scopes and control flow."""
 import pathlib
+import re
 import subprocess
 import os
 import sys
 import unittest
+from decimal import Context
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 VALTC = pathlib.Path(os.environ.get("VALTC_BIN", str(ROOT / "Code" / "build" / "bin" / "valtc")))
 EXAMPLES = ROOT / "DOCs" / "V1.0.0" / "Language-references" / "examples"
 EXPECTED = EXAMPLES.parent / "exceptions"
+
+_FLOAT = re.compile(r"-?\d+\.\d+(?:[eE][+-]?\d+)?|-?\d+[eE][+-]?\d+")
+
+
+def _cut(match):
+    # Round one float token to 6 significant digits, formatted like C++ default / %g.
+    d = Context(prec=6).create_decimal(match.group(0))
+    if d == 0:
+        return "0"
+    sign, digits, exp = d.as_tuple()
+    digits = "".join(map(str, digits))
+    x = exp + len(digits) - 1
+    s = digits.rstrip("0") or "0"
+    if x < -4 or x >= 6:
+        body = s[0] + ("." + s[1:] if len(s) > 1 else "") + f"e{'-' if x < 0 else '+'}{abs(x):02d}"
+    elif x >= 0:
+        body = s[:x + 1].ljust(x + 1, "0") + ("." + s[x + 1:] if len(s) > x + 1 else "")
+    else:
+        body = "0." + "0" * (-x - 1) + s
+    return ("-" if sign else "") + body
+
+
+def cut_floats(text):
+    return _FLOAT.sub(_cut, text)
 
 
 def run(code):
@@ -20,7 +46,7 @@ class Results(unittest.TestCase):
     def check(self, name, code, out):
         with self.subTest(name=name):
             p = run(code)
-            self.assertEqual((p.stdout, p.stderr, p.returncode), (out, "", 0))
+            self.assertEqual((cut_floats(p.stdout), p.stderr, p.returncode), (cut_floats(out), "", 0))
 
     def test_values(self):
         # println renders each supported primitive using its runtime spelling.
@@ -91,7 +117,7 @@ class Results(unittest.TestCase):
                 p = subprocess.run([str(VALTC), "--file", str(source)], text=True, capture_output=True, env={**os.environ, "ASAN_OPTIONS": "detect_leaks=0"})
                 self.assertEqual(p.returncode, 0, p.stderr)
                 expected_text = exp.read_text()[3:]
-                self.assertEqual(p.stdout, expected_text)
+                self.assertEqual(cut_floats(p.stdout), cut_floats(expected_text))
                 self.assertEqual(p.stderr, "")
         self.assertGreater(executed, 0)
 

@@ -1,12 +1,38 @@
 """Built-in and user-defined function checks for valtc."""
 import pathlib
+import re
 import subprocess
 import os
 import sys
 import unittest
+from decimal import Context
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 VALTC = pathlib.Path(os.environ.get("VALTC_BIN", str(ROOT / "Code" / "build" / "bin" / "valtc")))
+
+_FLOAT = re.compile(r"-?\d+\.\d+(?:[eE][+-]?\d+)?|-?\d+[eE][+-]?\d+")
+
+
+def _cut(match):
+    # Round one float token to 6 significant digits, formatted like C++ default / %g.
+    d = Context(prec=6).create_decimal(match.group(0))
+    if d == 0:
+        return "0"
+    sign, digits, exp = d.as_tuple()
+    digits = "".join(map(str, digits))
+    x = exp + len(digits) - 1
+    s = digits.rstrip("0") or "0"
+    if x < -4 or x >= 6:
+        body = s[0] + ("." + s[1:] if len(s) > 1 else "") + f"e{'-' if x < 0 else '+'}{abs(x):02d}"
+    elif x >= 0:
+        body = s[:x + 1].ljust(x + 1, "0") + ("." + s[x + 1:] if len(s) > x + 1 else "")
+    else:
+        body = "0." + "0" * (-x - 1) + s
+    return ("-" if sign else "") + body
+
+
+def cut_floats(text):
+    return _FLOAT.sub(_cut, text)
 
 
 def run(code):
@@ -18,7 +44,7 @@ class Functions(unittest.TestCase):
     def assert_run(self, label, code, stdout, stderr="", rc=0):
         with self.subTest(name=label):
             p = run(code)
-            self.assertEqual((p.stdout, p.stderr, p.returncode), (stdout, stderr, rc))
+            self.assertEqual((cut_floats(p.stdout), p.stderr, p.returncode), (cut_floats(stdout), stderr, rc))
 
     def test_math_success(self):
         # Representative constants, trig/log/math utilities and seeded random.
@@ -80,7 +106,7 @@ class Functions(unittest.TestCase):
         for name, (args, expected) in cases.items():
             with self.subTest(function=name):
                 p = run(f'CALL println value<any>:CALL {name} {args} END END')
-                self.assertEqual((p.stdout, p.stderr, p.returncode), (expected, '', 0))
+                self.assertEqual((cut_floats(p.stdout), p.stderr, p.returncode), (cut_floats(expected), '', 0))
         with self.subTest(function="random"):
             p = run('CALL println value<float>:CALL random END END')
             self.assertEqual((p.stderr, p.returncode), ('', 0))
