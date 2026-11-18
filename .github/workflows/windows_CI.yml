@@ -1,0 +1,51 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [ windows_tests ]
+
+jobs:
+  test-and-build:
+    runs-on: windows-latest
+
+    env:
+      LTS_VERSION: ${{ vars.LTS_VERSION }}
+      VALTC_BIN: ${{ vars.VALTC_BIN }}.exe
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+
+    steps:
+
+      # Get repository
+      - name: get repository
+        uses: actions/checkout@v4
+      
+      # Get ccache (cmake cache) files
+      - name: Get ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ${{ runner.os }}-ccache-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-ccache-
+      
+      # Install depedenses
+      - name: Install depedenses
+        run: |
+          choco install ccache -y
+          vcpkg install fmt:x64-windows nlohmann-json:x64-windows
+      
+      # Initialyze build
+      - name: Compile code and install the code
+        run: |
+          cd Code
+          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
+          cmake --build build --config Release -j
+          cmake --install build --config Release --prefix C:\valtc_install
+          "C:\valtc_install\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      
+      # Run all tests writed by python
+      - name: Run python tests
+        run: |
+          python TESTS/${LTS_VERSION}/test_results.py
+          python TESTS/${LTS_VERSION}/test_functions.py
+          python TESTS/${LTS_VERSION}/test_errors.py
+          python TESTS/${LTS_VERSION}/run_examples.py
