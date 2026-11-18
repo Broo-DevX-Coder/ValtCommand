@@ -31,6 +31,7 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build -j
           sudo cmake --install build
+          sudo ldconfig
       
       # Run all tests writed by python
       - name: Run python tests
