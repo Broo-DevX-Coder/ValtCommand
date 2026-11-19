@@ -34,7 +34,6 @@ function(create_module NAME FOLDER)
     set_target_properties(${NAME} PROPERTIES
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
-        WINDOWS_EXPORT_ALL_SYMBOLS ON
     )
 
 

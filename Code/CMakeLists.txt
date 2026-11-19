@@ -18,14 +18,10 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib")
 # Enable compile commands for IDEs
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
 # ASann and UBSan in Debug mode
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC)
     add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer) 
     add_link_options(-fsanitize=address,undefined)
-
-    # Enable testing
-    enable_testing()
 endif()
 
 # Get Libraries

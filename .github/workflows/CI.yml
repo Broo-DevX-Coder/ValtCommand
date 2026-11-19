@@ -6,9 +6,7 @@ env:
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
 
 jobs:
   test-and-build-by-linux:
@@ -31,6 +29,13 @@ jobs:
       # Install libraries
       - name: Install needed libraries
         run: sudo apt-get update && sudo apt-get install -y libfmt-dev nlohmann-json3-dev ccache
+
+      # build ctests and test
+      - name: CTests
+        run: |
+          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build build/tests
+          ctests --test-dir build/tests --output-on-failure
       
       # Run building by cmake
       - name: Build Binary app by cmake
@@ -40,11 +45,9 @@ jobs:
           cmake --build build -j
           sudo cmake --install build
           sudo ldconfig
-      
-      # Run all tests writed by python
-      - name: Run python tests
+
+      # A small test befor start
+      - name: Last test
         run: |
-          python3 TESTS/${LTS_VERSION}/test_results.py
-          python3 TESTS/${LTS_VERSION}/test_functions.py
-          python3 TESTS/${LTS_VERSION}/test_errors.py
+          ${VALTC_BIN} --eval "CALL println value<str>:'Hellow world!' END"
       
