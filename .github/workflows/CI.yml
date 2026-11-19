@@ -35,7 +35,7 @@ jobs:
         run: |
           cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build build/tests
-          ctests --test-dir build/tests --output-on-failure
+          ctest --test-dir build/tests --output-on-failure
       
       # Run building by cmake
       - name: Build Binary app by cmake
