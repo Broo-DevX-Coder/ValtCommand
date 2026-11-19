@@ -105,4 +105,4 @@ jobs:
       # A small test befor start
       - name: Last test
         run: |
-          ${VALTC_BIN} --eval "CALL println value<str>:'Hellow world!' END"
+          & $env:VALTC_BIN --eval "CALL println value<str>:'Hellow world!' END"
