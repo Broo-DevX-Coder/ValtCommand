@@ -1,16 +1,16 @@
 name: CI
 
-env:
-  LTS_VERSION: ${{ vars.LTS_VERSION }}
-  VALTC_BIN: ${{ vars.VALTC_BIN }}
-
 on:
   push:
   pull_request:
 
 jobs:
-  test-and-build-by-linux:
+  Linux-build-and-test:
     runs-on: ubuntu-latest
+
+    env:
+      LTS_VERSION: ${{ vars.LTS_VERSION }}
+      VALTC_BIN: ${{ vars.VALTC_BIN }}
     
     steps:
     
@@ -18,30 +18,32 @@ jobs:
       - name: get repository
         uses: actions/checkout@v4
       
-      # Get ccache (cmake cache) files
-      - name: Get ccache
+      # Get cache
+      - name: Get cache
         uses: actions/cache@v4
         with:
-          path: ~/.ccache
-          key: ${{ runner.os }}-ccache-${{ github.run_id }}
-          restore-keys: ${{ runner.os }}-ccache-
+          path: |
+            build
+            Code/build
+          key: ${{ runner.os }}-cmake-build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-cmake-build-
         
       # Install libraries
       - name: Install needed libraries
-        run: sudo apt-get update && sudo apt-get install -y libfmt-dev nlohmann-json3-dev ccache
+        run: sudo apt-get update && sudo apt-get install -y libfmt-dev nlohmann-json3-dev
 
       # build ctests and test
       - name: CTests
         run: |
-          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build build/tests
+          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/tests -j
           ctest --test-dir build/tests --output-on-failure
       
       # Run building by cmake
       - name: Build Binary app by cmake
         run: |
           cd Code
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build -j
           sudo cmake --install build
           sudo ldconfig
@@ -51,3 +53,56 @@ jobs:
         run: |
           ${VALTC_BIN} --eval "CALL println value<str>:'Hellow world!' END"
       
+  # Build and test by windows
+  Windows-build-and-test:
+    runs-on: windows-latest
+
+    env:
+      LTS_VERSION: ${{ vars.LTS_VERSION }}
+      VALTC_BIN: C:\valtc_install\bin\valtc.exe
+
+    steps:
+      - name: Get repository
+        uses: actions/checkout@v4
+
+      - name: Get cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            build
+            Code/build
+          key: ${{ runner.os }}-cmake-build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-cmake-build-
+
+      - name: Install dependencies
+        run: |
+          $ErrorActionPreference = "Stop"
+          vcpkg install fmt:x64-windows nlohmann-json:x64-windows
+
+      - name: Compile code
+        run: |
+          $ErrorActionPreference = "Stop"
+          cd Code
+          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
+          cmake --build build --config Release -j -- /nologo /verbosity:minimal | Select-String -NotMatch "C:\\Program Files\\Microsoft Visual Studio" | Select-String -NotMatch "^\s*(\[|\]|with|_Kty=|_Ty=|_Myself=)"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Cmake install
+        run: |
+          $ErrorActionPreference = "Stop"
+          cd Code
+          cmake --install build --config Release --prefix C:\valtc_install
+          Copy-Item "$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\bin\*.dll" -Destination "C:\valtc_install\bin\" -Force
+          "C:\valtc_install\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: CTests
+        run: |
+          $ErrorActionPreference = "Stop"
+          cmake -S Code/TESTS -B build/tests -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+          cmake --build build/tests -j --config Release
+          ctest --test-dir build/tests -C Release --output-on-failure
+
+      # A small test befor start
+      - name: Last test
+        run: |
+          ${VALTC_BIN} --eval "CALL println value<str>:'Hellow world!' END"
