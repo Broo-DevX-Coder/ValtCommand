@@ -12,45 +12,47 @@ jobs:
     env:
       LTS_VERSION: ${{ vars.LTS_VERSION }}
       VALTC_BIN: ${{ vars.VALTC_BIN }}
-    
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+
     steps:
-    
       # Get repository
-      - name: get repository
+      - name: Get repository
         uses: actions/checkout@v4
-      
-      # Get cache
-      - name: Get cache
+
+      # Get ccache
+      - name: Get ccache
         uses: actions/cache@v4
         with:
-          path: build
-          key: ${{ runner.os }}-cmake-build-${{ github.run_id }}
-          restore-keys: ${{ runner.os }}-cmake-build-
-        
-      # Install libraries
+          path: .ccache
+          key: ${{ runner.os }}-ccache-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-ccache-
+
+      # Install libraries & ccache
       - name: Install needed libraries
-        run: sudo apt-get update && sudo apt-get install -y libfmt-dev nlohmann-json3-dev
+        run: sudo apt-get update && sudo apt-get install -y ccache libfmt-dev nlohmann-json3-dev
 
       # Run building by cmake
       - name: Build Binary app by cmake
         run: |
-          cmake -S Code -B build/release -DCMAKE_BUILD_TYPE=Release
+          ccache -z
+          cmake -S Code -B build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build build/release -j
+          ccache -s
           sudo cmake --install build/release
           sudo ldconfig
 
       # build ctests and test
       - name: CTests
         run: |
-          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON
+          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build build/tests -j
           ctest --test-dir build/tests --output-on-failure
 
-      # A small test befor start
+      # A small test before start
       - name: Last test
         run: |
           ${VALTC_BIN} --eval "CALL println value<str>:'Hellow world!' END"
-      
+
   # Build and test by windows
   Windows-build-and-test:
     runs-on: windows-latest
@@ -59,28 +61,30 @@ jobs:
       LTS_VERSION: ${{ vars.LTS_VERSION }}
       VALTC_BIN: C:\valtc_install\bin\${{ vars.VALTC_BIN }}.exe
       CONAN_HOME: ${{ github.workspace }}\.conan2
+      CCACHE_DIR: ${{ github.workspace }}\.ccache
 
     steps:
       - name: Get repository
         uses: actions/checkout@v4
 
-      - name: Get cmake cache
+      - name: Get ccache
         uses: actions/cache@v4
         with:
-          path: build
-          key: ${{ runner.os }}-cmake-build-${{ github.run_id }}
-          restore-keys: ${{ runner.os }}-cmake-build-
+          path: .ccache
+          key: ${{ runner.os }}-ccache-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-ccache-
 
       - name: Get conan cache
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}\.conan2
+          path: .conan2
           key: ${{ runner.os }}-conan-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-conan-
 
-      - name: Install dependencies
+      - name: Install dependencies & ccache
         run: |
           $ErrorActionPreference = "Stop"
+          choco install ccache -y --no-progress
           pip install conan
           conan profile detect --force
           conan install `
@@ -95,17 +99,19 @@ jobs:
       - name: Compile code
         run: |
           $ErrorActionPreference = "Stop"
+          ccache -z
           $ToolchainFile = (Get-ChildItem -Path "conan_dps" -Filter "conan_toolchain.cmake" -Recurse | Select-Object -First 1).FullName
           if (-not $ToolchainFile) { throw "conan_toolchain.cmake not found!" }
           Write-Host "Using Toolchain: $ToolchainFile"
-          
-          cmake -S Code -B build/release --fresh -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
+
+          cmake -S Code -B build/release --fresh -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
           cmake --build build/release --config Release -j -- /nologo /verbosity:minimal | ForEach-Object {
             if ($_ -notmatch "C:\\Program Files\\Microsoft Visual Studio" -and $_ -notmatch "^\s*(\[|\]|with|_Kty=|_Ty=|_Myself=)") {
               $_
             }
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ccache -s
 
       - name: Cmake install
         run: |
@@ -117,12 +123,12 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $ToolchainFile = (Get-ChildItem -Path "conan_dps" -Filter "conan_toolchain.cmake" -Recurse | Select-Object -First 1).FullName
-          
-          cmake -S Code/TESTS -B build/tests --fresh -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH="C:\valtc_install"
+
+          cmake -S Code/TESTS -B build/tests --fresh -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH="C:\valtc_install"
           cmake --build build/tests -j --config Release
           ctest --test-dir build/tests -C Release --output-on-failure
 
-      # A small test befor start
+      # A small test before start
       - name: Last test
         run: |
           & $env:VALTC_BIN --eval "CALL println value<str>:'Hellow world!' END"
@@ -134,41 +140,43 @@ jobs:
     env:
       LTS_VERSION: ${{ vars.LTS_VERSION }}
       VALTC_BIN: ${{ vars.VALTC_BIN }}
-    
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+
     steps:
-    
       # Get repository
-      - name: get repository
+      - name: Get repository
         uses: actions/checkout@v4
-      
-      # Get cache
-      - name: Get cache
+
+      # Get ccache
+      - name: Get ccache
         uses: actions/cache@v4
         with:
-          path: build
-          key: ${{ runner.os }}-cmake-build-${{ github.run_id }}
-          restore-keys: ${{ runner.os }}-cmake-build-
-        
-      # Install libraries
+          path: .ccache
+          key: ${{ runner.os }}-ccache-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-ccache-
+
+      # Install libraries & ccache
       - name: Install needed libraries
-        run: brew install fmt nlohmann-json
+        run: brew install ccache fmt nlohmann-json
 
       # Run building by cmake
       - name: Build Binary app by cmake
         run: |
-          cmake -S Code -B build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(brew --prefix)
+          ccache -z
+          cmake -S Code -B build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(brew --prefix) -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build build/release -j$(sysctl -n hw.ncpu)
+          ccache -s
           sudo cmake --install build/release --prefix /opt/valtc
           echo "/opt/valtc/bin" >> $GITHUB_PATH
 
       # build ctests and test
       - name: CTests
         run: |
-          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH=$(brew --prefix)
+          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH=$(brew --prefix) -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build build/tests -j$(sysctl -n hw.ncpu)
           ctest --test-dir build/tests --output-on-failure
 
-      # A small test befor start
+      # A small test before start
       - name: Last test
         run: |
           ${VALTC_BIN} --eval "CALL println value<str>:'Hellow world!' END"
