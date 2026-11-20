@@ -116,12 +116,16 @@ void test_documented_examples() {
             }
         }
 
-        // long double has the same range as double on Windows and macOS;
-        // these three documented boundaries have platform-specific outcomes.
+        // These examples depend on long double range or precision. The
+        // out-of-range integer case rounds differently when long double has
+        // only double precision, so its expected OverflowError is not portable.
 #if defined(_WIN32) || defined(__APPLE__)
         if (source.stem() == "types-float-limits" ||
             source.stem() == "types-float-precision" ||
-            source.stem() == "types-int-limits") {
+            source.stem() == "types-int-limits" ||
+            (source.stem() == "types-int-out-of-range" &&
+             std::numeric_limits<long double>::digits <=
+                 std::numeric_limits<double>::digits)) {
             ++results.skipped;
             continue;
         }

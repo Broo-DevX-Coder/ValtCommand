@@ -66,7 +66,9 @@ jobs:
       - name: Get cache
         uses: actions/cache@v4
         with:
-          path: build
+          path: |
+            build
+            ~/AppData/Local/vcpkg/archives
           key: ${{ runner.os }}-cmake-build-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-cmake-build-
 

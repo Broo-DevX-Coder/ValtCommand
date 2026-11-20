@@ -50,7 +50,7 @@ The formatter prints the type and message, a separator line of 42 hyphens, then 
 | `FunctionError` | Semantic | A function is defined twice in the same scope. |
 | `RuntimeError` | Runtime | The `/` or `%%` operator has a zero divisor, or the divisor of `%` truncates to zero: `division by zero`. |
 | `ValueError` | Runtime | The `**` operator produces an invalid numeric result. |
-| `OverflowError` | Runtime | The `**` operator produces a non-finite result, `%` cannot convert an operand to signed 64-bit integer, or converting a non-finite/out-of-range float to `int` reports `cannot convert non-finite or out-of-range float to int`. |
+| `OverflowError` | Runtime | The `**` operator produces a non-finite result, `%` cannot convert an operand to signed 64-bit integer, or converting a non-finite/out-of-range float to `int` reports `cannot convert non-finite or out-of-range float to int`. Whether a borderline float is considered out of range depends on the platform's `long double` precision and range. In particular, the documented `-9223372036854775809` integer-literal example may raise this error on platforms with extended-precision `long double`, but can round to `INT64_MIN` and be accepted where `long double` has only double precision; see [Known limitations](limitations.md#known-limitations). |
 
 ### Function argument diagnostics
 
