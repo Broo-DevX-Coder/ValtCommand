@@ -141,6 +141,8 @@ jobs:
       LTS_VERSION: ${{ vars.LTS_VERSION }}
       VALTC_BIN: ${{ vars.VALTC_BIN }}
       CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_NOHASHDIR: "true"
 
     steps:
       # Get repository
