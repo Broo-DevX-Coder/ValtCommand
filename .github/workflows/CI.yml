@@ -131,7 +131,7 @@ jobs:
       - name: Build Binary app by cmake
         run: |
           cmake -S Code -B build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(brew --prefix)
-          cmake --build build/release -j(sysctl -n hw.ncpu)
+          cmake --build build/release -j$(sysctl -n hw.ncpu)
           sudo cmake --install build/release --prefix /opt/valtc
           echo "/opt/valtc/bin" >> $GITHUB_PATH
 
@@ -139,7 +139,7 @@ jobs:
       - name: CTests
         run: |
           cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH=$(brew --prefix)
-          cmake --build build/tests -j(sysctl -n hw.ncpu)
+          cmake --build build/tests -j$(sysctl -n hw.ncpu)
           ctest --test-dir build/tests --output-on-failure
 
       # A small test befor start
