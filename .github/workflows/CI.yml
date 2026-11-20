@@ -95,6 +95,9 @@ jobs:
             -s build_type=Release `
             -g CMakeDeps `
             -g CMakeToolchain
+      
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Compile code
         run: |
@@ -104,19 +107,20 @@ jobs:
           if (-not $ToolchainFile) { throw "conan_toolchain.cmake not found!" }
           Write-Host "Using Toolchain: $ToolchainFile"
 
-          cmake -S Code -B build/release --fresh -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
-          cmake --build build/release --config Release -j -- /nologo /verbosity:minimal | ForEach-Object {
-            if ($_ -notmatch "C:\\Program Files\\Microsoft Visual Studio" -and $_ -notmatch "^\s*(\[|\]|with|_Kty=|_Ty=|_Myself=)") {
-              $_
-            }  
-          }
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake -S Code -B build/release -G Ninja --fresh `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" `
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
+            -DCMAKE_POLICY_DEFAULT_CMP0141=NEW `
+            -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
+
+          cmake --build build/release -j
           ccache -s
 
       - name: Cmake install
         run: |
           $ErrorActionPreference = "Stop"
-          cmake --install build/release --config Release --prefix C:\valtc_install
+          cmake --install build/release --prefix C:\valtc_install
           "C:\valtc_install\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: CTests
@@ -124,9 +128,15 @@ jobs:
           $ErrorActionPreference = "Stop"
           $ToolchainFile = (Get-ChildItem -Path "conan_dps" -Filter "conan_toolchain.cmake" -Recurse | Select-Object -First 1).FullName
 
-          cmake -S Code/TESTS -B build/tests --fresh -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH="C:\valtc_install"
-          cmake --build build/tests -j --config Release
-          ctest --test-dir build/tests -C Release --output-on-failure
+          cmake -S Code/TESTS -B build/tests -G Ninja --fresh `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" `
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
+            -DVALTC_TESTS_USE_PACKAGE=ON `
+            -DCMAKE_PREFIX_PATH="C:\valtc_install"
+
+          cmake --build build/tests -j
+          ctest --test-dir build/tests --output-on-failure
 
       # A small test before start
       - name: Last test
