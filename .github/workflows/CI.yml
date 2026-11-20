@@ -108,7 +108,7 @@ jobs:
           cmake --build build/release --config Release -j -- /nologo /verbosity:minimal | ForEach-Object {
             if ($_ -notmatch "C:\\Program Files\\Microsoft Visual Studio" -and $_ -notmatch "^\s*(\[|\]|with|_Kty=|_Ty=|_Myself=)") {
               $_
-            }
+            }  
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           ccache -s
