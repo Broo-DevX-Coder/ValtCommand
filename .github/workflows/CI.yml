@@ -95,7 +95,7 @@ jobs:
       - name: Compile code
         run: |
           $ErrorActionPreference = "Stop"
-          cmake -S Code -B build/release -DCMAKE_TOOLCHAIN_FILE=conan_dps/conan_toolchain.cmake -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
+          cmake -S Code -B build/release -DCMAKE_TOOLCHAIN_FILE="conan_dps/conan_toolchain.cmake" -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
           cmake --build build/release --config Release -j -- /nologo /verbosity:minimal | Select-String -NotMatch "C:\\Program Files\\Microsoft Visual Studio" | Select-String -NotMatch "^\s*(\[|\]|with|_Kty=|_Ty=|_Myself=)"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -108,7 +108,7 @@ jobs:
       - name: CTests
         run: |
           $ErrorActionPreference = "Stop"
-          cmake -S Code/TESTS -B build/tests -DCMAKE_TOOLCHAIN_FILE=conan_dps/conan_toolchain.cmake -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH=C:\valtc_install
+          cmake -S Code/TESTS -B build/tests -DCMAKE_TOOLCHAIN_FILE="conan_dps/conan_toolchain.cmake" -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH=C:\valtc_install
           cmake --build build/tests -j --config Release
           ctest --test-dir build/tests -C Release --output-on-failure
 
