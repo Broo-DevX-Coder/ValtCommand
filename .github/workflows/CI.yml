@@ -5,6 +5,7 @@ on:
   pull_request:
 
 jobs:
+  # Build and test with linux
   Linux-build-and-test:
     runs-on: ubuntu-latest
 
@@ -22,9 +23,7 @@ jobs:
       - name: Get cache
         uses: actions/cache@v4
         with:
-          path: |
-            build
-            Code/build
+          path: build
           key: ${{ runner.os }}-cmake-build-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-cmake-build-
         
@@ -32,21 +31,20 @@ jobs:
       - name: Install needed libraries
         run: sudo apt-get update && sudo apt-get install -y libfmt-dev nlohmann-json3-dev
 
-      # build ctests and test
-      - name: CTests
-        run: |
-          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release
-          cmake --build build/tests -j
-          ctest --test-dir build/tests --output-on-failure
-      
       # Run building by cmake
       - name: Build Binary app by cmake
         run: |
-          cd Code
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build -j
-          sudo cmake --install build
+          cmake -S Code -B build/release -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/release -j
+          sudo cmake --install build/release
           sudo ldconfig
+
+      # build ctests and test
+      - name: CTests
+        run: |
+          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON
+          cmake --build build/tests -j
+          ctest --test-dir build/tests --output-on-failure
 
       # A small test befor start
       - name: Last test
@@ -98,7 +96,7 @@ jobs:
       - name: CTests
         run: |
           $ErrorActionPreference = "Stop"
-          cmake -S Code/TESTS -B build/tests -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+          cmake -S Code/TESTS -B build/tests -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH=C:\valtc_install
           cmake --build build/tests -j --config Release
           ctest --test-dir build/tests -C Release --output-on-failure
 
