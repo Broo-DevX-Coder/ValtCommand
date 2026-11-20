@@ -57,7 +57,7 @@ jobs:
 
     env:
       LTS_VERSION: ${{ vars.LTS_VERSION }}
-      VALTC_BIN: C:\valtc_install\bin\valtc.exe
+      VALTC_BIN: C:\valtc_install\bin\${{ vars.VALTC_BIN }}.exe
 
     steps:
       - name: Get repository
@@ -100,3 +100,49 @@ jobs:
       - name: Last test
         run: |
           & $env:VALTC_BIN --eval "CALL println value<str>:'Hellow world!' END"
+
+  # Build and test with MacOS
+  MacOS-build-and-test:
+    runs-on: macos-latest
+
+    env:
+      LTS_VERSION: ${{ vars.LTS_VERSION }}
+      VALTC_BIN: ${{ vars.VALTC_BIN }}
+    
+    steps:
+    
+      # Get repository
+      - name: get repository
+        uses: actions/checkout@v4
+      
+      # Get cache
+      - name: Get cache
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: ${{ runner.os }}-cmake-build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-cmake-build-
+        
+      # Install libraries
+      - name: Install needed libraries
+        run: brew install fmt nlohmann-json
+
+      # Run building by cmake
+      - name: Build Binary app by cmake
+        run: |
+          cmake -S Code -B build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(brew --prefix)
+          cmake --build build/release -j(sysctl -n hw.ncpu)
+          sudo cmake --install build/release --prefix /opt/valtc
+          echo "/opt/valtc/bin" >> $GITHUB_PATH
+
+      # build ctests and test
+      - name: CTests
+        run: |
+          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH=$(brew --prefix)
+          cmake --build build/tests -j(sysctl -n hw.ncpu)
+          ctest --test-dir build/tests --output-on-failure
+
+      # A small test befor start
+      - name: Last test
+        run: |
+          ${VALTC_BIN} --eval "CALL println value<str>:'Hellow world!' END"
