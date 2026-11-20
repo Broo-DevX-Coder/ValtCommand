@@ -93,7 +93,7 @@ jobs:
             --output-folder="conan_dps" `
             --build=missing `
             -c tools.cmake.cmaketoolchain:generator=Ninja `
-            -s build_type=Release `  
+            -s build_type=Release `
             -g CMakeDeps `
             -g CMakeToolchain
       
