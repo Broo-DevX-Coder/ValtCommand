@@ -12,12 +12,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Set RPATH 
-if(UNIX)
-    set(CMAKE_BUILD_RPATH "$ORIGIN;$ORIGIN/../lib")
-    set(CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib")
-elseif(APPLE)
+if(APPLE)
     set(CMAKE_BUILD_RPATH "@loader_path;@loader_path/../lib")
     set(CMAKE_INSTALL_RPATH "@loader_path;@loader_path/../lib")
+elseif(UNIX)
+    set(CMAKE_BUILD_RPATH "$ORIGIN;$ORIGIN/../lib")
+    set(CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib")
 endif()
 
 # Enable compile commands for IDEs
