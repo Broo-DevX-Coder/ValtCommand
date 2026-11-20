@@ -66,9 +66,7 @@ jobs:
       - name: Get cache
         uses: actions/cache@v4
         with:
-          path: |
-            build
-            Code/build
+          path: build
           key: ${{ runner.os }}-cmake-build-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-cmake-build-
 
@@ -80,16 +78,14 @@ jobs:
       - name: Compile code
         run: |
           $ErrorActionPreference = "Stop"
-          cd Code
-          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
-          cmake --build build --config Release -j -- /nologo /verbosity:minimal | Select-String -NotMatch "C:\\Program Files\\Microsoft Visual Studio" | Select-String -NotMatch "^\s*(\[|\]|with|_Kty=|_Ty=|_Myself=)"
+          cmake -S Code -B build/release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
+          cmake --build build/release --config Release -j -- /nologo /verbosity:minimal | Select-String -NotMatch "C:\\Program Files\\Microsoft Visual Studio" | Select-String -NotMatch "^\s*(\[|\]|with|_Kty=|_Ty=|_Myself=)"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Cmake install
         run: |
           $ErrorActionPreference = "Stop"
-          cd Code
-          cmake --install build --config Release --prefix C:\valtc_install
+          cmake --install build/release --config Release --prefix C:\valtc_install
           Copy-Item "$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\bin\*.dll" -Destination "C:\valtc_install\bin\" -Force
           "C:\valtc_install\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
