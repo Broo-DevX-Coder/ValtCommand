@@ -1,6 +1,6 @@
 # Base settings for the project
 cmake_minimum_required(VERSION 3.20)
-project(ValtCommand LANGUAGES CXX)
+project(ValtCommand LANGUAGES CXX VERSION 1.0.0)
 
 # C++ Standard settings
 set(CMAKE_CXX_STANDARD 20)
@@ -30,9 +30,15 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC)
 endif()
 
 # Get Libraries
-find_package(fmt REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
+find_package(fmt 8.0 REQUIRED)
+find_package(nlohmann_json 3.0 CONFIG REQUIRED)
 
 # Add Directories for files
 add_subdirectory(src)
 add_subdirectory(app)
+
+# CPack commands
+set(CPACK_PACKAGE_NAME "ValtCommand")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_GENERATOR "TGZ;ZIP")
+include(CPack)
