@@ -105,7 +105,7 @@ class ModuleNode : public ASTNode
     public:
         ModuleNode(const Token& END_token, StatmentsT& s_,Token& First_token); ///< Constructure
         std::string get_str(int level=0) override; ///< get the str of node to print
-        nlohmann::json get_json(); ///< Get the json file of ASTNode
+        nlohmann::json get_json() override; ///< Get the json file of ASTNode
         ASTNodesTypes NType() override; ///< Get the type of node
         ReturnResult<bool> accept(NodesContext Context) override; ///< The node verifi it self befor runnig
         ReturnResult<Value> exec(NodesContext Context) override; ///< Execute node

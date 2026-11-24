@@ -287,7 +287,7 @@ turn_value_to_float(
         if (v != nullptr)
             value = static_cast<long double>(*v);
         else 
-            return {"The input is not a int64_t or long double",false,SIZE_MAX};
+            return {"The input is not a int64_t or long double",false,static_cast<long double>(SIZE_MAX)};
     }
     
 

@@ -333,7 +333,7 @@ int main(int argc, char* argv[]) {
 
         if (!run_result.error.info.file.empty()) {
             std::cerr << "File: "
-                      << fs::absolute(run_result.error.info.file).lexically_normal()
+                      << fs::absolute(run_result.error.info.file).lexically_normal().generic_string()
                       << std::endl << std::endl;
         }
         return 2;

@@ -43,7 +43,7 @@ endfunction()
 # Link objects with libs and thier self
 # =======================================================================
 
-create_module(valtcommand .)
+create_module(valtcommand ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(
     valtcommand
