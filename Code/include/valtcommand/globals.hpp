@@ -29,13 +29,10 @@
  */
 
 #include <cstddef>
-#include <iostream>
 #include <functional>
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <variant>
-#include <fmt/format.h>
 
 /// Forward declarations
 
@@ -52,11 +49,6 @@ class ASTNode;
 namespace Errors {
     struct ErrorInfo;
 
-    /// @brief Format the error to print them on screan
-    /// @param info Info of errro
-    /// @param code The source code
-    /// @return The printable str
-    VALTC_API std::string formatter(ErrorInfo info, const std::string& code); 
 }
 
 /**
@@ -327,15 +319,6 @@ enum class VALTC_API TokenType {
     UNTERMINATED_COMMENT
 };
 
-/// Global variables
-
-/**
- * @brief Maps token types to their corresponding string representations.
- *
- * Used to convert TokenType values into readable strings.
- */
-extern VALTC_API std::unordered_map<TokenType, std::string> TokenTypesStr;
-
 /// Structures
 
 /**
@@ -376,132 +359,9 @@ struct VALTC_API Token {
      */
     fs::path FilePath;
 
-    /**
-     * @brief Prints the token information to standard output.
-     *
-     * Displays the token type, value, line, and column.
-     */
-    void print() {
-
-        std::cout << fmt::format(
-            "[ T:{} | V:\"{}\" | L:{} | C:{} | F:\"{}\" ]",
-            TokenTypesStr[Type],
-            value,
-            line,
-            column,
-            FilePath.string()
-        ) << std::endl << std::flush;
-    }
+    /** @brief Prints the token information to standard output. */
+    void print();
 };
 
-/// Global token definitions
-
-/**
- * @brief Maps token types to their string representations.
- *
- * Used to retrieve the readable representation of a token type.
- */
-extern VALTC_API std::unordered_map<TokenType, std::string>
-    TokenTypes_to_StringType;
-
-/**
- * @brief Contains all supported ValtCommand data types.
- */
-extern VALTC_API std::vector<std::string> __types__;
-
-/**
- * @brief Contains all supported ValtCommand keywords.
- */
-extern VALTC_API std::vector<std::string> __key_words__;
-
-/**
- * @brief Maps supported single-character symbols to their tokens.
- */
-extern VALTC_API std::unordered_map<char, Token> __symbols__;
-
-/**
- * @brief Maps supported multi-character symbols to their tokens.
- *
- * Examples include equality and logical operators.
- */
-extern VALTC_API std::unordered_map<std::string, Token> __complex_2_symbols__;
-
-/**
- * @brief Maps escaped characters to their corresponding characters.
- *
- * Examples include newline and tab escape sequences.
- */
-extern VALTC_API std::unordered_map<char, char> __backslashed_symbols__;
-
-/// Functions
-
-/**
- * @brief Checks whether a string represents a supported data type.
- *
- * @param token String to check.
- * @return true if the string represents a supported type, otherwise false.
- */
-VALTC_API bool is_token_type_(std::string token);
-
-/**
- * @brief Checks whether a string represents a supported keyword.
- *
- * @param token String to check.
- * @return true if the string represents a supported keyword, otherwise false.
- */
-VALTC_API bool is_token_key_word_(std::string token);
-
-/**
- * @brief Retrieves the type name of a runtime value.
- *
- * Determines the active alternative of the Value variant and returns
- * its corresponding ValtCommand type name.
- *
- * @param value Runtime value to inspect.
- * @return String representing the runtime value type.
- */
-VALTC_API std::string Get_ValueT(const Value& value);
-
-/**
- * @brief Checks whether two ValtCommand data types are compatible.
- *
- * Determines whether values of the first type can be used with
- * values of the second type.
- *
- * @param first First data type.
- * @param secound Second data type.
- * @return true if the types are compatible, otherwise false.
- */
-VALTC_API bool are_types_compatible(
-    const std::string& first,
-    const std::string& secound
-);
-
-/**
- * @brief Reconciles an integer or floating-point value with a target type.
- *
- * Converts the input value to the requested numeric type when
- * the conversion is supported.
- *
- * @param type Target data type.
- * @param input Value to convert.
- * @return Converted runtime value.
- */
-VALTC_API ReturnResult<Value> reconsiliation_int_float(
-    const std::string& type,
-    Value& input,
-    const Token& source_token
-);
-
-/**
- * @brief Converts a runtime value to a floating-point value.
- *
- * Attempts to convert the provided Value into a long double.
- *
- * @param input Runtime value to convert.
- * @return ReturnResult containing the converted floating-point value
- *         or error information if conversion fails.
- */
-VALTC_API ReturnResult<long double> turn_value_to_float(Value& input);
 
 } // namespace vltc

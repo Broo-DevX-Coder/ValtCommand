@@ -32,7 +32,7 @@ Core diagnostics carry a `vltc::Errors::ErrorInfo` record:
 | `column` | Zero-based byte column within that line. |
 | `length` | Number of source bytes to mark with the caret. |
 
-The formatter prints the type and message, a separator line of 42 hyphens, then source context when available. For an error at zero-based line `n`, it may print the preceding line as `n-|  ...`, then the failing line as `n+1-|  ...`; a caret line is printed only when that failing line exists. An optional `comment` follows another separator. The public runtime result carries this record as `result.error.info`; see `include/valtcommand/result.hpp`. CLI examples below capture the actual formatter output, including cases where zero-length locations produce no caret.
+The CLI diagnostic formatter is an internal helper (declared in `include/detail/globals.hpp`, not in the installed public API). It prints the type and message, a separator line of 42 hyphens, then source context when available. For an error at zero-based line `n`, it may print the preceding line as `n-|  ...`, then the failing line as `n+1-|  ...`; a caret line is printed only when that failing line exists. An optional `comment` follows another separator. The public runtime result carries this record as `result.error.info`; see `include/valtcommand/result.hpp`. CLI examples below capture the actual formatter output, including cases where zero-length locations produce no caret.
 
 ## Core error types
 
@@ -105,4 +105,4 @@ Errors from `vltc::Runtime::RunTime::run()` and `vltc::Runtime::RunTime::run_fil
 
 ## Scope
 
-Other components can construct diagnostics directly, and standard library functions can return their own error categories. This page covers the core error classes and formatter, not every failure possible in the interpreter.
+Other components can construct diagnostics directly, and standard library functions can return their own error categories. This page describes the core error classes and the CLI formatter output, not a host-callable formatter function or every failure possible in the interpreter.

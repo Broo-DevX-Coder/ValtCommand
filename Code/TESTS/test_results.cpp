@@ -174,21 +174,41 @@ void test_runtime_api() {
           missing.error.stage == vltc::Runtime::ErrorStage::Host,
           "Host error", missing ? "success" : missing.error.message);
 
+    runtime.add_external_function([](vltc::ExternalFunInType) {
+        vltc::ReturnResult<vltc::Value> result;
+        result.success = true;
+        result.value = int64_t{42};
+        return result;
+    }, "host_native", "int", {});
+    const auto script_state = runtime.run(
+        "FUNCTION user_fn()->int RETURN 5 END SET user_value<int> = 7");
     runtime.reset();
-    check(results, "reset clears script state", !runtime.has_variable("host_value"),
-          "false", "true");
+    const auto removed_function = runtime.run("CALL user_fn END");
+    const auto native_after_reset = runtime.run(
+        "SET native_result<int> = CALL host_native END");
+    const auto native_value = runtime.get_variable("native_result");
+    check(results, "reset clears script variables and functions, keeps native functions",
+          script_state && !runtime.has_variable("user_value") && !removed_function &&
+              native_after_reset && native_value && native_value.value == "42",
+          "user entries removed and host_native returns 42",
+          "variable=" + std::to_string(runtime.has_variable("user_value")) +
+              ", user function error=" + std::to_string(!removed_function) +
+              ", native=" + (native_value ? native_value.value : native_value.error.message));
 
     // Debugger callbacks expose typed events and breakpoints without formatting them.
     vltc::Runtime::RunTime debug_runtime(true);
     std::vector<vltc::DevTools::EventsT> event_types;
+    std::vector<std::string> event_strings;
     bool stopped = false;
-    debug_runtime.set_emit_event_slot([&](vltc::DevTools::event event, std::ostream&) {
+    auto* debugger = debug_runtime.GetDebugger();
+    debugger->set_emit_event_slot([&](vltc::DevTools::event event, std::ostream&) {
         event_types.push_back(event.type);
+        event_strings.push_back(event.get_str());
     });
-    debug_runtime.set_stop_slot([&](vltc::DevTools::Debugger&, vltc::Scopes::Scope*) {
+    debugger->set_stop_slot([&](vltc::DevTools::Debugger&, vltc::Scopes::Scope*) {
         stopped = true;
     });
-    debug_runtime.add_break_points({1});
+    debugger->add_break_points({1});
     const auto debug_run = debug_runtime.run("SET traced<int> = 1");
     const bool has_runtime_event = std::find(event_types.begin(), event_types.end(),
         vltc::DevTools::EventsT::Runtime) != event_types.end();
@@ -198,5 +218,120 @@ void test_runtime_api() {
           "Analysis and Runtime event kinds", "missing expected event kind");
     check(results, "runtime breakpoint callback", debug_run && stopped,
           "stop callback invoked at line 1", stopped ? "invoked" : "not invoked");
+
+    bool events_in_order = event_strings.size() > 1;
+    for (const auto& expected : event_strings)
+        events_in_order = events_in_order && debugger->get_next_event_str() == expected;
+    const auto event_end = debugger->get_next_event_str();
+    check(results, "next debugger events preserve emission order",
+          events_in_order && event_end == "EVENTS END",
+          "all events in callback order followed by EVENTS END",
+          events_in_order ? event_end : "event order mismatch");
+
+    vltc::Runtime::RunTime native_mutation_runtime;
+    native_mutation_runtime.set_variable("x", "1", "int");
+    native_mutation_runtime.add_external_function([](vltc::ExternalFunInType input) {
+        vltc::Token token{vltc::TokenType::IDENTIFIER, "x", 1, 1, 1, {}};
+        auto found = input.ParentScope->search_var(token);
+        input.ParentScope->add_var("native_added", "int", int64_t{7});
+        if (found.success) {
+            found.value->type = "str";
+            found.value->value = std::string("changed");
+        }
+        vltc::ReturnResult<vltc::Value> result;
+        result.success = found.success;
+        result.value = std::monostate{};
+        return result;
+    }, "mutate_scope", "void", {});
+    const auto native_mutation = native_mutation_runtime.run("CALL mutate_scope END");
+    const auto native_x = native_mutation_runtime.get_variable("x");
+    const auto native_added = native_mutation_runtime.get_variable("native_added");
+    const auto analysis_after_native_mutation = native_mutation_runtime.run(
+        "SET from_added<int> = GET native_added");
+    check(results, "native callback mutates its live scope",
+          native_mutation && native_x && native_x.type == "str" && native_x.value == "changed" &&
+              native_added && native_added.value == "7" && !analysis_after_native_mutation &&
+              analysis_after_native_mutation.error.stage == vltc::Runtime::ErrorStage::Semantic,
+          "runtime values changed; new entry visible at runtime but absent from analysis scope",
+          native_x.type + ":" + native_x.value + ", added=" +
+              (native_added ? native_added.value : native_added.error.message) +
+              ", next analysis stage=" + std::to_string(static_cast<int>(analysis_after_native_mutation.error.stage)));
+
+    const std::string gap_source =
+        "SET a<int> = 1\n\nFUNCTION f()->int\nRETURN 2\nEND\nSET b<int> = 3";
+    vltc::Runtime::RunTime gap_runtime(true);
+    auto* gap_debugger = gap_runtime.GetDebugger();
+    gap_debugger->set_emit_event_slot([](vltc::DevTools::event, std::ostream&) {});
+    int gap_stops = 0;
+    gap_debugger->set_stop_slot([&](vltc::DevTools::Debugger&, vltc::Scopes::Scope*) {
+        ++gap_stops;
+    });
+    gap_debugger->add_break_points({2, 5});
+    const auto gap_run = gap_runtime.run(gap_source);
+    check(results, "breakpoints on blank and END lines do not stop",
+          gap_run && gap_stops == 0,
+          "no stop for blank line 2 or END line 5", std::to_string(gap_stops) + " stops");
+
+    vltc::Runtime::RunTime next_gap_runtime(true);
+    auto* next_gap_debugger = next_gap_runtime.GetDebugger();
+    next_gap_debugger->set_emit_event_slot([](vltc::DevTools::event, std::ostream&) {});
+    int next_gap_stops = 0;
+    next_gap_debugger->set_stop_slot([&](vltc::DevTools::Debugger& debugger, vltc::Scopes::Scope*) {
+        ++next_gap_stops;
+        debugger.next_line();
+    });
+    next_gap_debugger->add_break_points({1});
+    const auto next_gap_run = next_gap_runtime.run(gap_source);
+    check(results, "next_line skips an empty source line without a runtime event",
+          next_gap_run && next_gap_stops == 1,
+          "one stop at line 1; temporary line 2 stop never fires", std::to_string(next_gap_stops) + " stops");
+
+    vltc::Runtime::RunTime next_adjacent_runtime(true);
+    auto* next_adjacent_debugger = next_adjacent_runtime.GetDebugger();
+    next_adjacent_debugger->set_emit_event_slot([](vltc::DevTools::event, std::ostream&) {});
+    int adjacent_stops = 0;
+    next_adjacent_debugger->set_stop_slot([&](vltc::DevTools::Debugger& debugger, vltc::Scopes::Scope*) {
+        ++adjacent_stops;
+        if (adjacent_stops == 1) debugger.next_line();
+    });
+    next_adjacent_debugger->add_break_points({1});
+    const auto adjacent_run = next_adjacent_runtime.run("SET a<int> = 1\nSET b<int> = 2");
+    check(results, "next_line stops at the adjacent executable line",
+          adjacent_run && adjacent_stops == 2,
+          "stops at line 1 and line 2", std::to_string(adjacent_stops) + " stops");
+
+    vltc::Runtime::RunTime debugger_mutation_runtime(true);
+    debugger_mutation_runtime.set_variable("x", "1", "int");
+    std::ostringstream debugger_log;
+    debugger_mutation_runtime.set_debugger_ostream(debugger_log);
+    auto* mutation_debugger = debugger_mutation_runtime.GetDebugger();
+    mutation_debugger->set_emit_event_slot([](vltc::DevTools::event, std::ostream&) {});
+    int mutation_stops = 0;
+    mutation_debugger->set_stop_slot([&](vltc::DevTools::Debugger&, vltc::Scopes::Scope* scope) {
+        ++mutation_stops;
+        vltc::Token token{vltc::TokenType::IDENTIFIER, "x", 2, 1, 1, {}};
+        auto found = scope->search_var(token);
+        if (found.success) {
+            found.value->type = "str";
+            found.value->value = std::string("debugged");
+            scope->add_var("debug_added", "int", int64_t{9});
+        }
+    });
+    mutation_debugger->add_break_points({2});
+    const auto debugger_mutation = debugger_mutation_runtime.run("SET x = 1\nSET y<int> = 2");
+    const auto debugger_x = debugger_mutation_runtime.get_variable("x");
+    const auto debugger_added = debugger_mutation_runtime.get_variable("debug_added");
+    const auto analysis_after_debugger_mutation = debugger_mutation_runtime.run(
+        "SET from_debugger<str> = GET x");
+    check(results, "debugger callback mutates its live scope",
+          debugger_mutation && mutation_stops == 1 && debugger_x && debugger_x.type == "str" &&
+              debugger_x.value == "debugged" && debugger_added && debugger_added.value == "9" &&
+              !analysis_after_debugger_mutation &&
+              analysis_after_debugger_mutation.error.stage == vltc::Runtime::ErrorStage::Semantic,
+          "callback changes runtime scope; analysis still sees original int entry",
+          "stops=" + std::to_string(mutation_stops) + ", x=" + debugger_x.type + ":" +
+              debugger_x.value + ", added=" +
+              (debugger_added ? debugger_added.value : debugger_added.error.message) +
+              ", next analysis stage=" + std::to_string(static_cast<int>(analysis_after_debugger_mutation.error.stage)));
 }
 }

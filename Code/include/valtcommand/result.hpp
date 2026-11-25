@@ -11,12 +11,13 @@
 
 namespace fs = std::filesystem; // Definition of filesystem namespace as fs
 
-/**
+
+namespace vltc {
+
+    /**
  * @namespace Errors
  * @brief Error data shared by the runtime and its host.
  */
-namespace vltc {
-
 namespace Errors {
 
 /**

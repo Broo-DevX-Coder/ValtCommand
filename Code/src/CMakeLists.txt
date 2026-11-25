@@ -45,20 +45,18 @@ endfunction()
 
 create_module(valtcommand ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(
-    valtcommand
-    PUBLIC
-    fmt::fmt
-    nlohmann_json::nlohmann_json
+target_include_directories(valtcommand PRIVATE
+    ${PROJECT_SOURCE_DIR}/libraries
 )
+target_compile_definitions(valtcommand PRIVATE FMT_HEADER_ONLY)
 
 # =======================================================================
 # Install: library, headers, and the find_package files
 # =======================================================================
 
 set_target_properties(valtcommand PROPERTIES
-    VERSION 1.0.0
-    SOVERSION 1
+    VERSION ${LibVersion}
+    SOVERSION ${LibSOVersion}
 )
 
 install(TARGETS valtcommand
@@ -80,7 +78,7 @@ install(EXPORT ValtCommandTargets
 
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/ValtCommandConfigVersion.cmake
-    VERSION 1.0.0
+    VERSION ${LibVersion}
     COMPATIBILITY SameMajorVersion
 )
 

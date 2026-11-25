@@ -3,6 +3,7 @@
 // ==================================================================
 
 // == Locals ==
+#include "detail/globals.hpp"
 #include "detail/ast/variable_node.hpp"
 #include "detail/errors.hpp"
 

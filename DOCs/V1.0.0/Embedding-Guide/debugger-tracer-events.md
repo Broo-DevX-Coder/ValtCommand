@@ -1,0 +1,7 @@
+# Debugger, tracer and events
+
+Construct `RunTime(true)` to enable debugging, then get the debugger with `GetDebugger()`. Call `add_break_points({line}, file)`, `set_stop_slot`, `set_emit_event_slot`, `get_all_events_strs()`, and `get_next_event_str()` on that `Debugger*`. `get_next_event_str()` returns the current event, advances its cursor, and returns `EVENTS END` when exhausted. `RunTime` retains only `set_debugger_ostream()` and `get_debugger_ostream()` as debugger-related convenience methods.
+
+The default stop handler accepts `c`/`continue`, `n`/`nextl`, `e`/`exit`, `sv`/`show vars`, `sf`/`show functions`, and `sc`/`show scope info`. Replace it for GUI or embedded hosts; the default `exit` calls `std::exit(0)`, terminating the host process.
+
+Events have `Info`, `Analysis`, `Runtime`, `Debug`, `Warning`, or `Error` categories. Runtime line events are used for line tracing and breakpoint checks; other events are produced by their emitting code paths. Breakpoints are matched by line and optional file. A breakpoint is checked on runtime events when line/file changes, so blank lines and `END` lines that do not emit such events may not stop. `next_line()` adds a temporary next-line stop. The breakpoint event path follows `Debugger.cpp` and AST emit sites. The exact line-by-line behavior of blank lines, `END`, and next-step pauses is not covered by CTest; see [follow-up probes](examples/probes/unverified.md). Example: [debugger.cpp](examples/debugger.cpp). See the [Debugger reference](debugger.md) for method details.

@@ -3,9 +3,12 @@
 // ==================================================================
 
 // == Locals ==
+#include "detail/globals.hpp"
 #include "valtcommand/globals.hpp"
 
 // == Libs ==
+#include <fmt/format.h>
+#include <iostream>
 #include <algorithm>
 #include <cmath>
 #include <sstream>
@@ -295,3 +298,10 @@ turn_value_to_float(
 }
 
 } // namespace vltc
+
+void vltc::Token::print() {
+    std::cout << fmt::format(
+        "[ T:{} | V:\"{}\" | L:{} | C:{} | F:\"{}\" ]",
+        vltc::TokenTypesStr[Type], value, line, column, FilePath.string()
+    ) << std::endl << std::flush;
+}

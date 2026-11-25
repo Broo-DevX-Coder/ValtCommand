@@ -1,9 +1,10 @@
 
- // ==================================================================
+// ==================================================================
 // Include necessary headers
 // ==================================================================
 
 // == Locals ==
+#include "detail/globals.hpp"
 #include "detail/ast/one_side_ops_nodes.hpp"
 #include "detail/errors.hpp"
 

@@ -11,6 +11,7 @@
 #include <utility>
 
 // == Locals ==
+#include "detail/globals.hpp"
 #include "valtcommand/runtime.hpp"
 #include "detail/errors.hpp"
 #include "detail/lexer.hpp"
@@ -180,22 +181,6 @@ Runtime::RunTime::GetDebugger() {
     return Debugger? Debugger.get() : nullptr;
 }
 
-void Runtime::RunTime::emit_event(DevTools::event event) {
-    if (Debugger) Debugger->emit(std::move(event));
-}
-
-void Runtime::RunTime::set_emit_event_slot(DevTools::Debugger::EmitSlotType slot) {
-    if (Debugger) Debugger->set_emit_event_slot(std::move(slot));
-}
-
-std::string Runtime::RunTime::get_next_event_str() {
-    return Debugger ? Debugger->get_next_event_str() : std::string{};
-}
-
-std::string Runtime::RunTime::get_all_events_strs() {
-    return Debugger ? Debugger->get_all_events_strs() : std::string{};
-}
-
 void Runtime::RunTime::set_debugger_ostream(std::ostream& output) {
     if (Debugger) Debugger->set_ostream(output);
 }
@@ -204,36 +189,6 @@ const std::ostream* Runtime::RunTime::get_debugger_ostream() const {
     return Debugger ? Debugger->get_ostream() : nullptr;
 }
 
-void Runtime::RunTime::add_break_points(
-    const std::vector<size_t>& points,
-    const std::string& FilePath
-) {
-    if (Debugger) Debugger->add_break_points(points, FilePath);
-}
-
-void Runtime::RunTime::check_break_point(
-    size_t line,
-    Scopes::Scope* scope,
-    const std::string& FilePath
-) {
-    if (Debugger) Debugger->check_break_point(line, scope, FilePath);
-}
-
-void Runtime::RunTime::set_stop_slot(DevTools::Debugger::StopSlotType slot) {
-    if (Debugger) Debugger->set_stop_slot(std::move(slot));
-}
-
-void Runtime::RunTime::continue_exec() {
-    if (Debugger) Debugger->continue_exec();
-}
-
-void Runtime::RunTime::next_line() {
-    if (Debugger) Debugger->next_line();
-}
-
-void Runtime::RunTime::exit_debugging() {
-    if (Debugger) Debugger->exit();
-}
 
 // (Re)create the three global scopes and put the native functions back in them
 void
