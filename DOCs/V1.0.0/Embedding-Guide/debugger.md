@@ -111,11 +111,3 @@ Adds a temporary breakpoint at `curent_line + 1` for the current file when one i
 ### `void exit()`
 
 Prints a message and calls `std::exit(0)`, terminating the entire host process. Do not call it from an embedded host unless process termination is intended.
-
-### `EventsT` values
-
-`Info`, `Analysis`, `Runtime`, `Debug`, `Warning`, and `Error` are the full public enum values. They are classification constants; selecting one when constructing an event controls its label and does not itself cause a runtime action.
-
-### `event::type`, `event::message`, `event::line`, `event::curent_scope`, and `event::file`
-
-These fields hold the event category, message, source line, current non-owning scope pointer, and path. Example: `event.message`. Changing a callback's event copy changes only the copy; the `curent_scope` pointer still refers to runtime-owned memory and must not outlive its scope.

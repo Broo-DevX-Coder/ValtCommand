@@ -8,6 +8,7 @@
 #include <sstream>
 
 // == Local ==
+#include "detail/globals.hpp"
 #include "detail/errors.hpp"
 #include "detail/utils.hpp"
 

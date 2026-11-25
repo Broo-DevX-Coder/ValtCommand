@@ -12,9 +12,6 @@
 /// == Locals ==
 #include "valtcommand/scope.hpp"
 
-/// == Libs ==
-#include <nlohmann/json.hpp>
-
 /// Namespace
 
 namespace vltc {
@@ -24,7 +21,7 @@ namespace DevTools {
     /// Inspect return
     struct VALTC_API InspecturesReturn {
         std::string printable;
-        nlohmann::json JSON;
+        std::string JSON;
     };
 
     /// Get the basic information of the curent scope

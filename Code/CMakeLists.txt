@@ -1,6 +1,10 @@
+# Set Local Vars of versions
+set(LibVersion 1.0.0)
+set(LibSOVersion 1)
+
 # Base settings for the project
 cmake_minimum_required(VERSION 3.20)
-project(ValtCommand LANGUAGES CXX VERSION 1.0.0)
+project(ValtCommand LANGUAGES CXX VERSION ${LibVersion})
 
 # C++ Standard settings
 set(CMAKE_CXX_STANDARD 20)
@@ -28,10 +32,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC)
     add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer) 
     add_link_options(-fsanitize=address,undefined)
 endif()
-
-# Get Libraries
-find_package(fmt 8.0 REQUIRED)
-find_package(nlohmann_json 3.0 CONFIG REQUIRED)
 
 # Add Directories for files
 add_subdirectory(src)

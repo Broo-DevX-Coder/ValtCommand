@@ -19,6 +19,7 @@
 /// @name Library includes
 /// @{
 #include <functional>
+#include <iostream>
 /// @}
 
 /**
@@ -64,9 +65,7 @@ namespace DevTools {
          * @brief Format the event as a printable string.
          * @return A string like `[Type] line:N -> message` ending with a newline.
          */
-        std::string get_str() {
-            return fmt::format("[{}] line:{} -> {}\n", event_type_to_string(type), line, message);
-        };
+        std::string get_str();
     };
 
     /**
@@ -141,8 +140,6 @@ namespace DevTools {
         private:
             using emitSlotType = EmitSlotType;
             using stopSlotType = StopSlotType;
-
-        private:
 
             /// @name General
             /// @{

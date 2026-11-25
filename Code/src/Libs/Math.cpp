@@ -3,6 +3,7 @@
 // ==================================================================
 
 // == Locals ==
+#include "detail/globals.hpp"
 #include "detail/builtins/math.hpp"
 
 // == Libs ==

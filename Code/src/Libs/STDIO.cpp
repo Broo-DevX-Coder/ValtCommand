@@ -5,6 +5,9 @@
 // == Locals ==
 #include "detail/builtins/stdio.hpp"
 
+// == Libs ==
+#include <fmt/format.h>
+
 // ==================================================================
 // Private helpers (visible only in this file)
 // ==================================================================

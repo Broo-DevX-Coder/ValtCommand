@@ -34,7 +34,3 @@ target_link_libraries(host PRIVATE ValtCommand::valtcommand)
 ```
 
 Set `CMAKE_PREFIX_PATH` to the installation prefix (or `ValtCommand_DIR` to its `lib/cmake/ValtCommand` directory). On Linux and macOS, the project sets install RPATH to `$ORIGIN;$ORIGIN/../lib` or `@loader_path;@loader_path/../lib`. This supports an executable finding a colocated library or one in a sibling `lib` directory. If your install layout differs, configure the host's RPATH or use the platform loader's library search configuration. Windows uses normal DLL search rules; the DLL must be discoverable at runtime.
-
-## Source-build caveat
-
-The checked-in vendored headers are in `Code/libraries/fmt/include` and `Code/libraries/nlohmann`, while `Code/src/CMakeLists.txt` currently adds private include paths named `third_party` and `third_party/fmt/include`, relative to `Code/src`. These paths do not match the vendored locations in this checkout. A source build without system-installed headers therefore remains unverified from the current CMake configuration; this does not alter the installed target's public dependency interface.

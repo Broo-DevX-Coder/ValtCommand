@@ -1,3 +1,4 @@
+#include "detail/globals.hpp"
 #include "valtcommand/runtime.hpp"
 #include "detail/errors.hpp"
 
@@ -281,9 +282,9 @@ int main(int argc, char* argv[]) {
             return 2;
         }
 
-        // Add all breakpoints to the runtime
+        // Add all breakpoints to the debugger
         for (auto& [path, points] : break_points_r.value)
-            r.add_break_points(points, path);
+            r.GetDebugger()->add_break_points(points, path);
     }
 
     // ==================================================================

@@ -29,7 +29,7 @@ jobs:
 
       # Install libraries & ccache
       - name: Install needed libraries
-        run: sudo apt-get update && sudo apt-get install -y ccache libfmt-dev nlohmann-json3-dev
+        run: sudo apt-get update && sudo apt-get install -y ccache
 
       # Run building by cmake
       - name: Build Binary app by cmake
@@ -38,8 +38,7 @@ jobs:
           cmake -S Code -B build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build build/release -j
           ccache -s
-          sudo cmake --install build/release
-          sudo ldconfig
+          cmake --install build/release --prefix "$RUNNER_TEMP/valtcommand-install"
 
       # build ctests and test
       - name: CTests
@@ -48,10 +47,16 @@ jobs:
           cmake --build build/tests -j
           ctest --test-dir build/tests --output-on-failure
 
+      - name: Build and test installed-package examples
+        run: |
+          cmake -S DOCs/V1.0.0/Embedding-Guide/examples -B build/embedding-examples -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/valtcommand-install"
+          cmake --build build/embedding-examples -j
+          LD_LIBRARY_PATH="$RUNNER_TEMP/valtcommand-install/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ctest --test-dir build/embedding-examples --output-on-failure
+
       # A small test before start
       - name: Last test
         run: |
-          ${VALTC_BIN} --eval "CALL println value<str>:'Hellow world!' END"
+          "$RUNNER_TEMP/valtcommand-install/bin/${VALTC_BIN}" --eval "CALL println value<str>:'Hellow world!' END"
 
   # Build and test by windows
   Windows-build-and-test:
@@ -59,7 +64,7 @@ jobs:
 
     env:
       LTS_VERSION: ${{ vars.LTS_VERSION }}
-      VALTC_BIN: C:\valtc_install\bin\${{ vars.VALTC_BIN }}.exe
+      VALTC_BIN: ${{ runner.temp }}\valtcommand-install\bin\${{ vars.VALTC_BIN }}.exe
       CONAN_HOME: ${{ github.workspace }}\.conan2
       CCACHE_DIR: ${{ github.workspace }}\.ccache
 
@@ -85,17 +90,6 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           choco install ccache -y --no-progress
-          pip install conan
-          conan profile detect --force
-          conan install `
-            --requires="fmt/11.1.4" `
-            --requires="nlohmann_json/3.10.5" `
-            --output-folder="conan_dps" `
-            --build=missing `
-            -c tools.cmake.cmaketoolchain:generator=Ninja `
-            -s build_type=Release `
-            -g CMakeDeps `
-            -g CMakeToolchain
       
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -104,13 +98,9 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           ccache -z
-          $ToolchainFile = (Get-ChildItem -Path "conan_dps" -Filter "conan_toolchain.cmake" -Recurse | Select-Object -First 1).FullName
-          if (-not $ToolchainFile) { throw "conan_toolchain.cmake not found!" }
-          Write-Host "Using Toolchain: $ToolchainFile"
 
           cmake -S Code -B build/release -G Ninja --fresh `
             -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" `
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
             -DCMAKE_POLICY_DEFAULT_CMP0141=NEW `
             -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="Embedded"
@@ -121,23 +111,29 @@ jobs:
       - name: Cmake install
         run: |
           $ErrorActionPreference = "Stop"
-          cmake --install build/release --prefix C:\valtc_install
-          "C:\valtc_install\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          $InstallPrefix = Join-Path $env:RUNNER_TEMP "valtcommand-install"
+          cmake --install build/release --prefix $InstallPrefix
+          (Join-Path $InstallPrefix "bin") | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: CTests
         run: |
           $ErrorActionPreference = "Stop"
-          $ToolchainFile = (Get-ChildItem -Path "conan_dps" -Filter "conan_toolchain.cmake" -Recurse | Select-Object -First 1).FullName
 
           cmake -S Code/TESTS -B build/tests -G Ninja --fresh `
             -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_TOOLCHAIN_FILE="$ToolchainFile" `
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
             -DVALTC_TESTS_USE_PACKAGE=ON `
-            -DCMAKE_PREFIX_PATH="C:\valtc_install"
+            -DCMAKE_PREFIX_PATH=(Join-Path $env:RUNNER_TEMP "valtcommand-install")
 
           cmake --build build/tests -j
           ctest --test-dir build/tests --output-on-failure
+
+          $InstallPrefix = Join-Path $env:RUNNER_TEMP "valtcommand-install"
+          cmake -S DOCs/V1.0.0/Embedding-Guide/examples -B build/embedding-examples -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_PREFIX_PATH=$InstallPrefix
+          cmake --build build/embedding-examples -j
+          ctest --test-dir build/embedding-examples --output-on-failure
 
       # A small test before start
       - name: Last test
@@ -170,7 +166,7 @@ jobs:
 
       # Install libraries & ccache
       - name: Install needed libraries
-        run: brew install ccache fmt nlohmann-json
+        run: brew install ccache
 
       # Run building by cmake
       - name: Build Binary app by cmake
@@ -179,8 +175,8 @@ jobs:
           cmake -S Code -B build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(brew --prefix) -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build build/release -j$(sysctl -n hw.ncpu)
           ccache -s
-          sudo cmake --install build/release --prefix /opt/valtc
-          echo "/opt/valtc/bin" >> $GITHUB_PATH
+          cmake --install build/release --prefix "$RUNNER_TEMP/valtcommand-install"
+          echo "$RUNNER_TEMP/valtcommand-install/bin" >> $GITHUB_PATH
 
       # build ctests and test
       - name: CTests
@@ -189,7 +185,11 @@ jobs:
           cmake --build build/tests -j$(sysctl -n hw.ncpu)
           ctest --test-dir build/tests --output-on-failure
 
+          cmake -S DOCs/V1.0.0/Embedding-Guide/examples -B build/embedding-examples -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/valtcommand-install"
+          cmake --build build/embedding-examples -j$(sysctl -n hw.ncpu)
+          DYLD_LIBRARY_PATH="$RUNNER_TEMP/valtcommand-install/lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}" ctest --test-dir build/embedding-examples --output-on-failure
+
       # A small test before start
       - name: Last test
         run: |
-          ${VALTC_BIN} --eval "CALL println value<str>:'Hellow world!' END"
+          "$RUNNER_TEMP/valtcommand-install/bin/${VALTC_BIN}" --eval "CALL println value<str>:'Hellow world!' END"

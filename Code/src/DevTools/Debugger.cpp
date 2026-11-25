@@ -8,6 +8,7 @@
 
 // == Libs ==
 #include <sstream>
+#include <fmt/format.h>
 
 // ==================================================================
 // Helper: Turn event type to string
@@ -88,6 +89,11 @@ namespace {
 // Runtime tracker
 // ==================================================================
 
+// Event get str
+std::string DevTools::event::get_str() {
+    return fmt::format("[{}] line:{} -> {}\n", event_type_to_string(type), line, message);
+}
+
 // Print event 
 void 
 DevTools::Debugger::print_event(
@@ -122,8 +128,9 @@ DevTools::Debugger::set_emit_event_slot(
 // Get the str of next event aftre print_pos
 std::string 
 DevTools::Debugger::get_next_event_str() {
+    auto a = print_pos<events_list.size()? events_list[print_pos].get_str() : "EVENTS END";
     print_pos++;
-    return print_pos<events_list.size()? events_list[print_pos].get_str() : "EVENTS END";
+    return a;
 }
 
 // Get all strings of events

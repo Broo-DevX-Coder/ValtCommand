@@ -9,6 +9,7 @@
 #include <string>
 
 // == Locals ==
+#include "detail/globals.hpp"
 #include "detail/ast/function_call_node.hpp"
 #include "detail/errors.hpp"
 

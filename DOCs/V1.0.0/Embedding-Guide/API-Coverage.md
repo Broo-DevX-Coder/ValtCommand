@@ -116,7 +116,3 @@ Inventory source: headers under `Code/include/valtcommand/`. Rows below enumerat
 | `TokenType`, `Token` | `globals.hpp` | [scope.md](./scope.md) — lookup methods | Token is accepted by public `Scope::search_*`. |
 | `vltc::fs` | `result.hpp` | API-Coverage.md — this inventory | Namespace alias. |
 | `valtcommand.hpp` | `valtcommand.hpp` | [installation.md](./installation.md) — Consumer CMake | Umbrella include for installed API. |
-
-## Moved out of the installed public headers
-
-`include/detail/globals.hpp` contains `Errors::formatter`, `TokenTypesStr`, `TokenTypes_to_StringType`, `__types__`, `__key_words__`, `__symbols__`, `__complex_2_symbols__`, `__backslashed_symbols__`, `is_token_type_`, `is_token_key_word_`, `Get_ValueT`, `are_types_compatible`, `reconsiliation_int_float`, and `turn_value_to_float`. These implementation declarations are not installed as public host API. `TokenType` and `Token` remain public because `Scope::search_*` accepts `Token&`.

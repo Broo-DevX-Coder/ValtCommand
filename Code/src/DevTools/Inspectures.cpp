@@ -7,6 +7,7 @@
 
 // == Libs ==
 #include <sstream>
+#include <nlohmann/json.hpp>
 
 // ==================================================================
 // Helper: Variant's value to nlohmann::json obj
@@ -136,7 +137,7 @@ DevTools::ScopeInspect(
     ss << "===========================================================\n";
 
     // Return result
-    return {ss.str(),JSON};
+    return {ss.str(),JSON.dump()};
 }
 
 // Get visible variables table in entered scope
@@ -317,7 +318,7 @@ DevTools::VariablesInspect(
     draw_border();
 
     // Return table and JSON
-    return {ss.str(), JSON};
+    return {ss.str(), JSON.dump()};
 }
 
 
@@ -626,7 +627,7 @@ DevTools::FunctionsInspect(
     draw_border();
 
     // Return table and JSON
-    return {ss.str(), JSON};
+    return {ss.str(), JSON.dump()};
 }
 
 } // namespace vltc
