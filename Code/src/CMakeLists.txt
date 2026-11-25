@@ -50,11 +50,6 @@ target_include_directories(valtcommand PRIVATE
 )
 target_compile_definitions(valtcommand PRIVATE FMT_HEADER_ONLY)
 
-#Initialyze UTF-8 on MSVC
-if(MSVC)
-    target_compile_options(valtcommand PRIVATE /utf-8)
-endif()
-
 # =======================================================================
 # Install: library, headers, and the find_package files
 # =======================================================================

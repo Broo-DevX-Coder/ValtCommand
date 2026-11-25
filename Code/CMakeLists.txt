@@ -24,6 +24,11 @@ elseif(UNIX)
     set(CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib")
 endif()
 
+#Initialyze UTF-8 flag on MSVC
+if(MSVC)
+    add_compile_options(/utf-8)
+endif()
+
 # Enable compile commands for IDEs
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
