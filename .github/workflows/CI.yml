@@ -43,7 +43,7 @@ jobs:
       # build ctests and test
       - name: CTests
         run: |
-          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/valtcommand-install" -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build build/tests -j
           ctest --test-dir build/tests --output-on-failure
 
@@ -64,8 +64,7 @@ jobs:
 
     env:
       LTS_VERSION: ${{ vars.LTS_VERSION }}
-      VALTC_BIN: ${{ runner.temp }}\valtcommand-install\bin\${{ vars.VALTC_BIN }}.exe
-      CONAN_HOME: ${{ github.workspace }}\.conan2
+      VALTC_BIN: ${{ vars.VALTC_BIN }}.exe
       CCACHE_DIR: ${{ github.workspace }}\.ccache
 
     steps:
@@ -78,13 +77,6 @@ jobs:
           path: .ccache
           key: ${{ runner.os }}-ccache-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-ccache-
-
-      - name: Get conan cache
-        uses: actions/cache@v4
-        with:
-          path: .conan2
-          key: ${{ runner.os }}-conan-fmt11.1.4-json3.10.5
-          restore-keys: ${{ runner.os }}-conan-
 
       - name: Install dependencies & ccache
         run: |
@@ -118,17 +110,17 @@ jobs:
       - name: CTests
         run: |
           $ErrorActionPreference = "Stop"
+          $InstallPrefix = Join-Path $env:RUNNER_TEMP "valtcommand-install"
 
           cmake -S Code/TESTS -B build/tests -G Ninja --fresh `
             -DCMAKE_BUILD_TYPE=Release `
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
             -DVALTC_TESTS_USE_PACKAGE=ON `
-            -DCMAKE_PREFIX_PATH=(Join-Path $env:RUNNER_TEMP "valtcommand-install")
+            -DCMAKE_PREFIX_PATH=$InstallPrefix
 
           cmake --build build/tests -j
           ctest --test-dir build/tests --output-on-failure
 
-          $InstallPrefix = Join-Path $env:RUNNER_TEMP "valtcommand-install"
           cmake -S DOCs/V1.0.0/Embedding-Guide/examples -B build/embedding-examples -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             -DCMAKE_PREFIX_PATH=$InstallPrefix
@@ -138,7 +130,8 @@ jobs:
       # A small test before start
       - name: Last test
         run: |
-          & $env:VALTC_BIN --eval "CALL println value<str>:'Hellow world!' END"
+          $BinPath = Join-Path $env:RUNNER_TEMP "valtcommand-install\bin\$env:VALTC_BIN"
+          & $BinPath --eval "CALL println value<str>:'Hellow world!' END"
 
   # Build and test with MacOS
   MacOS-build-and-test:
@@ -181,7 +174,7 @@ jobs:
       # build ctests and test
       - name: CTests
         run: |
-          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH=$(brew --prefix) -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S Code/TESTS -B build/tests -DCMAKE_BUILD_TYPE=Release -DVALTC_TESTS_USE_PACKAGE=ON -DCMAKE_PREFIX_PATH="$(brew --prefix);$RUNNER_TEMP/valtcommand-install" -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build build/tests -j$(sysctl -n hw.ncpu)
           ctest --test-dir build/tests --output-on-failure
 
