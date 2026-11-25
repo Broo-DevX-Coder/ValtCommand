@@ -47,7 +47,6 @@ create_module(valtcommand ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_include_directories(valtcommand PRIVATE
     ${PROJECT_SOURCE_DIR}/libraries
-    ${PROJECT_SOURCE_DIR}/libraries/fmt/include
 )
 target_compile_definitions(valtcommand PRIVATE FMT_HEADER_ONLY)
 
