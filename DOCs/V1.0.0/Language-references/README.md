@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 
-These pages provide a ValtCommand language reference, the [CLI reference](../cli.md), a Host API section in [Errors](errors.md#host-api), and a C++ library usage section in [Built-in Functions](built-in-functions.md#18-using-the-libraries-from-c).
+These pages provide a ValtCommand language reference, the [CLI reference](../cli.md), a Host API section in [Errors](errors.md#host-api), and C++ library usage in [Built-in Functions](built-in-functions.md#18-using-the-libraries-from-c) and the [Embedding Guide](../Embedding-Guide/README.md).
 
 ## Language reference
 

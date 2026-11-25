@@ -1,0 +1,5 @@
+# Running code
+
+`RunTime::run(source, ScopeMode::Persistent)` parses, semantically analyzes and executes the string. Persistent is the default and retains script globals across calls. `ScopeMode::Fresh` uses temporary scopes; `reset()` removes script-created variables and user-defined functions, then reinstalls host-registered native functions and constants.
+
+`run_file(path, mode)` reads a file and follows the same pipeline. A read failure returns `ErrorStage::IO`. Parse, semantic and execution failures are returned in `RunResult`, not thrown by these APIs; inspect `ok` (or its explicit bool conversion), `error.stage`, `error.type`, `error.message`, `error.line`, and `error.column`. The language uses keyword-based calls such as `CALL name arg<int>:1 END`. `reset()` clears the last source/result state and recreates all runtime scopes. Native registrations are stored separately and survive; script-created global variables and user functions are removed. It does not provide single-entry deletion. Example: [running.cpp](examples/running.cpp).

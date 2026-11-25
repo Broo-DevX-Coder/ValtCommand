@@ -1,0 +1,5 @@
+# Native functions
+
+Native libraries follow the `vltc::Lib::<Library>::__init__(Runtime::RunTime&)` pattern and call `add_external_function` for each exposed function. A callback has type `ReturnResult<Value> f(ExternalFunInType)`. The input contains a name-to-`Value` argument map and `ParentScope`. Return a successful result with `success=true` and `value` set; failures should set `success=false` and diagnostic fields. Runtime argument metadata is `Runtime::ExternalFunctionArgument` (`type`, `is_const`, `is_required`, `is_any`, `default_value`).
+
+The host can register a callback with `add_external_function(callback, script_name, return_type, argument_map, is_any)`. Supported runtime values are `std::monostate` (void), `int64_t`, `long double`, `std::string`, and `bool`. Use matching language type strings (`void`, `int`, `float`, `str`, `bool` as applicable). A declared argument type `any` does not make arithmetic generic: source code `any + 1` is rejected by static analysis in the checked language example `types-any-arithmetic.vlt`. See [native.cpp](examples/native.cpp). For the full API, see [RunTime reference](runtime.md).

@@ -43,7 +43,7 @@ The first character must be an ASCII letter or `_`. Following characters may als
 
 ## 6. Keywords
 
-Exact matches against `__key_words__` in `src/Globals.cpp` become KEY_WORD tokens. Matching is case-sensitive because the lexer compares the scanned text with these exact strings.
+Exact matches against the keyword table initialized in `src/Globals.cpp` become KEY_WORD tokens. The table declaration is in the internal `include/detail/globals.hpp`; it is not an installed public host API. Matching is case-sensitive because the lexer compares the scanned text with these exact strings.
 
 | Keyword | Token type |
 |---|---|
@@ -70,7 +70,7 @@ END is handled separately as END_BLOCK, not as KEY_WORD.
 
 ## 7. Type names
 
-The exact strings in `__types__` in `src/Globals.cpp` become TYPE tokens in `vltc::Lexar::get_the_next_token`. They are not emitted as ordinary identifiers.
+The exact strings in the internal type-name table initialized in `src/Globals.cpp` become TYPE tokens in `vltc::Lexar::get_the_next_token`. The table is not part of the installed public API. They are not emitted as ordinary identifiers.
 
 | Type spelling | Token type |
 |---|---|
@@ -107,7 +107,7 @@ The scanner accepts at most one dot and does not require digits after it. A dot 
 
 The lexer recognizes text beginning with either " or ' as a string. The matching quote ends the token. The token's value contains the string content, without the delimiters.
 
-Supported escapes in `__backslashed_symbols__` in `src/Globals.cpp` are `\n`, `\t`, `\\`, `\"`, and `\'`; they insert the corresponding character into the string value. An unknown escape preserves both the backslash and the escaped byte as written. Strings cannot contain a literal line feed. A line feed or end of input before the closing quote emits an unterminated-string lexical error.
+Supported escapes in the internal escape table in `src/Globals.cpp` are `\n`, `\t`, `\\`, `\"`, and `\'`; they insert the corresponding character into the string value. An unknown escape preserves both the backslash and the escaped byte as written. Strings cannot contain a literal line feed. A line feed or end of input before the closing quote emits an unterminated-string lexical error.
 
 ```text
 "hi"        -> STRING("hi")
@@ -123,7 +123,7 @@ Only the exact spellings True and False are emitted as BOOLEAN tokens. Matching 
 
 ## 9. Operators and punctuation
 
-`vltc::Lexar::get_the_next_token` checks the two-character symbol map `__complex_2_symbols__` before the single-character symbol map `__symbols__` in `src/Globals.cpp`. This gives the listed two-character spellings priority over their one-character prefixes. There are no three-character tokens.
+`vltc::Lexar::get_the_next_token` checks the two-character symbol map before the single-character symbol map; these internal tables are initialized in `src/Globals.cpp` and declared in `include/detail/globals.hpp`, not in the installed public API. This gives the listed two-character spellings priority over their one-character prefixes. There are no three-character tokens.
 
 ### Two-character tokens
 

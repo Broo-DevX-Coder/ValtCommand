@@ -15,7 +15,7 @@ The interpreter's source type spellings are `int`, `float`, `bool`, `str`, `void
 | `void` | `std::monostate` | No returned value |
 | `any` | The actual contained value | A type accepted by compatible declarations and generic function arguments |
 
-`Get_ValueT` reports `int`, `float`, `bool`, `void`, and `str` for their corresponding runtime alternatives. The runtime validation example reports a string argument as `str`; see [the `any` forwarding example](examples/types-any-runtime-string.vlt) and its [captured error](exceptions/types-any-runtime-string.expected).
+The internal `Get_ValueT` helper maps runtime alternatives to `int`, `float`, `bool`, `void`, and `str`; its declaration is in `include/detail/globals.hpp`, which is not an installed public API header. The runtime validation example reports a string argument as `str`; see [the `any` forwarding example](examples/types-any-runtime-string.vlt) and its [captured error](exceptions/types-any-runtime-string.expected).
 
 `void` has no value literal: a `void` function call has no value result. `any` is used as a declaration or parameter type, not as a literal. See [the no-value function example](examples/types-void.vlt) and [its output](exceptions/types-void.expected), and [the `any` example](examples/types-any.vlt) with [its output](exceptions/types-any.expected).
 

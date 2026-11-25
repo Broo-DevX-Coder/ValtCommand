@@ -1,0 +1,1 @@
+SET answer<int> = CALL increment x<int>:40 END
